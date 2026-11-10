@@ -1,7 +1,10 @@
 /* Libro de movimientos del club (pestaña Movimientos). */
-.ledger-tab { display: grid; gap: 12px; }
+.ledger-tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .ledger-tab header p { margin: 4px 0 0; font: 600 var(--fs-sm)/1.4 var(--font-body); color: var(--c-ink-muted); }
 .ledger-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ledger-stats > * { min-width: 0; overflow-wrap: anywhere; }
+.ledger-summary { min-width: 0; }
+.ledger-summary-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .ledger-filters { display: flex; flex-wrap: wrap; gap: 6px; }
 .ledger-filters button { border: 2px solid var(--c-navy-900); background: var(--c-white); color: var(--c-navy-900); padding: 6px 10px; font: 600 var(--fs-xs)/1 var(--font-ui); letter-spacing: .5px; cursor: pointer; }
 .ledger-filters button b { margin-left: 4px; color: var(--c-red); }
@@ -18,6 +21,9 @@
 .ledger-row.out .ledger-money strong { color: var(--c-red); }
 @media (max-width: 560px) {
   .ledger-stats { grid-template-columns: 1fr; }
+  .ledger-summary-table th, .ledger-summary-table td { padding: 6px 3px; font-size: 12px; }
+  .ledger-summary-table td:first-child { min-width: 74px; white-space: normal; overflow-wrap: break-word; }
+  .ledger-summary-table td button { font-size: 12px; line-height: 1.2; text-align: left; }
   .ledger-row { grid-template-columns: 1fr; gap: 6px; }
   .ledger-money { text-align: left; grid-auto-flow: column; justify-content: space-between; align-items: baseline; }
 }

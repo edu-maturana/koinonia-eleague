@@ -91,7 +91,7 @@
 .squad-value-simulator .pitch-board { padding: 0; border: 0; background: none; }
 .squad-value-simulator .pitch-board-field { z-index: 0; }
 .squad-sim-views { margin-bottom: 0; }
-.squad-sim-table { display: grid; gap: 12px; }
+.squad-sim-table { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .squad-sim-table-head, .squad-sim-row { display: grid; grid-template-columns: minmax(0, 1fr) 48px 44px 92px 170px 92px; align-items: center; gap: 10px; }
 .squad-sim-table-head { padding: 0 12px; color: #4d4839; font: 600 11px/1 'Oswald', sans-serif; letter-spacing: .8px; }
 .squad-sim-table-head span:nth-child(n+2), .squad-sim-table-head span:nth-child(6) { text-align: center; }

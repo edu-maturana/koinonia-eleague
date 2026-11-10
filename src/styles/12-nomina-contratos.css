@@ -1,5 +1,5 @@
 /* ===== Nómina y contratos ===== */
-.payroll-tab { display: grid; gap: 14px; }
+.payroll-tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .payroll-head h2 { margin: 0 0 4px; }
 .payroll-head p { margin: 0; color: #3b4a54; font: 500 13px/1.45 'Roboto Condensed', sans-serif; }
 .payroll-tiles { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
@@ -16,7 +16,7 @@
 .mood-meter.mid .mood-bar i { background: #d49b00; }
 .mood-meter.bad .mood-bar i { background: #a90020; }
 .role-under { color: #a90020; font-weight: 700; }
-.roles-panel { display: grid; gap: 8px; }
+.roles-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .roles-panel h3 { margin: 0; }
 .roles-panel p { margin: 0; color: #3b4a54; font: 500 13px/1.45 'Roboto Condensed', sans-serif; }
 
@@ -67,7 +67,7 @@
 @media (prefers-reduced-motion: reduce) { .sig-draw path, .sig-name, .sheet-stamp { animation-duration: .01s; animation-delay: 0s; } }
 @media (max-width: 560px) { .signing-sheet { padding: 14px 12px 16px; transform: none; } .sheet-player .mood-meter { margin-left: 0; } .sheet-stamp { right: 8px; font-size: 20px; } }
 
-.inbox-tab { display: grid; gap: 12px; }
+.inbox-tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .inbox-tab header h2 { margin: 0 0 4px; }
 .inbox-tab header p { margin: 0; color: #3b4a54; font: 500 13px/1.45 'Roboto Condensed', sans-serif; }
 .inbox-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
@@ -247,7 +247,7 @@
 .request-note.leave { padding: 6px 10px; border: 2px solid #a90020; background: #fbe9e7; color: #7a1a14; font-weight: 700; }
 .request-actions .chips button.danger { border-color: #a90020; color: #a90020; }
 
-.watchlist-tab { display: grid; gap: 12px; }
+.watchlist-tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .watchlist-tab > header h2 { display: flex; align-items: center; gap: 8px; }
 .watchlist-search { display: grid; gap: 8px; }
 .watchlist-search input { min-height: 48px; padding: 0 14px; font: 500 17px/1 var(--font-ui); }
@@ -278,7 +278,7 @@
 .board-block li em { font-style: normal; font: 700 12px/1.2 'Roboto Condensed', sans-serif; }
 .board-met em { color: #0a6b2d; } .board-failed em { color: #a11; }
 
-.stadium-tab { display: grid; gap: 12px; }
+.stadium-tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .stadium-mine { grid-template-columns: 1fr auto; align-items: center; }
 .stadium-mine > span { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 600 var(--fs-md)/1.3 var(--font-body); }
 .stadium-group h3 { margin: 0 0 6px; }

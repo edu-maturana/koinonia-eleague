@@ -259,7 +259,7 @@ a.club-form-pill:hover { color: #fff; transform: translateY(-2px); }
 .club-transfers .move-assignment .club-transfer-kind { background: #0b3f8d; }
 .club-transfers .move-out .club-transfer-kind { background: #a90020; }
 .club-transfers .move-trade .club-transfer-kind { color: #111; background: #ffd42a; }
-.club-history-tab-content { display: grid; gap: 14px; }
+.club-history-tab-content { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 @media (max-width: 900px) {
   .club-overview { grid-template-columns: 1fr; }
   .club-hero { grid-template-columns: 72px minmax(0, 1fr); }
