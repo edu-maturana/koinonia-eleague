@@ -518,3 +518,4 @@
 .trophy-cup svg { width: 18px; height: 18px; fill: none; stroke: #7a5400; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
 .trophy-cup svg path { fill: #f2b705; }
 .trophy-cup small { max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.calendar-cup-day { border-color: #b18b16; background: linear-gradient(#fff4cc, #fffaf0); }

@@ -37,6 +37,30 @@ function CalendarBlock({ match, resolveTeam, canMove, selected, dimmed, onSelect
   </div>;
 }
 
+const CUP_ROUNDS = [['QF', 'CUARTOS'], ['SF', 'SEMIS'], ['3P', '3.ER PUESTO'], ['F', 'FINAL']];
+
+/** El día de la Copa Grande Jogatore: todo el cuadro ese día (o el aviso de que se sortea al cerrar la primera vuelta). */
+function CupDayColumn({ day, cup, resolveTeam, navigate }) {
+  const matches = cup?.matches ?? [];
+  return <section className="calendar-day calendar-cup-day">
+    <header>
+      <h3>DÍA {day} · COPA</h3>
+      <small>{cup ? `${matches.filter(match => match.status === 'finished').length} / ${matches.length} JUGADOS` : 'GRANDE JOGATORE'}</small>
+      <p className="calendar-ok">{cup ? cup.name.toUpperCase() : 'SE SORTEA AL TERMINAR LA PRIMERA VUELTA'}</p>
+    </header>
+    <div className="calendar-blocks">{CUP_ROUNDS.map(([key, label]) => {
+      const list = matches.filter(match => match.slot.startsWith(key) && (key !== 'F' || match.slot === 'F'));
+      return list.length ? <div key={key} className="calendar-blocks">{list.map(match =>
+        <div key={match.id} role="button" tabIndex={0} className={`calendar-block calendar-${match.status}`} onClick={() => navigate(`/partidos/${encodeURIComponent(match.id)}`)}
+          onKeyDown={event => { if (event.key === 'Enter') navigate(`/partidos/${encodeURIComponent(match.id)}`); }}>
+          <small><span>{label}</span>{match.status === 'live' ? <em>EN VIVO</em> : match.status === 'finished' ? <em>FINAL</em> : null}</small>
+          {[['home', match.homeTeamId, match.homeName, match.homeScore], ['away', match.awayTeamId, match.awayName, match.awayScore]].map(([side, teamId, name, score]) =>
+            <span key={side} className="calendar-team"><TeamMark team={resolveTeam({ id: teamId, name })}/><b>{name}</b>{match.status !== 'pending' && <strong>{score}</strong>}</span>)}
+        </div>)}</div> : null;
+    })}</div>
+  </section>;
+}
+
 export function CalendarPage({ teams, navigate }) {
   const { isAdmin } = useAuth();
   const tournaments = useApiQuery(signal => endpoints.tournaments({ status: 'active', page: 1, pageSize: 100 }, signal));
@@ -44,6 +68,10 @@ export function CalendarPage({ teams, navigate }) {
   const [tournamentId, setTournamentId] = useState('');
   const activeId = tournamentId || leagues[0]?.id || '';
   const fixtures = useApiQuery(signal => activeId ? endpoints.fixtures(activeId, signal) : Promise.resolve({ data: [] }), [activeId]);
+  // Día reservado de la Copa Grande Jogatore (ligas automáticas): se muestra entre las dos vueltas.
+  const cupDay = leagues.find(item => item.id === activeId)?.rules?.cupDay ?? null;
+  const cups = useApiQuery(signal => cupDay ? endpoints.cups(signal) : Promise.resolve({ data: [] }), [cupDay]);
+  const cup = (Array.isArray(cups.data) ? cups.data : []).find(item => item.leagueId === activeId) ?? null;
   const [overrides, setOverrides] = useState({});
   const [extraDays, setExtraDays] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -66,14 +94,14 @@ export function CalendarPage({ teams, navigate }) {
     return [...byId.values()].sort((left, right) => left.name.localeCompare(right.name, 'es'));
   }, [matches]);
   const columns = useMemo(() => {
-    const days = [...new Set([...matches.map(match => match.calendarDay).filter(Boolean), ...extraDays])].sort((left, right) => left - right);
+    const days = [...new Set([...matches.map(match => match.calendarDay).filter(Boolean), ...extraDays, ...(cupDay ? [cupDay] : [])])].sort((left, right) => left - right);
     // Resaltando un equipo, sus partidos suben al principio de cada día; el resto sigue por fecha del fixture.
     const involves = match => Boolean(focusTeam) && (match.homeTeam.id === focusTeam || match.awayTeam.id === focusTeam);
     const order = (left, right) => Number(involves(right)) - Number(involves(left)) || (left.roundNumber ?? 0) - (right.roundNumber ?? 0);
     const list = days.map(day => ({ key: String(day), day, rows: matches.filter(match => match.calendarDay === day).sort(order) }));
     const unscheduled = matches.filter(match => !match.calendarDay).sort(order);
     return unscheduled.length ? [{ key: UNSCHEDULED, day: null, rows: unscheduled }, ...list] : list;
-  }, [matches, extraDays, focusTeam]);
+  }, [matches, extraDays, focusTeam, cupDay]);
   const scheduledCount = matches.filter(match => match.calendarDay).length;
 
   const move = async (matchId, day) => {
@@ -130,6 +158,7 @@ export function CalendarPage({ teams, navigate }) {
     <DataState query={fixtures} empty={null}/>
     {!fixtures.loading && !fixtures.error && (columns.length
       ? <div className="calendar-board" style={{ '--days': columns.length }}>{columns.map(column => {
+        if (cupDay && column.day === cupDay && !column.rows.length) return <CupDayColumn key={column.key} day={cupDay} cup={cup} resolveTeam={resolveTeam} navigate={navigate}/>;
         const { offCount, repeated } = column.day ? dayWarnings(column.rows, participants, Number(perDay)) : { offCount: [], repeated: false };
         return <section key={column.key} className={`calendar-day ${dragOver === column.key ? 'drag-over' : ''} ${column.day ? '' : 'unscheduled'}`} {...dropProps(column.key, column.day)}>
           <header>
