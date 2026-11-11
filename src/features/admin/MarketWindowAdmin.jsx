@@ -60,7 +60,6 @@ export function MarketPhaseBanner({ status, onChanged }) {
 export function MarketWindowAdmin() {
   const status = useApiQuery(signal => endpoints.marketStatus(signal), []);
   const [closesAt, setClosesAt] = useState(defaultClose);
-  const [minimum, setMinimum] = useState(2);
   const [renewals, setRenewals] = useState(true);
   // Duración máxima de los contratos de este mercado (por ahora 2: es la primera vez y es experimental).
   const [maxSeasons, setMaxSeasons] = useState(2);
@@ -79,12 +78,12 @@ export function MarketWindowAdmin() {
   }
   const submit = event => {
     event.preventDefault();
-    open.execute({ closesAt: chileToIso(closesAt), minConfirmations: Number(minimum), renewals, maxContractSeasons: Number(maxSeasons) });
+    open.execute({ closesAt: chileToIso(closesAt), minConfirmations: 5, renewals, maxContractSeasons: Number(maxSeasons) });
   };
   return <form className="admin-form market-window-admin" onSubmit={submit}>
     <p>🔒 El mercado está cerrado.</p>
     <label>CIERRA (HORA DE CHILE)<input type="datetime-local" required value={closesAt} onChange={event => setClosesAt(event.target.value)}/></label>
-    <label>CONFIRMACIONES PARA COMPRAR UN LIBRE<input type="number" min="1" required value={minimum} onChange={event => setMinimum(event.target.value)}/></label>
+    <p className="poll-hint">Comprar un agente libre pide siempre 5 confirmaciones.</p>
     <label>DURACIÓN MÁXIMA DE LOS CONTRATOS<select value={maxSeasons} onChange={event => setMaxSeasons(Number(event.target.value))}>{[2, 4, 6].map(n => <option key={n} value={n}>{n} TORNEOS{n === 2 ? ' (RECOMENDADO POR AHORA)' : ''}</option>)}</select></label>
     <label className="arrival-check"><input type="checkbox" checked={renewals} onChange={event => setRenewals(event.target.checked)}/> EMPEZAR CON PERÍODO DE RENOVACIONES</label>
     <small className="control-note">{renewals
