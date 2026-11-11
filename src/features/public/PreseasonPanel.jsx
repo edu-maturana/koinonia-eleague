@@ -66,7 +66,7 @@ export function PreseasonBracket({ bracket, onChanged }) {
       {list.map(renderMatch)}
     </section>)}</div>
     {bracket.standings && <ol className="preseason-standings">{bracket.standings.map((row, index) => <li key={row.teamId}>
-      <span>{index < 4 ? PLACE[index] : bracket.groups ? 'GRUPOS' : 'CUARTOS'}</span>
+      <span>{bracket.placeLabels?.[row.place] ?? (index < 4 ? PLACE[index] : bracket.groups ? 'GRUPOS' : 'CUARTOS')}</span>
       <EntityLink to="team" id={row.teamId} className="table-team-link"><TeamMark team={teamIndex?.[row.teamId] ?? { id: row.teamId, name: bracket.teamNames?.[row.teamId] }}/>{upper(bracket.teamNames?.[row.teamId] ?? '')}</EntityLink><b>{gp(row.prize)}</b>
     </li>)}</ol>}
   </div>;

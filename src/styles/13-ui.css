@@ -55,6 +55,7 @@
 .ui-notice { padding: var(--sp-2) var(--sp-3); border: 1px solid currentColor; font: 600 var(--fs-sm)/1.3 var(--font-body); }
 .ui-notice--success { color: var(--c-green); background: #dce8c5; }
 .ui-notice--error { color: #9f001b; background: #f3c9c1; }
+.ui-notice--warning { color: #6b4a00; background: #f8e3a6; }
 
 /* Pestañas */
 .ui-tabs { display: flex; gap: var(--sp-1); overflow-x: auto; border-bottom: var(--border); }

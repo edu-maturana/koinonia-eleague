@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AwardsPanel } from './AwardsPanel.jsx';
 import { PreseasonBracket } from './PreseasonPanel.jsx';
+import { CupBracketView } from './CupPanel.jsx';
 import { endpoints } from '../../api/endpoints.js';
 import { EntityLink } from '../../components/EntityLink.jsx';
 import { LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClass, playoffZone } from '../../components/LiveStandings.jsx';
@@ -185,6 +186,13 @@ function PlayoffsSection({ tournamentId, resolveTeam, playoffsEnabled = true }) 
   </section>;
 }
 
+/** La Copa Grande Jogatore se ve como su cuadro, con los cupos que dio la tabla del torneo anterior. */
+function CupWorkspace({ tournamentId, teams, onChanged }) {
+  const bracket = useApiQuery(signal => endpoints.cupBracket(tournamentId, signal), [tournamentId]);
+  if (!bracket.data) return <DataState query={bracket}/>;
+  return <section className="workspace-panel"><CupBracketView cup={bracket.data} teams={teams} onChanged={() => { bracket.retry(); onChanged?.(); }}/></section>;
+}
+
 /** Una gira se ve como su cuadro (no tiene tabla ni goleadores propios). */
 function PreseasonWorkspace({ tournamentId, teams, onChanged }) {
   const bracket = useApiQuery(signal => endpoints.preseasonBracket(tournamentId, signal), [tournamentId]);
@@ -230,7 +238,7 @@ function TournamentWorkspace({ tournamentId, teams, onChanged, onDeleted, hideNa
 
   return <section className="tournament-workspace"><DataState query={detail}/>{data && <>
     <header className="tournament-header"><div><small>{data.format === 'league' ? 'LIGA' : data.format === 'knockout' ? 'ELIMINACIÓN DIRECTA' : 'GRUPOS + ELIMINACIÓN'}{data.format === 'league' ? ` · CAMPEONES: ${data.championPolicy === 'both' ? 'LIGA REGULAR + PLAYOFFS' : data.championPolicy === 'playoffs' ? 'PLAYOFFS' : 'TABLA'}` : ''}</small>{hideName ? null : <h2>{data.name}</h2>}</div><b className={`status status-${data.status}`}>{statusLabel}</b>{isAdmin && <a className="tournament-manage-button" href={`#/admin?tab=torneos&id=${data.id}`}>⚙ Gestionar en la sala de control</a>}{isAdmin && <Button variant="danger" type="button" disabled={remove.loading} onClick={deleteTournament}>ELIMINAR TORNEO</Button>}</header>{isAdmin && (remove.error || remove.success) && <FormFeedback mutation={remove}/>}
-    {data.rules?.kind === 'preseason' ? <PreseasonWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : <>
+    {data.rules?.kind === 'grande_jogatore' ? <CupWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : data.rules?.kind === 'preseason' ? <PreseasonWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : <>
       {!embedded && <nav className="tournament-subtabs" aria-label="Secciones del torneo" role="tablist">
         <button type="button" role="tab" aria-selected={workspaceTab === 'standings'} className={workspaceTab === 'standings' ? 'active' : ''} onClick={() => setWorkspaceTab('standings')}>TABLA DE POSICIONES</button>
         <button type="button" role="tab" aria-selected={workspaceTab === 'scorers'} className={workspaceTab === 'scorers' ? 'active' : ''} onClick={() => setWorkspaceTab('scorers')}>GOLEADORES</button>

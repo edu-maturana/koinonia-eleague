@@ -4,8 +4,10 @@ import { useApiQuery } from '../features/public/useApiQuery.js';
 import { EntityLink } from './EntityLink.jsx';
 import { TeamMark } from './TeamMark.jsx';
 
-// "Koinonia E-League v6" -> "v6"; "Liga de Transición" -> "LT"; otro torneo -> iniciales.
+// "Koinonia E-League v6" -> "v6"; "Liga de Transición" -> "LT"; "Copa Grande Jogatore 2" -> "GC2" (va con copa dorada); otro torneo -> iniciales.
 export function starLabel(name = '') {
+  const cup = /grande\s+jogatore\s*(\d+)/i.exec(name);
+  if (cup) return { text: `GC${cup[1]}`, order: 2000 + Number(cup[1]), cup: true };
   const edition = /\bv\s*(\d+)\s*$/i.exec(name);
   if (edition) return { text: `v${edition[1]}`, order: Number(edition[1]) };
   if (/transici[oó]n/i.test(name)) return { text: 'LT', order: 0 };
@@ -17,7 +19,7 @@ export function starLabel(name = '') {
 export const seasonTag = name => (name ? starLabel(name).text : '');
 export const tourShortName = name => String(name ?? '').replace(/^gira\s+(por|de|a|en)\s+/i, '').trim() || String(name ?? '');
 
-const latest = row => Math.max(...row.stars.map(star => star.order === 1000 ? -1 : star.order));
+const latest = row => Math.max(...row.stars.map(star => star.order >= 1000 ? -1 : star.order));
 
 /** Campeones de gira por club: más giras primero; a igual cantidad, la más reciente (las giras llegan de la más nueva a la más vieja). */
 export function buildTourShowcase(clubs, titles) {
@@ -43,7 +45,9 @@ export function buildShowcase(clubs, titleLists) {
     .sort((a, b) => b.stars.length - a.stars.length || latest(b) - latest(a) || a.club.name.localeCompare(b.club.name));
 }
 
-// Vitrina del inicio: cada campeón con una estrella por título (LT, v1, v2…).
+const CUP_ICON = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v4a6 6 0 0 1-12 0V3zM6 5H3v2a4 4 0 0 0 4 4M18 5h3v2a4 4 0 0 1-4 4M12 13v4M8 21h8M9 17h6v4H9z"/></svg>;
+
+// Vitrina del inicio: cada campeón con una estrella por título de liga (LT, v1, v2…) y una copa dorada por Copa Grande Jogatore (GC1, GC2…).
 export function TrophyCase({ teams = [] }) {
   const clubs = teams.filter(team => team.kind === 'club' || team.kind == null);
   const key = clubs.map(team => team.id).join(',');
@@ -65,13 +69,13 @@ export function TrophyCase({ teams = [] }) {
       <EntityLink to="team" id={club.id} className="trophy-team"><TeamMark team={club}/><span>{club.name}</span></EntityLink>
       <span className="trophy-stars" aria-label={`${cups.length} gira${cups.length === 1 ? '' : 's'} ganada${cups.length === 1 ? '' : 's'}`}>{cups.map(cup =>
         <span key={cup.id} className="trophy-star trophy-cup" title={`${cup.name}${cup.season ? ` · ${cup.season}` : ''}`}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v4a6 6 0 0 1-12 0V3zM6 5H3v2a4 4 0 0 0 4 4M18 5h3v2a4 4 0 0 1-4 4M12 13v4M8 21h8M9 17h6v4H9z"/></svg>
+          {CUP_ICON}
           <small>{tourShortName(cup.name)}</small></span>)}</span>
     </li>) : shown.map(({ club, stars }) => <li key={club.id}>
       <EntityLink to="team" id={club.id} className="trophy-team"><TeamMark team={club}/><span>{club.name}</span></EntityLink>
       <span className="trophy-stars" aria-label={`${stars.length} título${stars.length === 1 ? '' : 's'}`}>{stars.map(star =>
-        <span key={star.id} className="trophy-star" title={star.name}>
-          <svg viewBox="-6 -6 112 108" aria-hidden="true"><polygon points="50,2 62,36 98,37 69,59 80,94 50,73 20,94 31,59 2,37 38,36" /></svg>
+        <span key={star.id} className={`trophy-star${star.cup ? ' trophy-cup' : ''}`} title={star.name}>
+          {star.cup ? CUP_ICON : <svg viewBox="-6 -6 112 108" aria-hidden="true"><polygon points="50,2 62,36 98,37 69,59 80,94 50,73 20,94 31,59 2,37 38,36" /></svg>}
           <small>{star.text}</small></span>)}</span>
     </li>)}</ul>
   </section>;
