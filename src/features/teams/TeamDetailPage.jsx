@@ -361,11 +361,10 @@ const SIMULATOR_VIEWS = [['pitch', 'VISTA CANCHA'], ['table', 'VISTA TABLA']];
 
 const simulatorDraftKey = teamId => `koinonia-simulador-plantel:${teamId}`;
 
-// El borrador solo vale mientras el plantel real siga igual: si cambió, se descarta.
-function loadSimulatorDraft(teamId, signature) {
+// Copia del borrador en este navegador (la de la cuenta manda si es más nueva). Se acomoda al plantel real con rebaseSimulatorDraft.
+function loadSimulatorDraft(teamId) {
   try {
-    const draft = JSON.parse(window.localStorage.getItem(simulatorDraftKey(teamId)) ?? 'null');
-    return draft?.signature === signature && Array.isArray(draft.roster) && Array.isArray(draft.removed) ? draft : null;
+    return JSON.parse(window.localStorage.getItem(simulatorDraftKey(teamId)) ?? 'null');
   } catch {
     return null;
   }
@@ -383,7 +382,33 @@ function saveSimulatorDraft(teamId, draft) {
 const SIMULATOR_SYNC_DELAY = 700;
 const SYNC_LABELS = { saving: 'GUARDANDO…', saved: 'GUARDADO EN TU CUENTA', error: 'Sin conexión · solo en este dispositivo' };
 
-const validSimulatorDraft = (draft, signature) => draft?.signature === signature && Array.isArray(draft.roster) && Array.isArray(draft.removed) ? draft : null;
+/**
+ * El plantel real cambia seguido (precios que se mueven con las ventas, orden, llegadas y salidas): en vez de botar el borrador, se
+ * acomoda al plantel de hoy. Los jugadores del club toman sus datos reales y conservan lo simulado (titular o banca, lugar en la
+ * cancha, precio editado); los que ya no están en el club salen del borrador; los fichajes simulados siguen; los que llegaron de
+ * verdad y no estaban en el borrador entran a la banca. Las salidas simuladas siguen si el jugador todavía está en el club.
+ */
+function rebaseSimulatorDraft(draft, baseRoster, signature, teamId) {
+  if (!draft || !Array.isArray(draft.roster) || !Array.isArray(draft.removed)) return null;
+  const baseIds = baseRoster.map(simulatorPlayerId);
+  if (draft.signature === signature) return { ...draft, baseIds };
+  const base = new Map(baseRoster.map(player => [simulatorPlayerId(player), player]));
+  // Quién era del club cuando se guardó: los borradores viejos no lo anotaban y se deduce del club del jugador.
+  const wasOurs = new Set(draft.baseIds ?? []);
+  const fromClub = player => wasOurs.has(simulatorPlayerId(player)) || simulatorPlayerTeamId(player) === String(teamId);
+  const simulated = ({ section, pitchX, pitchY, simPrice }) => ({ section, pitchX, pitchY, ...(simPrice !== undefined ? { simPrice } : {}) });
+  const removed = draft.removed.filter(player => base.has(simulatorPlayerId(player)))
+    .map(player => ({ ...base.get(simulatorPlayerId(player)), ...(player.simPrice !== undefined ? { simPrice: player.simPrice } : {}) }));
+  const removedIds = new Set(removed.map(simulatorPlayerId));
+  const roster = draft.roster
+    .filter(player => !removedIds.has(simulatorPlayerId(player)) && (base.has(simulatorPlayerId(player)) || !fromClub(player)))
+    .map(player => (base.has(simulatorPlayerId(player)) ? { ...base.get(simulatorPlayerId(player)), ...simulated(player) } : player));
+  const listed = new Set(roster.map(simulatorPlayerId));
+  for (const player of baseRoster) {
+    if (!listed.has(simulatorPlayerId(player)) && !removedIds.has(simulatorPlayerId(player))) roster.push({ ...player, section: 'substitutes', pitchX: undefined, pitchY: undefined });
+  }
+  return { ...draft, signature, baseIds, roster, removed };
+}
 
 function loadSimulatorView() {
   try {
@@ -485,7 +510,7 @@ function SquadValueSimulator({ team, squad, balance }) {
   const skipSave = useRef(true);
   useEffect(() => {
     flushSync();
-    const local = team?.id ? loadSimulatorDraft(team.id, baseSignature) : null;
+    const local = team?.id ? rebaseSimulatorDraft(loadSimulatorDraft(team.id), baseRoster, baseSignature, team.id) : null;
     skipSave.current = true;
     editedSinceLoad.current = false;
     setSyncState('idle');
@@ -498,7 +523,7 @@ function SquadValueSimulator({ team, squad, balance }) {
       // Si ya empezó a editar mientras cargaba, manda lo que está haciendo.
       if (editedSinceLoad.current) return;
       const stored = response?.data?.draft ?? null;
-      const remote = validSimulatorDraft(stored, baseSignature);
+      const remote = rebaseSimulatorDraft(stored, baseRoster, baseSignature, team.id);
       if (remote && (!local || (remote.savedAt ?? 0) > (local.savedAt ?? 0))) {
         skipSave.current = true;
         setSimulatedRoster(remote.roster);
@@ -511,7 +536,7 @@ function SquadValueSimulator({ team, squad, balance }) {
           flushSync();
         }
       } else if (stored && !remote) {
-        // El plantel real cambió desde que se guardó: el borrador de la cuenta ya no sirve.
+        // El borrador de la cuenta está dañado (no tiene plantel): se limpia.
         pendingSync.current = { teamId: team.id, draft: null };
         flushSync();
       }
@@ -557,7 +582,7 @@ function SquadValueSimulator({ team, squad, balance }) {
   useEffect(() => {
     if (skipSave.current) { skipSave.current = false; return; }
     if (!team?.id) return;
-    const draft = changed ? { signature: baseSignature, roster: simulatedRoster, removed: removedPlayers, savedAt: Date.now() } : null;
+    const draft = changed ? { signature: baseSignature, baseIds: baseRoster.map(simulatorPlayerId), roster: simulatedRoster, removed: removedPlayers, savedAt: Date.now() } : null;
     editedSinceLoad.current = true;
     saveSimulatorDraft(team.id, draft);
     pendingSync.current = { teamId: team.id, draft };
