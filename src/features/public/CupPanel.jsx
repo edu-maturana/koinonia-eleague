@@ -5,7 +5,7 @@ import { PreseasonBracket } from './PreseasonPanel.jsx';
 import { useApiQuery } from './useApiQuery.js';
 
 const upper = text => String(text ?? '').toUpperCase();
-const CUP_PLACES = { champion: 'CAMPEÓN', runnerUp: 'FINALISTA', semifinal: 'SEMIS', quarterfinal: 'CUARTOS' };
+const CUP_PLACES = { champion: 'CAMPEÓN', runnerUp: 'FINALISTA', third: '3.º', fourth: '4.º', quarterfinal: 'CUARTOS' };
 
 /** Cuadro de una Copa Grande Jogatore: cupos (tabla del torneo anterior), cruces y, al terminar, puestos y premios. */
 export function CupBracketView({ cup, teams = [], onChanged }) {
@@ -34,7 +34,7 @@ export function CupPanel({ teams = [] }) {
   const prizes = cups[0]?.prizes;
   return <Card title="COPA GRANDE JOGATORE" className="preseason-panel">
     <CupPauseNotice/>
-    <p className="club-life-hint">Se juega a mitad de cada torneo: al terminar la primera vuelta la liga se pausa y entran los 8 primeros de la tabla del torneo anterior. El 1.º y el 2.º se cruzan de entrada en cuartos y los otros 6 se sortean. Todo a partido único y eliminación directa (empate: penales), de local el mejor ubicado. El campeón suma un título a la vitrina (GC1, GC2…).{prizes ? ` Premios: campeón ${gp(prizes.champion)}, finalista ${gp(prizes.runnerUp)}, semifinalistas ${gp(prizes.semifinal)} y cuartofinalistas ${gp(prizes.quarterfinal)}.` : ''}</p>
+    <p className="club-life-hint">Se juega a mitad de cada torneo: al terminar la primera vuelta la liga se pausa y entran los 8 primeros de la tabla del torneo anterior. El 1.º y el 2.º se cruzan de entrada en cuartos y los otros 6 se sortean. Todo a partido único y eliminación directa (empate: penales), de local el mejor ubicado; los que pierden las semis juegan el 3.er puesto el día de la final. El campeón suma un título a la vitrina (GC1, GC2…).{prizes?.third ? ` Premios: campeón ${gp(prizes.champion)}, finalista ${gp(prizes.runnerUp)}, 3.º ${gp(prizes.third)}, 4.º ${gp(prizes.fourth)} y cuartofinalistas ${gp(prizes.quarterfinal)}.` : ''}</p>
     {!cups.length && <p className="trophy-empty">TODAVÍA NO SE JUEGA NINGUNA COPA: LA PRIMERA ARRANCA A MITAD DEL PRÓXIMO TORNEO.</p>}
     {cups.map(cup => <section key={cup.id} className="preseason-item">
       <header><b>{upper(cup.name)}</b><Chip tone={cup.status === 'completed' ? 'green' : 'yellow'}>{cup.status === 'completed' ? 'TERMINADA' : 'EN JUEGO'}</Chip></header>
