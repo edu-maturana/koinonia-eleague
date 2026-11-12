@@ -45,34 +45,47 @@ function PlayerChip({ player, note }) {
   </span>;
 }
 
-/** Responder con otra oferta: otro precio, GP de más o pidiendo a un jugador del que ofreció. La original queda rechazada. */
+/** Responder con otra oferta: se arma el trato entero, sin quedar atado a los jugadores de la original. Entregar y pedir a la vez
+ *  es un trueque (con GP de cada lado); solo uno de los dos es un traspaso con precio. La original queda rechazada. */
 function CounterForm({ offer, me, other, onDone, onCancel }) {
   const isTrade = offer.kind === 'trade';
   const iAmSeller = !isTrade && me?.id === offer.fromTeam?.id;
+  const mySquad = useSquad(me?.id);
   const theirSquad = useSquad(other?.id);
+  // Se parte de lo mismo que la oferta original (lo que ya entregabas / pedías) y se cambia lo que haga falta.
+  const [give, setGive] = useState(isTrade ? offer.toPlayer?.id ?? '' : iAmSeller ? offer.player?.id ?? '' : '');
+  const [ask, setAsk] = useState(isTrade ? offer.fromPlayer?.id ?? '' : iAmSeller ? '' : offer.player?.id ?? '');
   const [price, setPrice] = useState(isTrade ? 0 : offer.gpAmount ?? 0);
-  const [ask, setAsk] = useState(isTrade ? offer.fromPlayer?.id ?? '' : '');
   const [myGp, setMyGp] = useState(0);
   const [theirGp, setTheirGp] = useState(0);
-  const asking = isTrade || (iAmSeller && ask);
-  const given = isTrade ? offer.toPlayer : offer.player;
-  const wanted = theirSquad.squad.find(player => player.id === ask);
-  const problem = asking ? tradeProblem(given, wanted, Number(myGp) || 0, Number(theirGp) || 0) : bandProblem(offer.player, Number(price));
-  const counter = useApiMutation((body, signal) => (isTrade ? endpoints.counterTrade(offer.id, body, signal) : endpoints.counterTransfer(offer.id, body, signal)), { onSuccess: onDone });
-  const send = () => counter.execute(asking ? { askPlayerId: ask, gpFrom: Number(myGp) || 0, gpTo: Number(theirGp) || 0 } : { gpAmount: Number(price) });
+  const both = Boolean(give && ask);
+  const known = [offer.player, offer.fromPlayer, offer.toPlayer].filter(Boolean);
+  const pick = (squad, id) => asList(squad.squad).find(player => player.id === id) ?? known.find(player => player.id === id);
+  const given = give ? pick(mySquad, give) : null;
+  const wanted = ask ? pick(theirSquad, ask) : null;
+  const problem = both ? tradeProblem(given, wanted, Number(myGp) || 0, Number(theirGp) || 0) : (give || ask) ? bandProblem(given ?? wanted, Number(price)) : null;
+  const counter = useApiMutation((body, signal) => endpoints.counterDeal(offer.kind, offer.id, body, signal), { onSuccess: onDone });
+  const send = () => counter.execute({ givePlayerId: give || null, askPlayerId: ask || null, gpAmount: both ? null : Number(price), gpFrom: Number(myGp) || 0, gpTo: Number(theirGp) || 0 });
+  const option = player => <option key={player.id} value={player.id}>{player.name} · {player.position} · {gp(player.gpValue)}</option>;
   return <div className="offer-counter" role="group" aria-label="CONTRAOFERTA">
     <b>🔁 CONTRAOFERTA</b>
-    {!asking && <label>PRECIO QUE PROPONES<GpInput value={price} onChange={event => setPrice(event.target.value)} aria-label="Precio de la contraoferta"/></label>}
-    {(isTrade || iAmSeller) && <label>{isTrade ? 'JUGADOR QUE PIDES' : 'Pedir un jugador a cambio (opcional)'}
-      <select value={ask} onChange={event => setAsk(event.target.value)}>{isTrade ? null : <option value="">NO, SOLO PLATA</option>}{asList(theirSquad.squad).map(player => <option key={player.id} value={player.id}>{player.name} · {player.position} · {gp(player.gpValue)}</option>)}</select>
+    <label>QUÉ ENTREGAS TÚ ({upper(me?.name)})
+      <select value={give} onChange={event => setGive(event.target.value)}><option value="">NADIE: SOLO COMPRO</option>{asList(mySquad.squad).map(option)}</select>
+    </label>
+    <label>QUÉ PIDES A {upper(other?.name)}
+      <select value={ask} onChange={event => setAsk(event.target.value)}><option value="">NADIE: SOLO VENDO</option>{asList(theirSquad.squad).map(option)}</select>
+    </label>
+    {!both && (give || ask) && <label>{give ? `PRECIO QUE PIDES POR ${upper(given?.name)}` : `PRECIO QUE OFRECES POR ${upper(wanted?.name)}`}
+      <GpInput value={price} onChange={event => setPrice(event.target.value)} aria-label="Precio de la contraoferta"/>
     </label>}
-    {asking && <div className="offer-counter-gp">
+    {both && <div className="offer-counter-gp">
       <label>GP QUE PONES TÚ<GpInput value={myGp} onChange={event => setMyGp(event.target.value)} aria-label="GP que pones"/></label>
       <label>GP QUE PONE {upper(other?.name)}<GpInput value={theirGp} onChange={event => setTheirGp(event.target.value)} aria-label="GP que pone el otro club"/></label>
     </div>}
+    <p className="offer-counter-kind">{both ? 'Será un TRUEQUE.' : give ? 'Será un TRASPASO: le vendes a ese jugador.' : ask ? 'Será un TRASPASO: le compras a ese jugador.' : 'Elige a quién entregas, a quién pides o las dos cosas.'}</p>
     {problem && <p className="form-feedback error" role="alert">{problem}</p>}
     <div className="mini-actions">
-      <button type="button" disabled={counter.loading || Boolean(problem) || (isTrade && !ask)} onClick={send}>{counter.loading ? 'ENVIANDO…' : 'ENVIAR CONTRAOFERTA'}</button>
+      <button type="button" disabled={counter.loading || Boolean(problem) || (!give && !ask)} onClick={send}>{counter.loading ? 'ENVIANDO…' : 'ENVIAR CONTRAOFERTA'}</button>
       <button type="button" className="ghost" disabled={counter.loading} onClick={onCancel}>VOLVER</button>
     </div>
     {counter.error && <p className="form-feedback error" role="alert">{counter.error.message}</p>}

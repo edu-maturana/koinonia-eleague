@@ -136,6 +136,7 @@ export const endpoints = {
   approveTransfer: (transferId, signal) => apiClient.post(`/market/transfers/${transferId}/approve`, {}, { actor: 'web', signal }),
   rejectTransfer: (transferId, signal) => apiClient.post(`/market/transfers/${transferId}/reject`, {}, { actor: 'web', signal }),
   counterTransfer: (transferId, body, signal) => apiClient.post(`/market/transfers/${transferId}/counter`, body, { actor: 'web', signal }),
+  counterDeal: (kind, offerId, body, signal) => apiClient.post(`/market/offers/${kind}/${offerId}/counter-deal`, body, { actor: 'web', signal }),
   counterTrade: (tradeId, body, signal) => apiClient.post(`/market/trades/${tradeId}/counter`, body, { actor: 'web', signal }),
   reverseTransfer: (transferId, signal) => apiClient.post(`/market/transfers/${transferId}/reverse`, {}, { actor: 'web', signal }),
   createTrade: (body, signal) => apiClient.post('/market/trades', body, { actor: 'web', signal }),
