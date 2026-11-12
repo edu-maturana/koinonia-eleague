@@ -97,6 +97,21 @@ function moveText(move, direction) {
   return move.label?.toLowerCase() ?? '';
 }
 
+/** Brillo (0–1) de un color #rgb o #rrggbb; null si no se puede leer. */
+function brightness(color) {
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(color ?? '').trim())?.[1];
+  if (!hex) return null;
+  const full = hex.length === 3 ? [...hex].map(char => char + char).join('') : hex;
+  const [r, g, b] = [0, 2, 4].map(at => parseInt(full.slice(at, at + 2), 16) / 255);
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+/** Colores de un tramo: el del club, con texto oscuro si es claro (y borde para que no se pierda en el fondo). */
+function tint(color) {
+  const level = brightness(color);
+  if (level === null) return { '--career-bg': 'var(--c-navy-800)', '--career-fg': '#fff', '--career-edge': 'transparent' };
+  return { '--career-bg': color, '--career-fg': level > 0.62 ? 'var(--c-navy-900)' : '#fff', '--career-edge': level > 0.62 ? 'var(--c-navy-900)' : 'transparent' };
+}
+
 /** Barra proporcional de la carrera: un tramo por club (con su color) y los períodos libres en gris, del primer torneo al actual. */
 function CareerBar({ stints, seasons, firstSeason }) {
   const parts = stints.filter(stint => stint.seasonCount > 0);
@@ -105,7 +120,7 @@ function CareerBar({ stints, seasons, firstSeason }) {
   return <div className="career-bar-wrap">
     <div className="career-bar" role="img" aria-label="Línea de tiempo proporcional de sus clubes">
       {parts.map((stint, index) => <i key={index} className={stint.kind === 'free' ? 'career-bar-free' : ''}
-        style={{ flexGrow: stint.seasonCount, ...(stint.kind === 'club' && stint.color ? { background: stint.color } : null) }}
+        style={{ flexGrow: stint.seasonCount, ...(stint.kind === 'club' ? tint(stint.color) : null) }}
         title={`${stint.kind === 'free' ? 'Libre' : stint.teamName}: ${rangeWords(stint.range)}`}>
         {stint.seasonCount >= 3 && <span>{stint.kind === 'free' ? 'LIBRE' : stint.teamName}</span>}
       </i>)}
@@ -125,7 +140,7 @@ function PlayerCareer({ career }) {
       const free = stint.kind === 'free';
       const dates = `${monthOf(stint.joinedAt) ?? ''} – ${stint.leftAt ? monthOf(stint.leftAt) : 'hoy'}`;
       return <li key={`${stint.joinedAt}-${index}`} className={`${free ? 'career-free' : ''}${stint.current ? ' career-current' : ''}`}
-        style={!free && stint.color ? { '--career-color': stint.color } : undefined}>
+        style={!free ? tint(stint.color) : undefined}>
         <div className="career-when"><b>{rangeWords(stint.range)}</b><small>{stint.seasonCount > 0 ? `${stint.seasonCount} torneo${stint.seasonCount === 1 ? '' : 's'} · ` : ''}{dates}</small></div>
         <div className="career-what">
           <span className="career-club">{free

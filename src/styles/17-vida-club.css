@@ -639,14 +639,14 @@
 .player-career > header small { font: 600 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-muted); }
 .career-bar-wrap { margin: 8px 0 4px; }
 .career-bar { display: flex; height: 26px; gap: 2px; border: 2px solid var(--c-navy-900); background: var(--c-navy-900); }
-.career-bar i { flex-basis: 0; min-width: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--c-navy-800); color: #fff; }
-.career-bar i span { padding: 0 6px; font: 600 11px/1 var(--font-ui); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+.career-bar i { flex-basis: 0; min-width: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--career-bg, var(--c-navy-800)); color: var(--career-fg, #fff); box-shadow: inset 0 0 0 1px var(--career-edge, transparent); }
+.career-bar i span { padding: 0 6px; font: 600 11px/1 var(--font-ui); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .career-bar i.career-bar-free { background: repeating-linear-gradient(45deg, #b9b4a4, #b9b4a4 6px, #d2cebf 6px, #d2cebf 12px); color: var(--c-navy-900); text-shadow: none; }
 .career-bar-axis { display: flex; justify-content: space-between; margin-top: 3px; }
 .career-bar-axis small { font: 600 var(--fs-xs)/1 var(--font-ui); color: var(--c-ink-muted); }
 .player-career ol { display: grid; gap: 0; margin: 8px 0 0; padding: 0 0 0 12px; list-style: none; border-left: 3px solid var(--c-navy-800); }
 .player-career li { position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px 14px; align-items: start; padding: 10px 12px; background: var(--c-white); border-bottom: 1px solid var(--c-line, #d8dde8); color: var(--c-navy-900); }
-.player-career li::before { content: ''; position: absolute; left: -19px; top: 16px; width: 11px; height: 11px; background: var(--career-color, var(--c-navy-800)); border: 2px solid var(--c-white); }
+.player-career li::before { content: ''; position: absolute; left: -19px; top: 16px; width: 11px; height: 11px; background: var(--career-bg, var(--c-navy-800)); border: 2px solid var(--c-white); box-shadow: 0 0 0 1px var(--c-navy-900); }
 .player-career li.career-current::before { background: var(--c-green); }
 .player-career li.career-free::before { background: var(--c-ink-muted); }
 .career-when b { display: block; font: 600 var(--fs-md)/1.2 var(--font-ui); }
