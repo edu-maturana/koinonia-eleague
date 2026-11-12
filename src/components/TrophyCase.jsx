@@ -61,7 +61,7 @@ export function TrophyCase({ teams = [] }) {
   if (!rows.length && !tourRows.length) return null;
   const shown = tab === 'tours' ? tourRows : rows;
   return <section className="score-panel trophy-panel"><h2>VITRINA <span className="trophy-tabs" role="tablist" aria-label="Qué campeones ver">
-      <button type="button" role="tab" aria-selected={tab === 'leagues'} className={tab === 'leagues' ? 'active' : ''} onClick={() => setTab('leagues')}>LIGAS</button>
+      <button type="button" role="tab" aria-selected={tab === 'leagues'} className={tab === 'leagues' ? 'active' : ''} onClick={() => setTab('leagues')}>CAMPEONATOS</button>
       <button type="button" role="tab" aria-selected={tab === 'tours'} className={tab === 'tours' ? 'active' : ''} onClick={() => setTab('tours')}>GIRAS</button>
     </span></h2>
     {tab === 'tours' && !tourRows.length && <p className="trophy-empty">AÚN NO HAY CAMPEONES DE GIRA.</p>}
