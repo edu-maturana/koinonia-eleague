@@ -46,7 +46,7 @@ function CourtingLine({ teamId, playerId, name }) {
  */
 function LoanBanner({ loan }) {
   if (!loan) return null;
-  return <p className="courting-line" role="status"><Icon name="handshake" size={14}/><b>{loan.status === 'active' ? 'A préstamo' : 'Préstamo cerrado'}:</b> <span>{loan.ownerName} → {loan.borrowerName}{loan.startsAfter ? ` (parte ${loan.startsAfter.label})` : ' hasta que termine el torneo'}{loan.buyPrice ? ` · opción de compra ${gp(loan.buyPrice)}` : ''}</span></p>;
+  return <p className="courting-line" role="status"><Icon name="handshake" size={14}/><b>{loan.status === 'active' ? 'A préstamo' : 'Préstamo cerrado'}:</b> <span>{loan.ownerName} → {loan.borrowerName}{loan.startsAfter ? ` (parte ${loan.startsAfter.label})` : ' hasta que termine la ventana (2 torneos)'}{loan.buyPrice ? ` · opción de compra ${gp(loan.buyPrice)}` : ''}</span></p>;
 }
 
 function ProfileActions({ player, onTalk }) {
