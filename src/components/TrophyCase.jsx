@@ -4,9 +4,9 @@ import { useApiQuery } from '../features/public/useApiQuery.js';
 import { EntityLink } from './EntityLink.jsx';
 import { TeamMark } from './TeamMark.jsx';
 
-// "Koinonia E-League v6" -> "v6"; "Liga de Transición" -> "LT"; "Copa Grande Jogatore 2" -> "GC2" (va con copa dorada); otro torneo -> iniciales.
+// "Koinonia E-League v6" -> "v6"; "Liga de Transición" -> "LT"; "Copa Grande Giocatore 2" -> "GC2" (va con copa dorada); otro torneo -> iniciales.
 export function starLabel(name = '') {
-  const cup = /grande\s+jogatore\s*(\d+)/i.exec(name);
+  const cup = /grande\s+giocatore\s*(\d+)/i.exec(name);
   if (cup) return { text: `GC${cup[1]}`, order: 2000 + Number(cup[1]), cup: true };
   const edition = /\bv\s*(\d+)\s*$/i.exec(name);
   if (edition) return { text: `v${edition[1]}`, order: Number(edition[1]) };
@@ -47,7 +47,7 @@ export function buildShowcase(clubs, titleLists) {
 
 const CUP_ICON = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v4a6 6 0 0 1-12 0V3zM6 5H3v2a4 4 0 0 0 4 4M18 5h3v2a4 4 0 0 1-4 4M12 13v4M8 21h8M9 17h6v4H9z"/></svg>;
 
-// Vitrina del inicio: cada campeón con una estrella por título de liga (LT, v1, v2…) y una copa dorada por Copa Grande Jogatore (GC1, GC2…).
+// Vitrina del inicio: cada campeón con una estrella por título de liga (LT, v1, v2…) y una copa dorada por Copa Grande Giocatore (GC1, GC2…).
 export function TrophyCase({ teams = [] }) {
   const clubs = teams.filter(team => team.kind === 'club' || team.kind == null);
   const key = clubs.map(team => team.id).join(',');

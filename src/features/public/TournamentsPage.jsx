@@ -162,6 +162,7 @@ function PlayoffsSection({ tournamentId, resolveTeam, playoffsEnabled = true }) 
     return null;
   };
   return <section className="workspace-panel playoff-workspace"><h3>PLAYOFFS <small>TOP {count} · {summary}</small></h3>
+    {(data?.qualifiers ?? []).filter(row => row.withdrawn).map(row => <p className="playoff-note" key={row.teamId}><b>{row.name}</b> ({row.tableRank}.º DE LA TABLA) SE RETIRÓ DE LOS PLAYOFFS: LOS DE ABAJO SUBIERON UN PUESTO. CONSERVA SU PUESTO Y SU PREMIO DE LA TABLA.</p>)}
     {!done && pairs.length > 0 && <p className="playoff-note">LOS CRUCES SE ARMAN CON LA TABLA DE HOY Y SE CONFIRMAN CUANDO LOS DOS PUESTOS QUEDAN ASEGURADOS.</p>}
     {count === 6 && <details className="playoff-howto-box"><summary>CÓMO FUNCIONAN LOS PLAYOFFS</summary><ol>
       <li><b>Clasifican los 6 primeros de la tabla.</b> Todos los partidos son únicos: no hay vuelta.</li>
@@ -186,7 +187,7 @@ function PlayoffsSection({ tournamentId, resolveTeam, playoffsEnabled = true }) 
   </section>;
 }
 
-/** La Copa Grande Jogatore se ve como su cuadro, con los cupos que dio la tabla del torneo anterior. */
+/** La Copa Grande Giocatore se ve como su cuadro, con los cupos que dio la tabla del torneo anterior. */
 function CupWorkspace({ tournamentId, teams, onChanged }) {
   const bracket = useApiQuery(signal => endpoints.cupBracket(tournamentId, signal), [tournamentId]);
   if (!bracket.data) return <DataState query={bracket}/>;
@@ -238,7 +239,7 @@ function TournamentWorkspace({ tournamentId, teams, onChanged, onDeleted, hideNa
 
   return <section className="tournament-workspace"><DataState query={detail}/>{data && <>
     <header className="tournament-header"><div><small>{data.format === 'league' ? 'LIGA' : data.format === 'knockout' ? 'ELIMINACIÓN DIRECTA' : 'GRUPOS + ELIMINACIÓN'}{data.format === 'league' ? ` · CAMPEONES: ${data.championPolicy === 'both' ? 'LIGA REGULAR + PLAYOFFS' : data.championPolicy === 'playoffs' ? 'PLAYOFFS' : 'TABLA'}` : ''}</small>{hideName ? null : <h2>{data.name}</h2>}</div><b className={`status status-${data.status}`}>{statusLabel}</b>{isAdmin && <a className="tournament-manage-button" href={`#/admin?tab=torneos&id=${data.id}`}>⚙ Gestionar en la sala de control</a>}{isAdmin && <Button variant="danger" type="button" disabled={remove.loading} onClick={deleteTournament}>ELIMINAR TORNEO</Button>}</header>{isAdmin && (remove.error || remove.success) && <FormFeedback mutation={remove}/>}
-    {data.rules?.kind === 'grande_jogatore' ? <CupWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : data.rules?.kind === 'preseason' ? <PreseasonWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : <>
+    {data.rules?.kind === 'grande_giocatore' ? <CupWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : data.rules?.kind === 'preseason' ? <PreseasonWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : <>
       {!embedded && <nav className="tournament-subtabs" aria-label="Secciones del torneo" role="tablist">
         <button type="button" role="tab" aria-selected={workspaceTab === 'standings'} className={workspaceTab === 'standings' ? 'active' : ''} onClick={() => setWorkspaceTab('standings')}>TABLA DE POSICIONES</button>
         <button type="button" role="tab" aria-selected={workspaceTab === 'scorers'} className={workspaceTab === 'scorers' ? 'active' : ''} onClick={() => setWorkspaceTab('scorers')}>GOLEADORES</button>

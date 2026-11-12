@@ -36,7 +36,7 @@ export function MatchesScreen({ tab, teams = [], navigate, matchesMode = 'all' }
 }
 
 const TOURNAMENT_TABS = [
-  { id: 'tabla', label: 'Tabla' }, { id: 'goleadores', label: 'Goleadores' }, { id: 'playoffs', label: 'Playoffs' }, { id: 'premios', label: 'Premios' }, { id: 'copa', label: 'Copa GJ' }, { id: 'giras', label: 'Giras' },
+  { id: 'tabla', label: 'Tabla' }, { id: 'goleadores', label: 'Goleadores' }, { id: 'playoffs', label: 'Playoffs' }, { id: 'premios', label: 'Premios' }, { id: 'copa', label: 'Copa GG' }, { id: 'giras', label: 'Giras' },
   { id: 'calculadora', label: 'Calculadora' }, { id: 'rankings', label: 'Rankings' },
 ];
 const TOURNAMENT_INTRO = {
@@ -44,7 +44,7 @@ const TOURNAMENT_INTRO = {
   goleadores: 'Quién lleva más goles en el torneo.',
   playoffs: 'Los cruces del play-in, semifinal y final.',
   premios: 'Balón de Oro, Bota, Guante, Golden Boy, DT y portadas. Aquí votan los presis.',
-  copa: 'La Copa Grande Jogatore: a mitad de cada torneo, los 8 primeros del torneo anterior a partido único.',
+  copa: 'La Copa Grande Giocatore: a mitad de cada torneo, los 8 primeros del torneo anterior a partido único.',
   giras: 'Torneos de pretemporada entre clubes: se arman, se juegan y se cierran aparte de la liga.',
   calculadora: 'Qué necesita cada club para clasificar.',
   rankings: 'Los planteles más caros y las divisiones.',

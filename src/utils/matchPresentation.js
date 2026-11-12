@@ -7,7 +7,7 @@ export function matchRoundLabel(match, { leagueRound = 'FECHA' } = {}) {
     if (slot.startsWith('F')) return 'PLAYOFFS · FINAL';
     return 'PLAYOFFS';
   }
-  // Copa Grande Jogatore (y otras copas a partido único con cuadro QF/SF/F).
+  // Copa Grande Giocatore (y otras copas a partido único con cuadro QF/SF/F).
   if (match.stage === 'knockout') {
     const slot = match.bracketSlot ?? match.bracket_slot ?? '';
     if (slot.startsWith('QF')) return `CUARTOS ${slot.slice(2)}`;

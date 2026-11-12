@@ -39,13 +39,13 @@ function CalendarBlock({ match, resolveTeam, canMove, selected, dimmed, onSelect
 
 const CUP_ROUNDS = [['QF', 'CUARTOS'], ['SF', 'SEMIS'], ['3P', '3.ER PUESTO'], ['F', 'FINAL']];
 
-/** El día de la Copa Grande Jogatore: todo el cuadro ese día (o el aviso de que se sortea al cerrar la primera vuelta). */
+/** El día de la Copa Grande Giocatore: todo el cuadro ese día (o el aviso de que se sortea al cerrar la primera vuelta). */
 function CupDayColumn({ day, cup, resolveTeam, navigate }) {
   const matches = cup?.matches ?? [];
   return <section className="calendar-day calendar-cup-day">
     <header>
       <h3>DÍA {day} · COPA</h3>
-      <small>{cup ? `${matches.filter(match => match.status === 'finished').length} / ${matches.length} JUGADOS` : 'GRANDE JOGATORE'}</small>
+      <small>{cup ? `${matches.filter(match => match.status === 'finished').length} / ${matches.length} JUGADOS` : 'GRANDE GIOCATORE'}</small>
       <p className="calendar-ok">{cup ? cup.name.toUpperCase() : 'SE SORTEA AL TERMINAR LA PRIMERA VUELTA'}</p>
     </header>
     <div className="calendar-blocks">{CUP_ROUNDS.map(([key, label]) => {
@@ -68,7 +68,7 @@ export function CalendarPage({ teams, navigate }) {
   const [tournamentId, setTournamentId] = useState('');
   const activeId = tournamentId || leagues[0]?.id || '';
   const fixtures = useApiQuery(signal => activeId ? endpoints.fixtures(activeId, signal) : Promise.resolve({ data: [] }), [activeId]);
-  // Día reservado de la Copa Grande Jogatore (ligas automáticas): se muestra entre las dos vueltas.
+  // Día reservado de la Copa Grande Giocatore (ligas automáticas): se muestra entre las dos vueltas.
   const cupDay = leagues.find(item => item.id === activeId)?.rules?.cupDay ?? null;
   const cups = useApiQuery(signal => cupDay ? endpoints.cups(signal) : Promise.resolve({ data: [] }), [cupDay]);
   const cup = (Array.isArray(cups.data) ? cups.data : []).find(item => item.leagueId === activeId) ?? null;

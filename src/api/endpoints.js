@@ -176,6 +176,7 @@ export const endpoints = {
   generateBracket: (tournamentId, body, signal) => apiClient.post(`/tournaments/${tournamentId}/bracket`, body, { actor: 'web', signal }),
   advanceBracket: (tournamentId, signal) => apiClient.post(`/tournaments/${tournamentId}/bracket/advance`, {}, { actor: 'web', signal }),
   createPlayoffs: (tournamentId, body, signal) => apiClient.post(`/tournaments/${tournamentId}/playoffs`, body, { actor: 'web', signal }),
+  withdrawFromPlayoffs: (tournamentId, teamId, signal) => apiClient.post(`/tournaments/${tournamentId}/playoffs/withdraw`, { teamId }, { actor: 'web', signal }),
   resolvePlayoffTiebreak: (seriesId, winnerTeamId, penalties, signal) => apiClient.post(`/playoff-series/${seriesId}/tiebreak`, { winnerTeamId, ...(penalties ? { penalties } : {}) }, { actor: 'web', signal }),
   generateCupQuarterfinals: (tournamentId, signal) => apiClient.post(`/tournaments/${tournamentId}/cup-quarterfinals`, {}, { actor: 'web', signal }),
   generateWorldRoundOf16: (tournamentId, signal) => apiClient.post(`/tournaments/${tournamentId}/world-round-of-16`, {}, { actor: 'web', signal }),
