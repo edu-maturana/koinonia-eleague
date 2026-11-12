@@ -200,3 +200,10 @@
   .reputation-row { grid-template-columns: 22px 24px minmax(0, 1fr) auto 12px; }
   .reputation-tags { display: none; }
 }
+
+/* Préstamos */
+.loan-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.loan-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 2px solid #b8c3dd; background: #fff; }
+.loan-row.active { border-color: #062764; }
+.loan-row small { display: block; margin-top: 2px; color: #55607a; font: 500 12px/1.2 'Roboto Condensed', sans-serif; }
+.loan-option { display: flex; gap: 8px; align-items: center; }

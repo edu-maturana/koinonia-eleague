@@ -44,6 +44,11 @@ function CourtingLine({ teamId, playerId, name }) {
  * Lo que puedes hacer con el jugador, en botones grandes. De otro club o libre: hacer oferta (o fichar si está libre),
  * hablarle (aunque el mercado esté cerrado) y seguirlo. Tuyo: su contrato y sus mensajes.
  */
+function LoanBanner({ loan }) {
+  if (!loan) return null;
+  return <p className="courting-line" role="status"><Icon name="handshake" size={14}/><b>{loan.status === 'active' ? 'A préstamo' : 'Préstamo cerrado'}:</b> <span>{loan.ownerName} → {loan.borrowerName}{loan.startsAfter ? ` (parte ${loan.startsAfter.label})` : ' hasta que termine el torneo'}{loan.buyPrice ? ` · opción de compra ${gp(loan.buyPrice)}` : ''}</span></p>;
+}
+
 function ProfileActions({ player, onTalk }) {
   const { teamId: myTeamId } = useAuth();
   const watchlist = useApiQuery(signal => (myTeamId ? endpoints.teamWatchlist(myTeamId, signal).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })), [myTeamId]);
@@ -58,6 +63,7 @@ function ProfileActions({ player, onTalk }) {
     </div></>;
   }
   return <div className="profile-actions">
+    {player.team && !player.loan && <a className="ui-btn ui-btn--ghost ui-btn--md" href={`#/transferencias?tab=ofertas&jugador=${encodeURIComponent(player.id)}&club=${encodeURIComponent(player.team.id)}&op=prestamo`}><Icon name="handshake" size={14}/>Pedir a préstamo</a>}
     {player.team
       ? <a className="ui-btn ui-btn--positive ui-btn--md" href={`#/transferencias?tab=ofertas&jugador=${encodeURIComponent(player.id)}&club=${encodeURIComponent(player.team.id)}`}><Icon name="handshake" size={14}/>Hacer oferta</a>
       : <OpenPollFromProfile player={player}/>}
@@ -187,6 +193,7 @@ export function PlayerProfilePage({ playerId, teams = [], onBack, backLabel = '�
     hero={player ? <div className="screen-face"><PlayerFace src={player.faceUrl} name={player.name}/></div> : null}
     intro={player ? `${player.position ?? ''}${player.external?.overall ? ` · media ${player.external.overall}` : ''} · vale ${gp(player.gpValue)}` : null}
     actions={<div className="screen-actions-stack"><button className="back-button" onClick={onBack}>{backLabel}</button>{player && <Button size="sm" variant="ghost" onClick={() => compare(player)}>⇄ Comparar</Button>}</div>}>
+    {player && <LoanBanner loan={player.loan}/>}
     {player && <ProfileActions player={player} onTalk={() => setTalking(true)}/>}
     <DataState query={profile}/>
     {talking && player && myTeamId && <TalkModal player={player} teamId={myTeamId} onClose={() => setTalking(false)}/>}

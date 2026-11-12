@@ -18,7 +18,7 @@ export function leavingMarks(data) {
   for (const move of data?.moves ?? []) {
     if (move.direction === 'in') continue;
     const swap = move.swapPlayer ? ` por ${splitPlayerName(move.swapPlayer.name).rest}` : '';
-    marks.set(move.player.id, { title: `Sale ${move.executes.label} → ${move.counterpart.name}${swap}`, club: move.counterpart.name, swap: move.swapPlayer ?? null, when: move.executes.label });
+    marks.set(move.player.id, { title: `Sale${move.type === 'loan' ? ' a préstamo' : ''} ${move.executes.label} → ${move.counterpart.name}${swap}`, club: move.counterpart.name, swap: move.swapPlayer ?? null, when: move.executes.label });
   }
   return marks;
 }
@@ -28,7 +28,7 @@ export function projectedRoster(roster, data) {
   const marks = leavingMarks(data);
   const stay = roster.filter(player => !marks.has(player.id));
   const incoming = (data?.moves ?? []).flatMap(move => {
-    const arriving = move.type === 'transfer' ? (move.direction === 'in' ? move.player : null) : move.swapPlayer;
+    const arriving = move.type !== 'trade' ? (move.direction === 'in' ? move.player : null) : move.swapPlayer;
     return arriving ? [{ ...arriving, incoming: { club: move.counterpart.name, when: move.executes.label } }] : [];
   });
   return { stay, incoming };
@@ -41,7 +41,9 @@ function MoveLine({ move }) {
   const swapName = move.swapPlayer ? splitPlayerName(move.swapPlayer.name).rest : null;
   const text = move.type === 'trade'
     ? <><b>{name}</b> ⇄ <b>{swapName}</b> con {move.counterpart.name}</>
-    : move.direction === 'out' ? <>Sale <b>{name}</b> a {move.counterpart.name}</> : <>Llega <b>{name}</b> desde {move.counterpart.name}</>;
+    : move.type === 'loan'
+      ? (move.direction === 'out' ? <>Sale a préstamo <b>{name}</b> a {move.counterpart.name}</> : <>Llega a préstamo <b>{name}</b> desde {move.counterpart.name}</>)
+      : move.direction === 'out' ? <>Sale <b>{name}</b> a {move.counterpart.name}</> : <>Llega <b>{name}</b> desde {move.counterpart.name}</>;
   return <li className={`pending-move ${move.direction}`}>
     <PlayerFace src={move.player.faceUrl} name={name} className="roster-player-face"/>
     <span>{text}<small>{move.executes.label}</small></span>

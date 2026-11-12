@@ -115,7 +115,7 @@ export function App() {
     page = <PlayersScreen teams={league.teams} query={Object.fromEntries(Object.entries({ ...route.query, tab: route.query.vista === 'comparador' || route.query.tab === 'comparador' ? 'comparador' : undefined }).filter(([key, value]) => value !== undefined && key !== 'vista'))}/>;
   } else if (route.path === '/transferencias') {
     const tab = route.query.tab;
-    page = <MarketPage key={`${route.query.jugador ?? ''}`} teams={league.teams} initialTab={tab} highlightId={route.query.id} query={route.query} importing={route.path.endsWith('/importar')} navigate={navigate} prefill={route.query.jugador ? { playerId: route.query.jugador, teamId: route.query.club ?? '' } : null}/>;
+    page = <MarketPage key={`${route.query.jugador ?? ''}`} teams={league.teams} initialTab={tab} highlightId={route.query.id} query={route.query} importing={route.path.endsWith('/importar')} navigate={navigate} prefill={route.query.jugador ? { playerId: route.query.jugador, teamId: route.query.club ?? '', op: route.query.op ?? null } : null}/>;
   } else if (route.name === 'newsArticle') {
     page = <HomePage teams={league.teams} navigate={navigate} openNewsId={route.newsId} onCloseNews={() => navigate('/')}/>;
   } else if (route.path === '/notificaciones') {
