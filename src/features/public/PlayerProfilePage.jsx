@@ -77,19 +77,68 @@ function PlayerAwards({ awards }) {
   </section>;
 }
 
-/** Trayectoria: cada club por el que pasó (con rangos de torneo) y los períodos en que estuvo libre, del más viejo al más nuevo. */
+const monthOf = value => (value ? new Date(String(value).includes('T') ? value : `${value.replace(' ', 'T')}Z`).toLocaleDateString('es-CL', { month: 'short', year: 'numeric' }) : null);
+/** "v3–v12" → "v3 a v12"; "desde v12" queda igual. */
+const rangeWords = range => range.replace('–', ' a ');
+/** El GP de más de un trueque, con el club que lo puso. */
+const extraGp = move => (move.gpNet ? ` (+${gp(Math.abs(move.gpNet))} de ${move.gpNet > 0 ? move.to?.name : move.from?.name})` : '');
+/** Cómo llegó o se fue, en una frase: con quién, por cuánto o por quién. */
+function moveText(move, direction) {
+  if (!move) return null;
+  const club = direction === 'in' ? move.from : move.team ?? move.to;
+  if (move.type === 'initial') return 'plantel inicial';
+  if (move.type === 'free') return 'quedó libre';
+  if (move.type === 'transfer') return `traspaso ${direction === 'in' ? 'desde' : 'a'} ${club?.name ?? 'otro club'}${move.price ? ` por ${gp(move.price)}` : ''}`;
+  if (move.type === 'trade') return `trueque con ${club?.name ?? 'otro club'}${move.swap ? ` por ${move.swap}` : ''}${extraGp(move)}`;
+  if (move.type === 'auction') return 'fichado libre en subasta';
+  if (move.type === 'poll') return 'fichado libre por encuesta';
+  if (move.type === 'market') return 'fichado libre en el mercado';
+  if (move.type === 'reverted') return 'operación revertida';
+  return move.label?.toLowerCase() ?? '';
+}
+
+/** Barra proporcional de la carrera: un tramo por club (con su color) y los períodos libres en gris, del primer torneo al actual. */
+function CareerBar({ stints, seasons, firstSeason }) {
+  const parts = stints.filter(stint => stint.seasonCount > 0);
+  if (!parts.length) return null;
+  const shown = seasons.filter(season => season.index >= (firstSeason ?? 0));
+  return <div className="career-bar-wrap">
+    <div className="career-bar" role="img" aria-label="Línea de tiempo proporcional de sus clubes">
+      {parts.map((stint, index) => <i key={index} className={stint.kind === 'free' ? 'career-bar-free' : ''}
+        style={{ flexGrow: stint.seasonCount, ...(stint.kind === 'club' && stint.color ? { background: stint.color } : null) }}
+        title={`${stint.kind === 'free' ? 'Libre' : stint.teamName}: ${rangeWords(stint.range)}`}>
+        {stint.seasonCount >= 3 && <span>{stint.kind === 'free' ? 'LIBRE' : stint.teamName}</span>}
+      </i>)}
+    </div>
+    <div className="career-bar-axis"><small>{shown[0]?.label}</small><small>{shown.at(-1)?.label}</small></div>
+  </div>;
+}
+
+/** Trayectoria: cada club por el que pasó (con rangos de torneo, con quién y por cuánto se movió, goles y premios) y los períodos libres. */
 function PlayerCareer({ career }) {
-  const stints = career.stints;
-  const when = value => (value ? new Date(String(value).includes('T') ? value : `${value.replace(' ', 'T')}Z`).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }) : null);
-  return <section className="player-career"><header><h2>Trayectoria</h2><small>{career.clubs} CLUB{career.clubs === 1 ? '' : 'ES'} EN LA LIGA</small></header>
-    <ol>{stints.map((stint, index) => <li key={`${stint.joinedAt}-${index}`} className={`${stint.kind === 'free' ? 'career-free' : ''}${stint.current ? ' career-current' : ''}`}
-      title={`${when(stint.joinedAt)}${stint.leftAt ? ` – ${when(stint.leftAt)}` : ' – hoy'}`}>
-      <b className="career-range">{stint.range}</b>
-      <span className="career-club">{stint.kind === 'free'
-        ? <em>Agente libre</em>
-        : <EntityLink to="team" id={stint.teamId}>{stint.imageUrl && <img src={stint.imageUrl} alt="" onError={event => { event.currentTarget.hidden = true; }}/>} {stint.teamName}</EntityLink>}</span>
-      <small>{stint.kind === 'free' ? (stint.current ? 'Sin club hoy' : `Lo fichó: ${stint.exit?.toLowerCase()}`) : `${stint.arrival}${stint.exit ? ` → ${stint.exit.toLowerCase()}` : ' · actual'}`}</small>
-    </li>)}</ol>
+  const { stints, summary } = career;
+  const bits = [`${summary.clubs} CLUB${summary.clubs === 1 ? '' : 'ES'}`, `${summary.seasons} TORNEO${summary.seasons === 1 ? '' : 'S'} EN LA LIGA`];
+  if (summary.freeSeasons > 0) bits.push(`${summary.freeSeasons} COMO AGENTE LIBRE`);
+  return <section className="player-career"><header><h2>Trayectoria</h2><small>{bits.join(' · ')}</small></header>
+    <CareerBar stints={stints} seasons={career.seasons} firstSeason={summary.firstSeason}/>
+    <ol>{stints.map((stint, index) => {
+      const free = stint.kind === 'free';
+      const dates = `${monthOf(stint.joinedAt) ?? ''} – ${stint.leftAt ? monthOf(stint.leftAt) : 'hoy'}`;
+      return <li key={`${stint.joinedAt}-${index}`} className={`${free ? 'career-free' : ''}${stint.current ? ' career-current' : ''}`}
+        style={!free && stint.color ? { '--career-color': stint.color } : undefined}>
+        <div className="career-when"><b>{rangeWords(stint.range)}</b><small>{stint.seasonCount > 0 ? `${stint.seasonCount} torneo${stint.seasonCount === 1 ? '' : 's'} · ` : ''}{dates}</small></div>
+        <div className="career-what">
+          <span className="career-club">{free
+            ? <em>Agente libre</em>
+            : <EntityLink to="team" id={stint.teamId}>{stint.imageUrl && <img src={stint.imageUrl} alt="" onError={event => { event.currentTarget.hidden = true; }}/>} {stint.teamName}</EntityLink>}
+            {stint.current && !free && <mark>ACTUAL</mark>}
+          </span>
+          {!free && <p><b>Llegó:</b> {moveText(stint.arrivalMove, 'in')}{stint.exitMove && <> · <b>Salió:</b> {moveText(stint.exitMove, 'out')}</>}</p>}
+          {free && <p>{stint.current ? 'Sin club hoy.' : <><b>Lo fichó:</b> {moveText(stint.exitMove, 'out')}</>}</p>}
+          {!free && (stint.goals > 0 || stint.awards?.length > 0) && <p className="career-stats">{stint.goals > 0 && <span>⚽ {stint.goals} gol{stint.goals === 1 ? '' : 'es'}</span>}{stint.awards?.map(award => <span key={award}>🏆 {award}</span>)}</p>}
+        </div>
+      </li>;
+    })}</ol>
   </section>;
 }
 
