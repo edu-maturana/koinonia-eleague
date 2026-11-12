@@ -206,4 +206,7 @@
 .loan-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 2px solid #b8c3dd; background: #fff; }
 .loan-row.active { border-color: #062764; }
 .loan-row small { display: block; margin-top: 2px; color: #55607a; font: 500 12px/1.2 'Roboto Condensed', sans-serif; }
-.loan-option { display: flex; gap: 8px; align-items: center; }
+.offer-form .loan-option { grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 2px solid #092e77; background: #f8f1de; color: #092e77; font: 600 13px/1.2 'Oswald', sans-serif; letter-spacing: .5px; cursor: pointer; }
+.offer-form .loan-option:has(input:checked) { background: #e3ecd7; border-color: #245230; color: #245230; }
+.offer-form .loan-option input[type="checkbox"] { flex: none; width: 18px; min-width: 18px; height: 18px; padding: 0; margin: 0; accent-color: #245230; cursor: pointer; }
+.offer-form .loan-option input[type="checkbox"]:disabled, .offer-form .loan-option:has(input:disabled) { opacity: .55; cursor: not-allowed; }
