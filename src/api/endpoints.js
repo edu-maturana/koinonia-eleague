@@ -239,6 +239,7 @@ export const endpoints = {
   teamFans: (teamId, signal) => get(`/teams/${teamId}/fans`, null, signal),
   addFanHome: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/fan-homes`, body, { actor: 'web', signal }),
   removeFanHome: (teamId, homeId, signal) => apiClient.delete(`/teams/${teamId}/fan-homes/${homeId}`, null, { actor: 'web', signal }),
+  setMatchTicketTier: (teamId, matchId, tier, signal) => apiClient.put(`/teams/${teamId}/matches/${matchId}/ticket-tier`, { tier }, { actor: 'web', signal }),
   setTicketTier: (teamId, tier, signal) => apiClient.put(`/teams/${teamId}/ticket-tier`, { tier }, { actor: 'web', signal }),
   teamBusiness: (teamId, signal) => get(`/teams/${teamId}/business`, null, signal),
   bookConcert: (teamId, artistKey, signal) => apiClient.post(`/teams/${teamId}/concerts`, { artistKey }, { actor: 'web', signal }),
