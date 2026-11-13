@@ -510,6 +510,10 @@
 .team-covers-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border: 2px solid #10285b; }
 .team-covers-grid select { width: 100%; min-width: 0; padding: 3px; border: 1px solid #10285b; font: 500 12px/1.1 'Roboto Condensed', sans-serif; }
 .team-covers-grid button { padding: 4px; border: 1px solid #a90020; color: #fff; background: #a90020; font: 500 12px/1 'Oswald', sans-serif; }
+.cover-players { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.cover-players-label { flex: 1 0 100%; color: #10285b; font: 600 11px/1.1 'Oswald', sans-serif; letter-spacing: .4px; }
+.team-covers-grid .cover-player-chip { padding: 3px 6px; border: 1px solid #10285b; color: #10285b; background: #fff7e3; font: 500 12px/1.1 'Roboto Condensed', sans-serif; cursor: pointer; }
+.team-covers-grid .cover-player-chip:hover:not(:disabled) { color: #fff; background: #a90020; border-color: #a90020; }
 .club-actions { display: flex; justify-content: space-between; gap: 8px; }
 .club-covers-button { margin-left: auto; }
 .club-pitch { position: relative; width: 380px; max-width: 100%; aspect-ratio: 3 / 4; background: repeating-linear-gradient(180deg, #1c7a3e 0 32px, #1a7238 32px 64px); overflow: hidden; }
