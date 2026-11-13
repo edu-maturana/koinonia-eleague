@@ -185,7 +185,7 @@ function SimulationBasis({ simulation }) {
       <div><dt>Partidos en su historial</dt><dd>{team.historyMatches}</dd></div>
       <div><dt>Formación</dt><dd>{team.formation}</dd></div>
       {enabled.day && <div><dt>Factor del día</dt><dd>×{team.dayFactor.toFixed(3)}</dd></div>}
-      {enabled.headToHead && <div><dt>Historial directo ({team.headToHeadMatches})</dt><dd>×{team.headToHead.toFixed(3)}</dd></div>}
+      {enabled.headToHead && <div><dt>Historial directo sin castigos ({team.headToHeadMatches})</dt><dd>×{team.headToHead.toFixed(3)}</dd></div>}
     </dl>
     <p className="sim-lineup-used"><b>DT:</b> {team.coach ? `${team.coach.name} · ${team.coach.proficiency ? `${styleName(team.coach.proficiency.style)} (${team.coach.proficiency.value})` : 'sin estilo'} · ${team.coach.boosters.length ? team.coach.boosters.map(boosterText).join(' · ') : 'sin potenciadores'} (se suman a las stats base de sus jugadores)` : 'sin DT del catálogo vinculado'}</p>
     <p className="sim-lineup-used"><b>TITULARES:</b> {team.lineup.map(player => `${player.position} ${player.name}`).join(' · ')}</p>

@@ -57,6 +57,7 @@ export const endpoints = {
   updateTeamHistory: (teamId, body, signal) => apiClient.patch(`/teams/${teamId}/history`, body, { actor: 'web', signal }),
   setTeamNicknames: (teamId, nicknames, signal) => apiClient.put(`/teams/${teamId}/nicknames`, { nicknames }, { actor: 'web', signal }),
   teamHeadToHead: (teamId, signal) => get(`/teams/${teamId}/head-to-head`, null, signal),
+  matchHeadToHead: (matchId, signal) => get(`/matches/${matchId}/head-to-head`, null, signal),
   teamCovers: (teamId, signal) => get(`/teams/${teamId}/covers`, null, signal),
   addTeamCover: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/covers`, body, { actor: 'web', signal }),
   updateTeamCover: (teamId, coverId, body, signal) => apiClient.patch(`/teams/${teamId}/covers/${coverId}`, body, { actor: 'web', signal }),

@@ -90,22 +90,23 @@ function MatchViewToggle({ view, onChange }) {
 }
 
 function HeadToHead({ match, resolveTeam }) {
-  const homeId = match.homeTeam?.id;
-  const awayId = match.awayTeam?.id;
-  const history = useApiQuery(signal => homeId ? endpoints.matches({ team: homeId, opponent: awayId, status: 'finished', order: 'recent', page: 1, pageSize: 100 }, signal) : Promise.resolve({ data: [] }), [homeId, awayId]);
-  const meetings = (Array.isArray(history.data) ? history.data : [])
-    .filter(item => item.id !== match.id && item.status === 'finished' && [item.homeTeam?.id, item.awayTeam?.id].includes(awayId))
-    .sort((left, right) => String(right.finishedAt ?? '').localeCompare(String(left.finishedAt ?? '')));
-  const tally = meetings.reduce((sum, item) => {
-    const own = item.homeTeam?.id === homeId ? item.homeScore : item.awayScore;
-    const rival = item.homeTeam?.id === homeId ? item.awayScore : item.homeScore;
-    if (own > rival) sum.home += 1; else if (own < rival) sum.away += 1; else sum.draw += 1;
-    return sum;
-  }, { home: 0, draw: 0, away: 0 });
+  // El mismo cálculo de la ficha del club: ligas, giras y Copa GG, y un empate definido por penales vale victoria de quien ganó la tanda.
+  const history = useApiQuery(signal => match.id ? endpoints.matchHeadToHead(match.id, signal) : Promise.resolve({ data: null }), [match.id]);
+  const h2h = history.data;
+  const meetings = h2h?.meetings ?? [];
+  const homeName = match.homeTeam?.name;
+  const awayName = match.awayTeam?.name;
+  // Cada partido se muestra con el local de ESE partido a la izquierda.
+  const view = game => {
+    const leftIsMine = game.home;
+    return { left: leftIsMine ? homeName : awayName, right: leftIsMine ? awayName : homeName,
+      leftGoals: leftIsMine ? game.goalsFor : game.goalsAgainst, rightGoals: leftIsMine ? game.goalsAgainst : game.goalsFor,
+      pens: game.penalties ? (leftIsMine ? `${game.penalties.for}-${game.penalties.against}` : `${game.penalties.against}-${game.penalties.for}`) : null };
+  };
   return <section className="match-card-panel"><h2>CARA A CARA <small>{meetings.length} PARTIDO{meetings.length === 1 ? '' : 'S'}</small></h2>
     {history.loading ? <p className="empty-copy">CARGANDO…</p> : meetings.length ? <>
-      <div className="h2h-tally"><span><div className="h2h-team-watermark" aria-hidden="true"><TeamMark team={resolveTeam(match.homeTeam)}/></div><b>{tally.home}</b><small>VICTORIAS</small></span><span><div className="h2h-team-watermark h2h-team-watermark-empty" aria-hidden="true"/><b>{tally.draw}</b><small>EMPATES</small></span><span><div className="h2h-team-watermark" aria-hidden="true"><TeamMark team={resolveTeam(match.awayTeam)}/></div><b>{tally.away}</b><small>VICTORIAS</small></span></div>
-      <ul className="h2h-list">{meetings.map(item => <li key={item.id}><EntityLink to="match" id={item.id}><small>{item.tournament?.name ?? 'TORNEO'}{item.finishedAt ? ` · ${formatDate(item.finishedAt)}` : ''}</small><span><em className="h2h-home-name">{item.homeTeam?.name}</em><strong>{item.homeScore} - {item.awayScore}</strong><em className="h2h-away-name">{item.awayTeam?.name}</em></span></EntityLink></li>)}</ul>
+      <div className="h2h-tally"><span><div className="h2h-team-watermark" aria-hidden="true"><TeamMark team={resolveTeam(match.homeTeam)}/></div><b>{h2h.wins}</b><small>VICTORIAS</small></span><span><div className="h2h-team-watermark h2h-team-watermark-empty" aria-hidden="true"/><b>{h2h.draws}</b><small>EMPATES</small></span><span><div className="h2h-team-watermark" aria-hidden="true"><TeamMark team={resolveTeam(match.awayTeam)}/></div><b>{h2h.losses}</b><small>VICTORIAS</small></span></div>
+      <ul className="h2h-list">{meetings.map(game => { const row = view(game); return <li key={game.matchId}><EntityLink to="match" id={game.matchId}><small>{game.tournament ?? 'TORNEO'}{game.playedAt ? ` · ${formatDate(game.playedAt)}` : ''}{game.matchId === match.id ? ' · ESTE PARTIDO' : ''}</small><span><em className="h2h-home-name">{row.left}</em><strong>{row.leftGoals} - {row.rightGoals}{row.pens ? ` (${row.pens} pen.)` : ''}</strong><em className="h2h-away-name">{row.right}</em></span></EntityLink></li>; })}</ul>
     </> : <p className="empty-copy">NUNCA SE HAN ENFRENTADO.</p>}
   </section>;
 }
