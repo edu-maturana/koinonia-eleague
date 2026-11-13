@@ -14,7 +14,7 @@ export function CupBracketView({ cup, teams = [], onChanged }) {
   return <>
     <h3>CUADRO DE LA COPA <small>LOS 8 PRIMEROS DE {upper(cup.sourceName ?? 'la liga anterior')} · 1.º VS 2.º DE ENTRADA, EL RESTO POR SORTEO · PARTIDO ÚNICO, LOCAL EL MEJOR UBICADO</small></h3>
     {cup.seeds?.length > 0 && <p className="club-life-hint">CUPOS: {cup.seeds.map(seed => `${seed.rank}.º ${names[seed.teamId] ?? ''}`).join(' · ')}</p>}
-    <PreseasonBracket bracket={{ ...cup, teamNames: names, teamIndex, placeLabels: CUP_PLACES }} onChanged={onChanged}/>
+    <PreseasonBracket bracket={{ ...cup, tree: true, teamNames: names, teamIndex, placeLabels: CUP_PLACES }} onChanged={onChanged}/>
   </>;
 }
 

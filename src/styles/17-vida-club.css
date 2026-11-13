@@ -541,6 +541,28 @@
 .preseason-side a { display: flex; align-items: center; gap: 6px; min-width: 0; color: inherit; overflow-wrap: anywhere; }
 .preseason-side .team-mark { width: 24px; height: 24px; flex: 0 0 24px; }
 .preseason-match.is-live { border-color: var(--c-red); }
+.preseason-match.is-placeholder { background: transparent; border-style: dashed; box-shadow: none; }
+.preseason-match.is-placeholder .preseason-side { color: var(--c-ink-muted); font-size: var(--fs-xs); letter-spacing: .5px; }
+
+/* Cuadro en árbol (Copa Grande Giocatore): cuartos → semis → final; las líneas nacen de cada casilla */
+.bracket-wrap { display: grid; gap: var(--sp-3); }
+.bracket-tree { display: grid; grid-template-columns: repeat(3, minmax(230px, 1fr)); column-gap: 32px; overflow-x: auto; padding: 2px 16px 6px 2px; }
+.bracket-col { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.bracket-col h4, .bracket-third h4 { margin: 0; font: 600 var(--fs-xs)/1 var(--font-ui); letter-spacing: .6px; color: var(--c-ink-muted); }
+.bracket-col.col-f h4 { color: var(--c-red); }
+.bracket-cells { flex: 1; display: flex; flex-direction: column; }
+.bracket-cell { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 6px 0; }
+.bracket-cell > .preseason-match { box-sizing: border-box; width: 100%; }
+.col-sf .bracket-cell { flex: 2; }
+.col-f .bracket-cell { flex: 4; }
+/* Codo hacia la ronda siguiente: la casilla de arriba baja, la de abajo sube, y se juntan en el medio. */
+.col-qf .bracket-cell::after, .col-sf .bracket-cell::after { content: ''; position: absolute; right: -16px; width: 16px; border: 0 solid var(--c-ink-muted); border-right-width: 2px; }
+.col-qf .bracket-cell:nth-child(odd)::after, .col-sf .bracket-cell:nth-child(odd)::after { top: 50%; bottom: 0; border-top-width: 2px; }
+.col-qf .bracket-cell:nth-child(even)::after, .col-sf .bracket-cell:nth-child(even)::after { top: 0; bottom: 50%; border-bottom-width: 2px; }
+/* Entrada desde la ronda anterior. */
+.col-sf .bracket-cell::before, .col-f .bracket-cell::before { content: ''; position: absolute; left: -16px; top: 50%; width: 16px; border-top: 2px solid var(--c-ink-muted); }
+.bracket-third { display: grid; gap: var(--sp-2); max-width: 260px; }
+
 .preseason-groups { display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; margin-bottom: var(--sp-3); }
 .preseason-group-panel { display: grid; gap: var(--sp-2); padding-bottom: var(--sp-2); }
 .preseason-group-panel h3 small { color: var(--c-gold, #ffd42a); font: 600 12px/1 var(--font-ui); letter-spacing: .6px; align-self: center; }

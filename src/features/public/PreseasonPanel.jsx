@@ -35,6 +35,27 @@ function MatchCard({ match, teamIndex, canOperateMatches }) {
   </article>;
 }
 
+/** Casilla vacía del cuadro: de dónde vendrá cada lado mientras no se juegue la ronda anterior. */
+function PlaceholderCard({ lines }) {
+  return <article className="preseason-match is-placeholder">{lines.map(line => <div key={line} className="preseason-side"><span>{line}</span></div>)}</article>;
+}
+
+const TREE_FEEDS = { SF1: ['GANADOR CUARTOS 1', 'GANADOR CUARTOS 2'], SF2: ['GANADOR CUARTOS 3', 'GANADOR CUARTOS 4'], F: ['GANADOR SEMI 1', 'GANADOR SEMI 2'], '3P': ['PERDEDOR SEMI 1', 'PERDEDOR SEMI 2'] };
+
+/** Cuadro de eliminación de 8 en árbol: cuartos → semis → final, con líneas que unen cada cruce y casillas por jugarse; el 3.er puesto va abajo. */
+function BracketTree({ bracket, renderMatch }) {
+  const bySlot = Object.fromEntries(bracket.matches.map(match => [match.slot, match]));
+  const cell = slot => <div key={slot} className="bracket-cell">{bySlot[slot] ? renderMatch(bySlot[slot]) : <PlaceholderCard lines={TREE_FEEDS[slot]}/>}</div>;
+  return <div className="bracket-wrap">
+    <div className="bracket-tree">
+      <section className="bracket-col col-qf"><h4>CUARTOS DE FINAL</h4><div className="bracket-cells">{['QF1', 'QF2', 'QF3', 'QF4'].map(cell)}</div></section>
+      <section className="bracket-col col-sf"><h4>SEMIFINALES</h4><div className="bracket-cells">{['SF1', 'SF2'].map(cell)}</div></section>
+      <section className="bracket-col col-f"><h4>FINAL</h4><div className="bracket-cells">{['F'].map(cell)}</div></section>
+    </div>
+    <div className="bracket-third"><h4>TERCER LUGAR</h4>{bySlot['3P'] ? renderMatch(bySlot['3P']) : <PlaceholderCard lines={TREE_FEEDS['3P']}/>}</div>
+  </div>;
+}
+
 /** Grupo de la gira de 6: tabla con la misma estética que la de liga (pasan los dos primeros) y sus tres partidos. */
 function GroupPanel({ group, matches, teamIndex, names, renderMatch }) {
   return <section className="workspace-panel preseason-group-panel">
@@ -61,10 +82,12 @@ export function PreseasonBracket({ bracket, onChanged }) {
   return <div className="preseason-bracket">
     {bracket.groups && <div className="preseason-groups">{bracket.groups.map(group => <GroupPanel key={group.name} group={group} names={bracket.teamNames} teamIndex={teamIndex}
       matches={bracket.matches.filter(match => roundOf(match.slot) === `G${group.name}`)} renderMatch={renderMatch}/>)}</div>}
-    <div className="preseason-rounds">{rounds.map(([key, list]) => <section key={key} className={`preseason-round round-${key}`}>
-      <h4>{ROUND_LABEL[key]}</h4>
-      {list.map(renderMatch)}
-    </section>)}</div>
+    {bracket.tree
+      ? <BracketTree bracket={bracket} renderMatch={renderMatch}/>
+      : <div className="preseason-rounds">{rounds.map(([key, list]) => <section key={key} className={`preseason-round round-${key}`}>
+        <h4>{ROUND_LABEL[key]}</h4>
+        {list.map(renderMatch)}
+      </section>)}</div>}
     {bracket.standings && <ol className="preseason-standings">{bracket.standings.map((row, index) => <li key={row.teamId}>
       <span>{bracket.placeLabels?.[row.place] ?? (index < 4 ? PLACE[index] : bracket.groups ? 'GRUPOS' : 'CUARTOS')}</span>
       <EntityLink to="team" id={row.teamId} className="table-team-link"><TeamMark team={teamIndex?.[row.teamId] ?? { id: row.teamId, name: bracket.teamNames?.[row.teamId] }}/>{upper(bracket.teamNames?.[row.teamId] ?? '')}</EntityLink><b>{gp(row.prize)}</b>
