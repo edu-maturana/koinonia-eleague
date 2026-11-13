@@ -214,7 +214,11 @@ export function MatchesPage({ mode = 'all', teams, navigate }) {
     const sectionOf = match => {
       const tournamentName = match.tournament?.name ?? 'TORNEO';
       const tournamentKey = match.tournament?.id ?? tournamentName;
-      const section = match.stage === 'playoffs'
+      // La Copa Grande Giocatore se juega entre las dos vueltas de la liga: primera vuelta, copa, segunda vuelta.
+      const isCup = match.stage === 'knockout' && /grande\s+giocatore/i.test(tournamentName);
+      const section = isCup
+        ? { key: 'cup', label: '', order: 1.5 }
+        : match.stage === 'playoffs'
         ? { key: 'playoffs', label: 'PLAYOFFS', order: 3 }
         : (() => {
           const perLeg = legRoundsFor(match.tournament?.id);
