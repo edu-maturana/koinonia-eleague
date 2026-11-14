@@ -128,7 +128,7 @@ function CareerBar({ stints, seasons, firstSeason }) {
       {parts.map((stint, index) => <i key={index} className={stint.kind === 'free' ? 'career-bar-free' : ''}
         style={{ flexGrow: stint.seasonCount, ...(stint.kind === 'club' ? tint(stint.color) : null) }}
         title={`${stint.kind === 'free' ? 'Libre' : stint.teamName}: ${rangeWords(stint.range)}`}>
-        {stint.seasonCount >= 3 && <span>{stint.kind === 'free' ? 'LIBRE' : stint.teamName}</span>}
+        {stint.seasonCount >= 1 && <span>{stint.kind === 'free' ? 'LIBRE' : stint.teamName}</span>}
       </i>)}
     </div>
     <div className="career-bar-axis"><small>{shown[0]?.label}</small><small>{shown.at(-1)?.label}</small></div>
