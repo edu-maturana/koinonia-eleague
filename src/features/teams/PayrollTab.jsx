@@ -212,12 +212,13 @@ function RealView({ team, query, balance, marketOpen, canEdit, layout, refresh }
   const renewables = contracts.filter(contract => contract.renewable);
   const sheets = [...renewables, ...signedIds.filter(id => !renewables.some(contract => contract.id === id)).map(id => signedSnapshots[id]).filter(Boolean)];
   const keepSigned = contract => { setSignedSnapshots(items => ({ ...items, [contract.id]: contract })); setSignedIds(ids => ids.includes(contract.id) ? ids : [...ids, contract.id]); };
-  const remainingCost = contracts.filter(contract => contract.status === 'active' && !contract.endsWith).reduce((sum, contract) => sum + contract.salary * contract.seasonsLeft, 0);
+  const remainingCost = contracts.filter(contract => contract.status === 'active' && !contract.endsWith).reduce((sum, contract) => sum + contract.salary * (contract.loan?.leaguesLeft ?? contract.seasonsLeft), 0);
   // Qué torneos le quedan por cobrar a un contrato ("v11 y v12"), con los nombres reales cuando se pueden deducir.
-  const pending = contract => upcoming.slice(0, contract.seasonsLeft).map(upper);
+  const pending = contract => upcoming.slice(0, contract.loan?.leaguesLeft ?? contract.seasonsLeft).map(upper);
   const chargeText = names => (names.length <= 2 ? names.join(' Y ') : `${names[0]} A ${names[names.length - 1]}`);
   const contractText = contract => {
     if (contract.arrivalPending) return 'RECIÉN LLEGADO: CONTRATO POR FIRMAR';
+    if (contract.loan) { const names = pending(contract); return `A PRÉSTAMO DE ${upper(contract.loan.ownerName)}${names.length ? ` HASTA EL ${names[names.length - 1]}` : ''}`; }
     if (contract.status === 'expired') return 'VENCIDO: RENOVAR';
     if (contract.leavesFree) return 'NO RENOVÓ: SIGUE JUGANDO Y SALE LIBRE CUANDO TERMINE EL TORNEO';
     if (contract.startsAfter) return `RENOVADO: EL SUELDO NUEVO RIGE DESPUÉS DEL ${upper(contract.startsAfter.name ?? 'TORNEO EN CURSO')}`;
@@ -257,7 +258,7 @@ function RealView({ team, query, balance, marketOpen, canEdit, layout, refresh }
           <div className="payroll-card-salary"><b>{gp(contract.salary)}</b><small>POR TORNEO</small></div>
           <ShareBar salary={contract.salary} value={contract.marketValue}/>
           <div className="payroll-card-years">
-            {!contract.endsWith && <SeasonDots paid={contract.seasonsPaid} total={contract.seasons}/>}
+            {!contract.endsWith && !contract.loan && <SeasonDots paid={contract.seasonsPaid} total={contract.seasons}/>}
             <span>{contractText(contract)}</span>
           </div>
           {chargeNote(contract) && <small className="payroll-card-total">{chargeNote(contract)}</small>}
@@ -271,7 +272,7 @@ function RealView({ team, query, balance, marketOpen, canEdit, layout, refresh }
             <td>{gp(contract.marketValue)}</td>
             <td><b>{gp(contract.salary)}</b></td>
             <td><ShareBar salary={contract.salary} value={contract.marketValue} compact/></td>
-            <td><span className="ptable-contract" title={chargeNote(contract) ?? undefined}>{!contract.endsWith && <SeasonDots paid={contract.seasonsPaid} total={contract.seasons}/>}<small>{contractText(contract)}{chargeNote(contract) ? ` · ${chargeNote(contract).replace('SE COBRA AL TERMINAR: ', 'PAGA ')}` : ''}</small></span></td>
+            <td><span className="ptable-contract" title={chargeNote(contract) ?? undefined}>{!contract.endsWith && !contract.loan && <SeasonDots paid={contract.seasonsPaid} total={contract.seasons}/>}<small>{contractText(contract)}{chargeNote(contract) ? ` · ${chargeNote(contract).replace('SE COBRA AL TERMINAR: ', 'PAGA ')}` : ''}</small></span></td>
             {canEdit && <td className="ptable-actions">{actions(contract)}</td>}
           </tr>)}</tbody>
         </table></div>}
