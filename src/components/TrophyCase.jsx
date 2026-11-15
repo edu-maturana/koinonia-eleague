@@ -3,6 +3,7 @@ import { endpoints } from '../api/endpoints.js';
 import { useApiQuery } from '../features/public/useApiQuery.js';
 import { EntityLink } from './EntityLink.jsx';
 import { TeamMark } from './TeamMark.jsx';
+import { GG_TROPHY_ICON, LEAGUE_TROPHY_ICON } from './TrophyIcons.jsx';
 
 // "Koinonia E-League v6" -> "v6"; "Liga de Transición" -> "LT"; "Copa Grande Giocatore 2" -> "GG2" (va con el trofeo plateado de la copa); otro torneo -> iniciales.
 export function starLabel(name = '') {
@@ -47,16 +48,6 @@ export function buildShowcase(clubs, titleLists) {
 
 const CUP_ICON = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v4a6 6 0 0 1-12 0V3zM6 5H3v2a4 4 0 0 0 4 4M18 5h3v2a4 4 0 0 1-4 4M12 13v4M8 21h8M9 17h6v4H9z"/></svg>;
 
-// Trofeo de la Copa Grande Giocatore: copa plateada de cintura fina con borde y nervaduras doradas (distinta de la copa dorada de las giras).
-const GG_ICON = <svg viewBox="0 0 24 32" aria-hidden="true">
-  <defs><linearGradient id="gg-silver" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#a9a9b4"/><stop offset=".35" stopColor="#f6f6f8"/><stop offset=".65" stopColor="#d6d6dd"/><stop offset="1" stopColor="#9c9ca8"/></linearGradient></defs>
-  <path d="M3 3C5.5 12 9.6 15 10.2 19C10.6 23 8.4 26 7.5 28L16.5 28C15.6 26 13.4 23 13.8 19C14.4 15 18.5 12 21 3Z" fill="url(#gg-silver)" stroke="#55556a" strokeWidth=".7" strokeLinejoin="round"/>
-  <path d="M6.2 4C8 11 10.4 15 10.8 20M17.8 4C16 11 13.6 15 13.2 20" fill="none" stroke="#f2b705" strokeWidth=".9" strokeLinecap="round"/>
-  <ellipse cx="12" cy="3" rx="9" ry="1.8" fill="#f2b705" stroke="#7a5400" strokeWidth=".7"/>
-  <path d="M9.4 8.2h5.2M9.4 10.2h5.2" fill="none" stroke="#1c1c24" strokeWidth="1.1" strokeLinecap="round"/>
-  <rect x="6.8" y="27.2" width="10.4" height="2.2" rx=".7" fill="#f2b705" stroke="#7a5400" strokeWidth=".7"/>
-</svg>;
-
 // Vitrina del inicio: cada campeón con una estrella por título de liga (LT, v1, v2…) y una copa dorada por Copa Grande Giocatore (GG1, GG2…).
 export function TrophyCase({ teams = [] }) {
   const clubs = teams.filter(team => team.kind === 'club' || team.kind == null);
@@ -84,8 +75,8 @@ export function TrophyCase({ teams = [] }) {
     </li>) : shown.map(({ club, stars }) => <li key={club.id}>
       <EntityLink to="team" id={club.id} className="trophy-team"><TeamMark team={club}/><span>{club.name}</span></EntityLink>
       <span className="trophy-stars" aria-label={`${stars.length} título${stars.length === 1 ? '' : 's'}`}>{stars.map(star =>
-        <span key={star.id} className={`trophy-star${star.cup ? ' trophy-gg' : ''}`} title={star.name}>
-          {star.cup ? GG_ICON : <svg viewBox="-6 -6 112 108" aria-hidden="true"><polygon points="50,2 62,36 98,37 69,59 80,94 50,73 20,94 31,59 2,37 38,36" /></svg>}
+        <span key={star.id} className={`trophy-star ${star.cup ? 'trophy-gg' : 'trophy-koi'}`} title={star.name}>
+          {star.cup ? GG_TROPHY_ICON : LEAGUE_TROPHY_ICON}
           <small>{star.text}</small></span>)}</span>
     </li>)}</ul>
   </section>;

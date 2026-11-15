@@ -1,3 +1,4 @@
+import { trophyIconFor } from '../../components/TrophyIcons.jsx';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { endpoints } from '../../api/endpoints.js';
 import { TeamMark } from '../../components/TeamMark.jsx';
@@ -814,7 +815,7 @@ function ClubScorers({ teamId, limit = 5, tournaments = [] }) {
 }
 
 function HonoursList({ honours, tours = [], historyError }) {
-  return <section className="club-card"><h3>PALMARÉS <small>{honours.length} TÍTULO{honours.length === 1 ? '' : 'S'}</small></h3>{honours.length ? <div className="honours-list">{honours.map(item => <article key={item.id}><span aria-hidden="true">★</span><b>{item.name}</b>{item.season && <small>{item.season}</small>}</article>)}</div> : !tours.length && <p className="empty-copy">Aún no hay títulos registrados.</p>}
+  return <section className="club-card"><h3>PALMARÉS <small>{honours.length} TÍTULO{honours.length === 1 ? '' : 'S'}</small></h3>{honours.length ? <div className="honours-list">{honours.map(item => <article key={item.id}><span aria-hidden="true">{trophyIconFor(item.name)}</span><b>{item.name}</b>{item.season && <small>{item.season}</small>}</article>)}</div> : !tours.length && <p className="empty-copy">Aún no hay títulos registrados.</p>}
     {tours.length > 0 && <><h4 className="honours-subtitle">GIRAS <small>{tours.length}</small></h4>
       <div className="honours-list honours-list-tours">{tours.map(tour => <article key={tour.id}><span aria-hidden="true">🏆</span><b>{tour.name}</b>{tour.season && <small title={tour.season}>EN {seasonTag(tour.season).toUpperCase()}</small>}</article>)}</div></>}{historyError && <p className="honours-api-note">No fue posible consultar el historial del club.</p>}</section>;
 }

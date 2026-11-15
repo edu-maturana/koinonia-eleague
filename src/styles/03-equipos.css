@@ -39,6 +39,7 @@
 .honours-list { display: grid; gap: 4px; }
 .honours-list article { display: grid; grid-template-columns: 22px 1fr auto auto; align-items: center; gap: 5px; padding: 5px 7px; border-bottom: 1px solid #aa9e86; background: #e1d6bd; }
 .honours-list article span { color: #c28b00; font-size: 18px; }
+.honours-list article span svg { display: block; width: 20px; height: 20px; }
 .honours-list article b { font: 600 14px/1 'Roboto Condensed', sans-serif; }
 .honours-list article small { color: #a90020; font: 600 13px/1 'Oswald', sans-serif; }
 .roster-panel h2 small { padding-top: 3px; font-size: 14px; }
