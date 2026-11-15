@@ -30,9 +30,13 @@ function StandingsPanel({ tournament, standings, resolveTeam, loading, navigate 
 
 export function MatchSidebar({ tournament, standings = [], teams = [], activeTournaments = [], resolveTeam, loading, navigate }) {
   const live = useApiQuery(signal => endpoints.matches({ status: 'live', activeOnly: 1, page: 1, pageSize: 20 }, signal));
+  // Con la pestaña oculta no se consulta (antes seguía preguntando cada 12 s); al volver se refresca de inmediato.
   useEffect(() => {
-    const timer = window.setInterval(live.retry, LIVE_REFRESH_MS);
-    return () => window.clearInterval(timer);
+    const tick = () => { if (document.visibilityState !== 'hidden') live.retry(); };
+    const timer = window.setInterval(tick, LIVE_REFRESH_MS);
+    const onVisible = () => { if (document.visibilityState === 'visible') live.retry(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange', onVisible); };
   }, [live.retry]);
   const liveMatches = (Array.isArray(live.data) ? live.data : []).filter(match => match.status === 'live');
   // Si hay un encuentro de liga en vivo, su torneo manda (otra edición de la liga).

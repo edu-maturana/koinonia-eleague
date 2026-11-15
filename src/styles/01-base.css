@@ -28,7 +28,7 @@ figure, p, blockquote, h1, h2, h3, h4 { margin: 0; }
 /* Shell del sitio: barra superior fija y contenido que scrollea con la página. */
 body { min-width: 0; overflow-x: hidden; background: #001344; }
 .site { position: relative; isolation: isolate; display: flex; flex-direction: column; min-height: 100vh; }
-.site::before { content: ''; position: fixed; inset: 0; z-index: -1; background: linear-gradient(#0013441a, #00134466 70%, #001344b3), url('/stadium-background-v2.jpeg') center top / cover no-repeat; }
+.site::before { content: ''; position: fixed; inset: 0; z-index: -1; background: linear-gradient(#0013441a, #00134466 70%, #001344b3), url('/stadium-background-v2.webp') center top / cover no-repeat; }
 .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 3px solid #43a8d6; background: #031d58f2 url('/paper-grain.svg'); box-shadow: 0 4px 0 #000c24; backdrop-filter: blur(6px); }
 .site-header-inner { display: flex; align-items: center; gap: 14px; max-width: 1480px; min-height: 68px; margin: 0 auto; padding: 6px 24px; }
 .brand { flex: 0 0 auto; width: 150px; height: 56px; padding: 0; overflow: hidden; border: 0; background: transparent; }
@@ -115,13 +115,13 @@ body { min-width: 0; overflow-x: hidden; background: #001344; }
   .match-sidebar { grid-template-columns: 1fr; }
   .radio-info small { display: none; }
 }
-.fatal-screen { display: grid; min-height: 100vh; place-items: center; padding: 20px; color: #fff8df; background: #001449 url('/stadium-background-v2.jpeg') center / cover fixed; }
+.fatal-screen { display: grid; min-height: 100vh; place-items: center; padding: 20px; color: #fff8df; background: #001449 url('/stadium-background-v2.webp') center / cover fixed; }
 .fatal-screen section { width: min(680px, 100%); padding: 30px; border: 4px solid #ffd42a; background: #061f5ee8 url('/paper-grain.svg'); box-shadow: 10px 10px #0009; text-align: center; }
 .fatal-screen p { color: #ffd42a; font: 600 17px/1 'Oswald', sans-serif; letter-spacing: 2px; }
 .fatal-screen h1 { margin: 10px 0; font: italic 400 46px/1 'Anton', sans-serif; }
 .fatal-screen span { display: block; font: 500 18px/1.25 'Roboto Condensed', sans-serif; }
 .fatal-screen button { margin-top: 22px; padding: 10px 18px; border: 2px solid #72b4e3; color: #fff; background: #a90020; font: 500 16px/1 'Oswald', sans-serif; }
-.access-gate { display: grid; min-height: 100vh; place-items: center; padding: 22px; color: #fff8df; background: #001449 url('/stadium-background-v2.jpeg') center / cover fixed; }
+.access-gate { display: grid; min-height: 100vh; place-items: center; padding: 22px; color: #fff8df; background: #001449 url('/stadium-background-v2.webp') center / cover fixed; }
 .access-gate section { width: min(460px, 100%); padding: 27px; border: 4px solid #ffd42a; background: #061f5eee url('/paper-grain.svg'); box-shadow: 10px 10px #0009; text-align: center; }
 .access-gate-kicker { color: #73c5eb; font: 600 14px/1 'Oswald', sans-serif; letter-spacing: 2px; }
 .access-gate h1 { margin: 9px 0; font: italic 400 clamp(34px, 8vw, 50px)/.95 'Anton', sans-serif; }

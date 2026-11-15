@@ -83,7 +83,7 @@ const opaqueBlackMask = new Uint8ClampedArray([0, 0, 0, 255, 0, 0, 0, 255]);
 assert.deepEqual(recolorPixels(base, opaqueBlackMask, '#FF0000'), base, 'El negro opaco de una máscara no debe recolorear la escena');
 assert.deepEqual(applyAvailableMasks(base, [null]), base, 'Una máscara ausente no debe impedir el render');
 assert.deepEqual(applyAvailableMasks(base, [{ pixels: new Uint8ClampedArray(4), color: '#FF0000' }]), base);
-assert.equal(fallbackSceneSrc, '/reference-art.png');
+assert.equal(fallbackSceneSrc, '/reference-art.webp');
 
 for (const path of [
   new URL('../src/features/news/newsImageCatalog.js', import.meta.url),

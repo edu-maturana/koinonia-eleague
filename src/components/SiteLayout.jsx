@@ -5,7 +5,6 @@ import { ApiStatus } from './ApiStatus.jsx';
 import { GlobalSearch } from './GlobalSearch.jsx';
 import { MusicPlayer } from './MusicPlayer.jsx';
 import { Navigation } from './Navigation.jsx';
-import { TransparentLogo } from './TransparentLogo.jsx';
 import { UpdateNotice } from './UpdateNotice.jsx';
 
 export function SiteLayout({ route, navigate, children, sidebar, error, dismissError, playlist = [], teams = [] }) {
@@ -15,7 +14,8 @@ export function SiteLayout({ route, navigate, children, sidebar, error, dismissE
     <header className="site-header">
       <div className="site-header-inner">
         <button className="brand" onClick={() => navigate('/')} aria-label="Koinonia e-League, ir al inicio">
-          <TransparentLogo className="brand-logo" src="/koinonia-eleague-logo.png" label="Koinonia e-League"/>
+          {/* Logo ya recortado y achicado (42 KB en vez de 977 KB recortados píxel a píxel en el navegador en cada visita). */}
+          <img className="brand-logo" src="/koinonia-eleague-logo.webp" width="720" height="240" alt="Koinonia e-League" decoding="async" fetchpriority="high"/>
         </button>
         <Navigation route={route} navigate={navigate}/>
         <GlobalSearch navigate={navigate} teams={teams}/>

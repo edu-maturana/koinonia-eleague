@@ -1,24 +1,28 @@
-import { ControlRoomPage } from '../features/admin/ControlRoomPage.jsx';
-import { NotificationsPage } from '../features/notifications/NotificationsPage.jsx';
-import { useEffect, useMemo } from 'react';
+import { Suspense, lazy, useEffect, useMemo } from 'react';
 import { SiteLayout } from '../components/SiteLayout.jsx';
 import { MatchSidebar } from '../components/MatchSidebar.jsx';
 import { HomePage } from '../features/home/HomePage.jsx';
 import { useLeagueData } from '../features/league/useLeagueData.js';
 import { leaguePlaylist } from './playlist.js';
 import { SectionPage } from '../features/shared/SectionPage.jsx';
-import { TeamDetailPage } from '../features/teams/TeamDetailPage.jsx';
-import { MarketPage } from '../features/public/MarketPage.jsx';
 import { playersReturnQuery } from '../features/public/PlayersPage.jsx';
-import { PlayerProfilePage } from '../features/public/PlayerProfilePage.jsx';
-import { EfootballCardPage } from '../features/public/EfootballCard.jsx';
 import { projectionLink } from '../features/public/ProjectionPanel.jsx';
-import { MatchScoreboardPage } from '../features/public/MatchScoreboardPage.jsx';
-import { MatchCenterPage } from '../features/public/MatchCenterPage.jsx';
 import { ClubsScreen, MatchesScreen, NewsScreen, PlayersScreen, RulesScreen, TournamentsScreen } from '../features/league/LeaguePage.jsx';
 import { CareerHub } from '../features/home/CareerHub.jsx';
 import { useAuth } from './AuthGate.jsx';
 import { useRoute } from './useRoute.js';
+
+// Pantallas pesadas (sala de control, mercado, ficha del club, partido…) se bajan recién cuando se abren: el inicio ya no carga
+// todo el código de la administración, el simulador y las subastas en la primera visita.
+const named = (loader, name) => lazy(() => loader().then(module => ({ default: module[name] })));
+const ControlRoomPage = named(() => import('../features/admin/ControlRoomPage.jsx'), 'ControlRoomPage');
+const NotificationsPage = named(() => import('../features/notifications/NotificationsPage.jsx'), 'NotificationsPage');
+const TeamDetailPage = named(() => import('../features/teams/TeamDetailPage.jsx'), 'TeamDetailPage');
+const MarketPage = named(() => import('../features/public/MarketPage.jsx'), 'MarketPage');
+const PlayerProfilePage = named(() => import('../features/public/PlayerProfilePage.jsx'), 'PlayerProfilePage');
+const EfootballCardPage = named(() => import('../features/public/EfootballCard.jsx'), 'EfootballCardPage');
+const MatchScoreboardPage = named(() => import('../features/public/MatchScoreboardPage.jsx'), 'MatchScoreboardPage');
+const MatchCenterPage = named(() => import('../features/public/MatchCenterPage.jsx'), 'MatchCenterPage');
 
 const list = value => Array.isArray(value) ? value : [];
 const tournamentPriority = tournament => tournament.format === 'league' || /liga/i.test(tournament.name ?? '') ? 0 : 1;
@@ -127,5 +131,5 @@ export function App() {
   }
 
   const sidebar = route.name === 'home' || route.name === 'newsArticle' ? <MatchSidebar tournament={tournament} activeTournaments={activeTournaments} standings={league.standings} teams={league.teams} resolveTeam={resolveTeam} loading={state.loading} navigate={navigate}/> : null;
-  return <SiteLayout route={route} navigate={navigate} sidebar={sidebar} error={state.error} dismissError={dismissError} playlist={playlist} teams={league.teams}>{page}</SiteLayout>;
+  return <SiteLayout route={route} navigate={navigate} sidebar={sidebar} error={state.error} dismissError={dismissError} playlist={playlist} teams={league.teams}><Suspense fallback={<main className="screen"><div className="arcade-state">Cargando…</div></main>}>{page}</Suspense></SiteLayout>;
 }

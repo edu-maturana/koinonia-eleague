@@ -183,7 +183,7 @@
 .scoreboard-tile .scoreboard-btn-start { padding: 12px; font-size: 14px; }
 
 /* Vista móvil a pantalla completa (fuera del cabinet escalado): página independiente. */
-.scoreboard-page { display: flex; min-height: 100dvh; flex-direction: column; gap: 10px; padding: max(10px, env(safe-area-inset-top, 0px)) 10px max(10px, env(safe-area-inset-bottom, 0px)); background: var(--navy) url('/stadium-background-v2.jpeg') center / cover no-repeat; }
+.scoreboard-page { display: flex; min-height: 100dvh; flex-direction: column; gap: 10px; padding: max(10px, env(safe-area-inset-top, 0px)) 10px max(10px, env(safe-area-inset-bottom, 0px)); background: var(--navy) url('/stadium-background-v2.webp') center / cover no-repeat; }
 .scoreboard-page-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .scoreboard-back { padding: 8px 10px; border: 2px solid #72b4e3; color: #fff9e8; background: #062764; font: 500 13px/1 'Oswald', sans-serif; }
 .scoreboard-page .scoreboard { flex: 1 1 auto; display: flex; flex-direction: column; max-width: 460px; margin: 0 auto; width: 100%; }

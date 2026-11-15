@@ -1,4 +1,4 @@
-export const fallbackSceneSrc = '/reference-art.png';
+export const fallbackSceneSrc = '/reference-art.webp';
 
 export const fallbackKitColors = {
   team: { shirt: '#0752A0', shorts: '#FFFFFF', socks: '#0752A0' },
