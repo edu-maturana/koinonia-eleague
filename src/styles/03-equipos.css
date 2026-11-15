@@ -586,3 +586,12 @@
 .image-tile-drop input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .image-tile-clear { justify-self: start; padding: 0; border: 0; color: #a90020; background: none; font: 600 11px/1 'Oswald', sans-serif; letter-spacing: .5px; text-decoration: underline; cursor: pointer; }
 @media (max-width: 380px) { .crest-images { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Modal "Editar escudo y nombre": los colores ocupan una fila propia y cada control cabe en su columna (antes la pipeta
+   se salía y se montaba sobre el color de al lado, y el botón de guardar quedaba metido entre los colores). */
+.admin-form .profile-colors { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.color-picker-field .color-picker-controls { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 5px; }
+.color-picker-field .color-picker-controls input { width: 100%; }
+.color-picker-field input[type='color'] { width: 34px; height: 31px; }
+.admin-form .profile-save { grid-column: 1 / -1; justify-self: stretch; }
+@media (max-width: 700px) { .admin-form .profile-colors { grid-template-columns: minmax(0, 1fr); } }

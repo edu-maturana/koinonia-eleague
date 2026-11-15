@@ -84,10 +84,13 @@ export function ProfileForm({ team, onChanged, onSaved }) {
       <ImageTile label="CAMPEÓN COPA GG" hint="Imagen de la noticia cuando el equipo gana la Copa Grande Giocatore" fallbackNote="USA LA DE E-LEAGUE" value={form.cupChampionImageUrl} entityId={team.id} onChange={setField('cupChampionImageUrl')}/>
       <small>JPG, PNG, WEBP, GIF O AVIF · MÁXIMO 5 MB. Si no subes una imagen de campeón, la noticia usa la de más arriba. La pipeta de los colores sirve sobre el emblema.</small>
     </fieldset>
-    <ColorPickerField label="COLOR PRIMARIO" value={form.colors.primary} onChange={color => setColor('primary', color)}/>
-    <ColorPickerField label="COLOR SECUNDARIO" value={form.colors.secondary} onChange={color => setColor('secondary', color)}/>
-    <ColorPickerField label="COLOR TERCIARIO" value={form.colors.tertiary} onChange={color => setColor('tertiary', color)}/>
-    <Button type="submit" disabled={mutation.loading}>GUARDAR PERFIL</Button>
+    {/* Los tres colores en su propia fila (uno debajo del otro en el teléfono) y el botón de guardar a todo el ancho. */}
+    <div className="profile-colors">
+      <ColorPickerField label="COLOR PRIMARIO" value={form.colors.primary} onChange={color => setColor('primary', color)}/>
+      <ColorPickerField label="COLOR SECUNDARIO" value={form.colors.secondary} onChange={color => setColor('secondary', color)}/>
+      <ColorPickerField label="COLOR TERCIARIO" value={form.colors.tertiary} onChange={color => setColor('tertiary', color)}/>
+    </div>
+    <Button type="submit" className="profile-save" disabled={mutation.loading}>GUARDAR PERFIL</Button>
     <FormFeedback mutation={mutation}/>
   </form>;
 }

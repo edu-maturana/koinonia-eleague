@@ -270,8 +270,11 @@
 .news-card h2 button:hover { color: #a90020; }
 @media (max-width: 900px) {
   .news-reader-backdrop { padding: 0; place-items: stretch; }
-  .news-reader { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); width: 100%; max-height: none; height: 100%; border: 0; box-shadow: none; }
-  .news-reader-copy { padding: 18px 16px 24px; }
+  /* En el teléfono se lee como un diario: baja todo junto (foto y texto), no solo la columna de texto. */
+  .news-reader { display: block; grid-template-columns: 1fr; width: 100%; max-height: none; height: 100%; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border: 0; box-shadow: none; }
+  .news-reader-close { position: fixed; top: max(10px, env(safe-area-inset-top, 0px)); }
+  .news-reader-copy { overflow: visible; padding: 18px 16px calc(28px + env(safe-area-inset-bottom, 0px)); }
+  .news-reader-share { margin-top: 8px; }
   .news-reader-body p { font-size: 16px; }
 }
 .news-card h2 a { color: inherit; text-decoration: none; }

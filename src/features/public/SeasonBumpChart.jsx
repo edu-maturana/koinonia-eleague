@@ -42,6 +42,32 @@ export function readableTeamColor(team) {
   return INK;
 }
 
+/** Colores del club que se leen sobre el papel, en orden de preferencia (primario, secundario, terciario). */
+function readableOptions(team) {
+  const options = [team?.primaryColor, team?.secondaryColor, team?.tertiaryColor, team?.colors?.primary, team?.colors?.secondary, team?.colors?.tertiary];
+  return [...new Set(options.filter(option => { const rgb = hexToRgb(option); return rgb && contrast(rgb, surfaceRgb) >= 3; }))];
+}
+// Respaldo para cuando dos clubes comparten color (hay tres rojos y varios azul marino): tonos que se distinguen entre sí sobre el papel.
+const SPARE = ['#1f77b4', '#d62728', '#2ca02c', '#9467bd', '#8c564b', '#e377c2', '#17becf', '#bcbd22', '#ff7f0e', '#393b79', '#637939', '#7b4173'];
+// Distancia "redmean" entre dos colores: barata y bastante fiel a cómo se perciben.
+const distance = (a, b) => { const r = (a[0] + b[0]) / 2; const [dr, dg, db] = [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  return Math.sqrt((2 + r / 256) * dr * dr + 4 * dg * dg + (2 + (255 - r) / 256) * db * db); };
+const MIN_GAP = 120;
+
+/**
+ * Un color por club que no se confunda con los demás: cada uno (de arriba hacia abajo en la tabla) se queda con su primer color
+ * legible que esté lejos de los ya tomados; si ninguno sirve, toma uno del respaldo. Así el puntero conserva su color propio.
+ */
+export function distinctTeamColors(teams) {
+  const taken = [];
+  const far = hex => { const rgb = hexToRgb(hex); return rgb && taken.every(other => distance(rgb, other) >= MIN_GAP); };
+  return teams.map(team => {
+    const pick = readableOptions(team).find(far) ?? (far(readableTeamColor(team)) ? readableTeamColor(team) : null) ?? SPARE.find(far) ?? readableTeamColor(team);
+    taken.push(hexToRgb(pick) ?? hexToRgb(INK));
+    return pick;
+  });
+}
+
 const ordinal = position => `${position}.º`;
 
 function useWidth(enabled) {
@@ -59,9 +85,13 @@ function useWidth(enabled) {
 
 export function SeasonBumpChart({ progression, resolveTeam, title = 'MOMENTO DE LA TEMPORADA' }) {
   const rounds = progression?.rounds ?? [];
-  const teams = useMemo(() => (progression?.teams ?? []).filter(team => team.positions?.length === rounds.length)
-    .map(team => { const full = resolveTeam({ id: team.teamId, name: team.name }); return { ...team, full, color: readableTeamColor(full) }; })
-    .sort((a, b) => (a.position ?? 99) - (b.position ?? 99)), [progression, resolveTeam, rounds.length]);
+  const teams = useMemo(() => {
+    const rows = (progression?.teams ?? []).filter(team => team.positions?.length === rounds.length)
+      .map(team => ({ ...team, full: resolveTeam({ id: team.teamId, name: team.name }) }))
+      .sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
+    const colors = distinctTeamColors(rows.map(row => row.full));
+    return rows.map((row, index) => ({ ...row, color: colors[index] }));
+  }, [progression, resolveTeam, rounds.length]);
   const [pinned, setPinned] = useState(null);
   const [hovered, setHovered] = useState(null);
   const [column, setColumn] = useState(null);

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NewsArtwork } from '../../components/NewsArtwork.jsx';
 import { formatDate } from '../public/DataStates.jsx';
 import { cachedNews, findNews, newsPath, newsShareUrl } from './newsCache.js';
@@ -54,7 +55,8 @@ export function NewsModal({ item, loading, teams = [], onClose }) {
       // Compartir cancelado o portapapeles bloqueado.
     }
   };
-  return <div className="news-reader-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+  // Va directo al <body>: dentro del sitio quedaba bajo la barra inferior del teléfono, que tapaba el botón Compartir.
+  return createPortal(<div className="news-reader-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
     <article className="news-reader" role="dialog" aria-modal="true" aria-label={item?.headline ?? 'Noticia'}>
       <button type="button" className="news-reader-close" onClick={onClose} aria-label="Cerrar noticia">×</button>
       {!item ? <div className="arcade-state">{loading ? 'CARGANDO NOTICIA…' : 'ESTA NOTICIA YA NO ESTÁ DISPONIBLE.'}</div> : <>
@@ -68,5 +70,5 @@ export function NewsModal({ item, loading, teams = [], onClose }) {
         </div>
       </>}
     </article>
-  </div>;
+  </div>, document.body);
 }
