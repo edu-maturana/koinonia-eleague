@@ -41,9 +41,32 @@ function FixtureCard({ match, resolveTeam, onSelect, showRound }) {
         ? 'CANCELADO'
         : 'PENDIENTE';
   return <button type="button" className={`fixture-card fixture-${match.status}${match.sanctioned ? ' fixture-sanctioned' : ''}${match.derby ? ' fixture-derby' : ''}${rivalry ? ` rivalry-${rivalry.kind}${rivalry.both ? ' rivalry-both' : ''}` : ''}`} onClick={() => onSelect(match.id)} aria-label={`${match.homeTeam?.name ?? 'Equipo local'} contra ${match.awayTeam?.name ?? 'Equipo visitante'}: ${state}`}>
-    <span className="fixture-teams" data-derby={rivalry ? rivalry.label.toUpperCase() : undefined}>{team('home', home)}{team('away', away)}{rivalry?.streak && <em className="fixture-streak">{rivalry.streak.text}</em>}</span>
+    <span className="fixture-teams" data-derby={rivalry ? rivalry.label.toUpperCase() : undefined}>{team('home', home)}{team('away', away)}{rivalry?.streak && <StreakMarquee text={rivalry.streak.text}/>}</span>
     <small className="fixture-footer"><span>{rivalry && <Icon name={rivalry.icon} size={12} className="fixture-derby-flame" title={rivalry.label}/>}{showRound ? matchRoundLabel(match) : 'FECHA POR DEFINIR'}</span>{match.penaltiesHome != null && <span className="fixture-pens" title="Se definió por penales">PEN. {match.penaltiesHome}–{match.penaltiesAway}</span>}<SanctionBadge match={match} compact/><SimulatedBadge match={match}/>{match.homeTeam?.stadium && <span className="match-venue" title={`Estadio de ${match.homeTeam.name}`}>🏟️ {match.homeTeam.stadium}</span>}</small>
   </button>;
+}
+
+// Racha de la rivalidad en una sola línea: si no cabe en la tarjeta, corre como marquesina.
+function StreakMarquee({ text }) {
+  const box = useRef(null);
+  const [run, setRun] = useState(false);
+  const [dur, setDur] = useState(12);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return undefined;
+    const measure = () => {
+      const inner = el.firstChild;
+      const natural = inner.scrollWidth - (el.classList.contains('is-marquee') ? el.clientWidth : 0);
+      const over = natural > el.clientWidth + 1;
+      setRun(over);
+      if (over) setDur(Math.max(8, (natural + el.clientWidth) / 35));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [text]);
+  return <em ref={box} className={`fixture-streak${run ? ' is-marquee' : ''}`} title={text} style={{ '--marquee-dur': `${dur}s` }}><span>{text}</span></em>;
 }
 
 // Fecha libre de un equipo: mismo tamaño que un partido, con borde punteado. En "Todos"

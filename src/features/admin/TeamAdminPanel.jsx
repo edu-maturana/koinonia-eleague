@@ -39,11 +39,30 @@ function ColorPickerField({ label, value, onChange }) {
   </label>;
 }
 
+// Ficha de imagen: la vista previa es el propio botón de subida (ocupa una sola fila con las otras dos y no alarga el modal).
+// El fondo es blanco a propósito: el emblema se ve a color real, sin el fondo oscuro del modal, y sirve para la pipeta.
+function ImageTile({ label, hint, value, fallbackNote, entityId, onChange }) {
+  const upload = useApiMutation((file, signal) => endpoints.uploadImage(file, { entityType: 'team', entityId }, signal), {
+    onSuccess: response => onChange(response?.data?.secureUrl ?? response?.secureUrl ?? ''),
+  });
+  return <div className="image-tile">
+    <span className="image-tile-label">{label}</span>
+    <label className={`image-tile-drop${value ? ' has-image' : ''}${upload.loading ? ' is-loading' : ''}`} title={hint}>
+      {value ? <img src={value} alt={label}/> : <span className="image-tile-empty">{fallbackNote}</span>}
+      <span className="image-tile-action">{upload.loading ? 'SUBIENDO…' : value ? 'CAMBIAR' : 'SUBIR'}</span>
+      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" disabled={upload.loading} onChange={event => { const file = event.target.files?.[0]; if (file) upload.execute(file); event.target.value = ''; }}/>
+    </label>
+    {value && fallbackNote && <button type="button" className="image-tile-clear" onClick={() => onChange('')}>QUITAR</button>}
+    <FormFeedback mutation={upload}/>
+  </div>;
+}
+
 export function ProfileForm({ team, onChanged, onSaved }) {
   const buildForm = source => ({
     name: source.name ?? '',
     imageUrl: source.imageUrl ?? '',
     championImageUrl: source.championImageUrl ?? '',
+    cupChampionImageUrl: source.cupChampionImageUrl ?? '',
     colors: {
       primary: source.colors?.primary ?? fallbackKitColors.team.shirt,
       secondary: source.colors?.secondary ?? fallbackKitColors.team.shorts,
@@ -55,15 +74,16 @@ export function ProfileForm({ team, onChanged, onSaved }) {
   const mutation = useApiMutation((body, signal) => endpoints.updateTeam(team.id, body, signal), { onSuccess: result => { onChanged?.(result); onSaved?.(); } });
   const submit = event => { event.preventDefault(); mutation.execute(form); };
   const setColor = (key, color) => setForm(current => ({ ...current, colors: { ...current.colors, [key]: color } }));
+  const setField = key => value => setForm(current => ({ ...current, [key]: value }));
   return <form className="admin-form" onSubmit={submit}>
     <label>NOMBRE<input required value={form.name} onChange={event => setForm(current => ({ ...current, name: event.target.value }))}/></label>
-    <MediaImageField label="SUBIR NUEVO EMBLEMA" entityType="team" entityId={team.id} onUploaded={imageUrl => setForm(current => ({ ...current, imageUrl }))}/>
-    <MediaImageField label="SUBIR IMAGEN DE CAMPEÓN" entityType="team" entityId={team.id} onUploaded={championImageUrl => setForm(current => ({ ...current, championImageUrl }))}/>
-    {form.championImageUrl && <div className="color-pick-preview"><img src={form.championImageUrl} alt={`Imagen de campeón de ${team.name}`}/><small>Imagen para la noticia cuando este equipo asegure el campeonato</small><Button onClick={() => setForm(current => ({ ...current, championImageUrl: '' }))}>USAR EMBLEMA DEL EQUIPO</Button></div>}
-    {form.imageUrl && <div className="color-pick-preview">
-      <img src={form.imageUrl} alt="Escudo del club, para usar con la pipeta"/>
-      <small>Usa la pipeta sobre este escudo — aquí se ve a color real, sin el fondo oscuro del modal</small>
-    </div>}
+    <fieldset className="crest-images">
+      <legend>IMÁGENES DEL CLUB</legend>
+      <ImageTile label="EMBLEMA" hint="Escudo del club" value={form.imageUrl} entityId={team.id} onChange={setField('imageUrl')}/>
+      <ImageTile label="CAMPEÓN E-LEAGUE" hint="Imagen de la noticia cuando el equipo gana la Koinonia E-League" fallbackNote="USA EL EMBLEMA" value={form.championImageUrl} entityId={team.id} onChange={setField('championImageUrl')}/>
+      <ImageTile label="CAMPEÓN COPA GG" hint="Imagen de la noticia cuando el equipo gana la Copa Grande Giocatore" fallbackNote="USA LA DE E-LEAGUE" value={form.cupChampionImageUrl} entityId={team.id} onChange={setField('cupChampionImageUrl')}/>
+      <small>JPG, PNG, WEBP, GIF O AVIF · MÁXIMO 5 MB. Si no subes una imagen de campeón, la noticia usa la de más arriba. La pipeta de los colores sirve sobre el emblema.</small>
+    </fieldset>
     <ColorPickerField label="COLOR PRIMARIO" value={form.colors.primary} onChange={color => setColor('primary', color)}/>
     <ColorPickerField label="COLOR SECUNDARIO" value={form.colors.secondary} onChange={color => setColor('secondary', color)}/>
     <ColorPickerField label="COLOR TERCIARIO" value={form.colors.tertiary} onChange={color => setColor('tertiary', color)}/>

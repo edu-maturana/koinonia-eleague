@@ -204,7 +204,13 @@ a.tile:focus-visible, button.tile:focus-visible { outline: 3px solid var(--c-yel
 .fixture-card.fixture-derby .fixture-footer > span:first-child { color: rgb(var(--rv-ink)); }
 .fixture-derby-flame { margin-right: 5px; vertical-align: -1px; color: rgb(var(--rv-ink)); }
 .fixture-card.rivalry-clasico .fixture-derby-flame { color: #e0451c; }
-.fixture-streak { display: block; margin-top: -2px; color: rgb(var(--rv-ink)); font: italic 600 11px/1.2 'Roboto Condensed', sans-serif; letter-spacing: .2px; }
+.fixture-streak { display: block; min-width: 0; overflow: hidden; white-space: nowrap; margin-top: -2px; color: rgb(var(--rv-ink)); font: italic 600 11px/1.2 'Roboto Condensed', sans-serif; letter-spacing: .2px; }
+.fixture-streak > span { display: inline-block; }
+.fixture-streak.is-marquee { text-overflow: clip; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6px, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(90deg, transparent, #000 6px, #000 calc(100% - 14px), transparent); }
+.fixture-streak.is-marquee > span { padding-left: 100%; animation: streak-marquee var(--marquee-dur, 12s) linear infinite; }
+.fixture-card:hover .fixture-streak.is-marquee > span { animation-play-state: paused; }
+@keyframes streak-marquee { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .fixture-streak.is-marquee { -webkit-mask-image: none; mask-image: none; text-overflow: ellipsis; } .fixture-streak.is-marquee > span { padding-left: 0; animation: none; } }
 .fixture-card.fixture-derby:hover::before { animation: derby-fire 1.4s linear infinite; }
 .fixture-card.fixture-derby:hover .fixture-teams::after { color: rgba(var(--rv-ink), .16); }
 @keyframes derby-fire { from { background-position: 0 0; } to { background-position: -200% 0; } }

@@ -567,3 +567,21 @@
 .playoff-howto-box summary { cursor: pointer; font: 600 14px/1 'Oswald', sans-serif; letter-spacing: .5px; }
 .playoff-howto-box ol { margin: 8px 0 0; padding-left: 20px; font: 500 14px/1.4 'Roboto Condensed', sans-serif; }
 .playoff-howto-box li + li { margin-top: 4px; }
+
+/* Imágenes del club (emblema y campeón de liga / de copa): tres fichas en una fila para no alargar el modal. */
+.crest-images { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 8px; border: 2px solid #8d816a; background: #eee4cc; }
+.crest-images legend { padding: 0 4px; color: #a90020; font: 600 13px/1 'Oswald', sans-serif; letter-spacing: .5px; }
+.crest-images > small { grid-column: 1 / -1; color: #063172; font: 500 12px/1.3 'Oswald', sans-serif; }
+.image-tile { display: grid; align-content: start; gap: 4px; min-width: 0; }
+.image-tile-label { overflow: hidden; color: #063172; font: 600 12px/1.1 'Oswald', sans-serif; letter-spacing: .4px; text-overflow: ellipsis; white-space: nowrap; }
+.image-tile-drop { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; overflow: hidden; border: 2px dashed #8d816a; background: #fff; cursor: pointer; }
+.image-tile-drop.has-image { border-style: solid; border-color: #092e77; }
+.image-tile-drop:hover, .image-tile-drop:focus-within { border-color: #a90020; }
+.image-tile-drop:focus-within { outline: 2px solid #a90020; outline-offset: 1px; }
+.image-tile-drop img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+.image-tile-empty { padding: 6px; color: #7a7462; text-align: center; font: 500 11px/1.2 'Oswald', sans-serif; }
+.image-tile-action { position: absolute; inset: auto 0 0; padding: 3px 0; color: #fff; background: rgba(6, 39, 100, .88); text-align: center; font: 600 11px/1 'Oswald', sans-serif; letter-spacing: .6px; }
+.image-tile-drop.is-loading { opacity: .6; cursor: progress; }
+.image-tile-drop input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.image-tile-clear { justify-self: start; padding: 0; border: 0; color: #a90020; background: none; font: 600 11px/1 'Oswald', sans-serif; letter-spacing: .5px; text-decoration: underline; cursor: pointer; }
+@media (max-width: 380px) { .crest-images { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

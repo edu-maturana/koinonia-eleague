@@ -331,7 +331,7 @@ a.news-read-more { display: inline-block; text-decoration: none; }
 .fixture-pending { border-color: #b18b16; border-left-color: #b18b16; }
 .fixture-finished { border-color: #536680; border-left-color: #1c7a3e; }
 .fixture-cancelled { border-color: #837d70; border-left-color: #837d70; }
-.fixture-teams { display: grid; gap: 6px; padding: 9px 10px; }
+.fixture-teams { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 9px 10px; }
 .fixture-team { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 8px; }
 .fixture-team .team-mark { width: 26px; height: 26px; flex-basis: 26px; }
 .fixture-team b { overflow: hidden; font: 700 15px/1.1 'Roboto Condensed', sans-serif; text-overflow: ellipsis; white-space: nowrap; }
