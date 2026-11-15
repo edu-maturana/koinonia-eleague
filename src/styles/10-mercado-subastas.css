@@ -637,3 +637,9 @@ html.pc-locked, html.pc-locked body { overflow: hidden; }
 
 .for-sale-offer { display: inline-flex; align-items: center; min-height: 36px; padding: 0 10px; border: 2px solid #167a45; color: #fff; background: #167a45; font: 600 12px/1 'Oswald', sans-serif; letter-spacing: .5px; text-decoration: none; }
 .for-sale-offer:hover { background: #0d5a32; }
+
+/* Reloj del mercado para quien mira sin club. */
+.market-clock { margin: 0 0 var(--sp-3, 12px); padding: 8px 12px; border-left: 4px solid #5a5f6e; background: var(--c-paper-deep); font: 500 var(--fs-sm, 14px)/1.35 var(--font-ui); color: var(--c-ink); }
+.market-clock.is-open { border-left-color: #167a45; }
+.market-clock b { font-family: 'Oswald', sans-serif; letter-spacing: .5px; }
+.market-clock span { color: var(--c-ink-muted); }

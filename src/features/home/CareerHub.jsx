@@ -6,6 +6,7 @@ import { teamBalance } from '../../utils/teamPresentation.js';
 import { Card, Icon, Screen, Tile } from '../../ui/index.js';
 import { gp } from '../public/DataStates.jsx';
 import { useApiQuery } from '../public/useApiQuery.js';
+import { useMarketClock } from '../public/market/MarketClock.jsx';
 import { useNotifications } from '../notifications/NotificationsProvider.jsx';
 import { BoardPanel } from '../teams/BoardPanel.jsx';
 import { NewsArtwork } from '../../components/NewsArtwork.jsx';
@@ -81,7 +82,7 @@ export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
   const matches = useApiQuery(signal => endpoints.teamUpcoming(teamId, signal), [teamId]);
   const recent = useApiQuery(signal => endpoints.teamRecent(teamId, signal), [teamId]);
   const rivalry = useApiQuery(signal => endpoints.teamRivalry(teamId, signal).catch(() => ({ data: null })), [teamId]);
-  const market = useApiQuery(signal => endpoints.marketStatus(signal).catch(() => ({ data: { open: false } })), []);
+  const market = useMarketClock();
   const business = useApiQuery(signal => endpoints.teamBusiness(teamId, signal).catch(() => ({ data: null })), [teamId]);
   const inbox = useApiQuery(signal => endpoints.teamInbox(teamId, signal).catch(() => ({ data: null })), [teamId]);
   const todo = useTodo(teamId, business.data);
@@ -119,8 +120,9 @@ export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
           value={`${{ G: 'Ganaste', E: 'Empataste', P: 'Perdiste' }[resultOf(last, teamId)]} ${scoreFor(last, teamId)}`}
           detail={`${sideOf(last, teamId) === 'home' ? 'Contra' : 'En casa de'} ${rivalOf(last, teamId)?.name ?? '—'} (${competitionTag(last)}). No tienes partidos por jugar.`}/>}
       <Tile href={`#/equipos/${teamId}?tab=finanzas&ver=caja`} icon={<Icon name="coin" size={18}/>} title="Caja" value={balance === null ? '—' : gp(balance)} detail="Sueldos, ingresos y gastos."/>
-      <Tile tone={market.data?.open ? 'gold' : 'paper'} href="#/transferencias" icon={<Icon name="handshake" size={18}/>} title="Mercado"
-        value={market.data?.open ? 'Abierto' : 'Cerrado'} detail={market.data?.open ? `Cierra el ${when(market.data.closesAt) ?? 'pronto'}.` : 'Igual puedes buscar jugadores y hablarles.'}/>
+      <Tile tone={market.open ? 'gold' : 'paper'} href="#/transferencias" icon={<Icon name="handshake" size={18}/>} title="Mercado"
+        value={market.open ? (market.left > 0 ? market.short : 'Abierto') : 'Cerrado'}
+        detail={market.open ? `Cierra el ${when(market.closesAt) ?? 'pronto'}.` : `${market.target ? `${market.short}. ` : ''}Igual puedes buscar jugadores y hablarles.`}/>
       <Tile href={`#/equipos/${teamId}`} icon={<Icon name="shirt" size={18}/>} title="Mi club" badge={unread} value={club?.name ?? 'Tu club'}
         detail={unread ? `${unread} mensaje${unread === 1 ? '' : 's'} sin leer · plantel, finanzas y estadio.` : 'Plantel, mensajes, finanzas y estadio.'}/>
     </div>

@@ -1,10 +1,10 @@
 import { DataState, formatDate, gp } from '../DataStates.jsx';
 
 /* Resumen del club del presi: saldo, margen contra el tope de plantilla y estado del mercado. */
-export function marketStatusText(status) {
+export function marketStatusText(status, clock = null) {
   if (!status) return null;
-  if (!status.open) return 'MERCADO CERRADO';
-  return `MERCADO ABIERTO · CIERRA ${formatDate(status.closesAt).toUpperCase()}`;
+  if (!status.open) return clock?.target ? `MERCADO CERRADO · ${clock.short.toUpperCase()}` : 'MERCADO CERRADO';
+  return `MERCADO ABIERTO · ${clock?.left > 0 ? `${clock.short.toUpperCase()} (${formatDate(status.closesAt).toUpperCase()})` : `CIERRA ${formatDate(status.closesAt).toUpperCase()}`}`;
 }
 
 export function clubFigures(profile) {
@@ -36,10 +36,10 @@ export function signingNotes(figures, price) {
   return notes;
 }
 
-export function MyClubPanel({ team, figures, profileQuery, status, statusQuery, children = null }) {
+export function MyClubPanel({ team, figures, profileQuery, status, statusQuery, clock = null, children = null }) {
   // Una sola franja: lo que el presi necesita mirar antes de ofertar (saldo, margen bajo el tope y el reloj del mercado).
   return <section className="market-section market-myclub" aria-label="Tu club en el mercado">
-    <span className={`market-myclub-status ${status?.open ? 'is-open' : ''}`}>{marketStatusText(status) ?? 'ESTADO DEL MERCADO NO DISPONIBLE'}</span>
+    <span className={`market-myclub-status ${status?.open ? 'is-open' : ''}`}>{marketStatusText(status, clock) ?? 'ESTADO DEL MERCADO NO DISPONIBLE'}</span>
     {team && <b className="market-myclub-name">{team.name}</b>}
     {profileQuery && <DataState query={profileQuery}/>}
     {figures && <dl className="market-figures">

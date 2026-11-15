@@ -7,6 +7,7 @@ import { teamBalance } from '../../utils/teamPresentation.js';
 import { FormFeedback } from '../admin/FormFeedback.jsx';
 import { useApiMutation } from '../admin/useApiMutation.js';
 import { DataState, OverallBadge, PageHeader, formatDate, gp } from './DataStates.jsx';
+import { useMarketClock } from './market/MarketClock.jsx';
 import { useApiQuery } from './useApiQuery.js';
 import { MyClubPanel, clubFigures, signingBlocker, signingNotes } from './market/MyClubPanel.jsx';
 import { OffersInbox, ProposeOffers } from './market/OffersSection.jsx';
@@ -184,7 +185,7 @@ function PollSearch({ teams, club, interest, onChanged }) {
 }
 
 const TAB_KEY = 'mercado-pestana';
-const readTab = () => { try { return window.sessionStorage.getItem(TAB_KEY) ?? 'subastas'; } catch { return 'subastas'; } };
+const readTab = () => { try { return window.sessionStorage.getItem(TAB_KEY); } catch { return null; } };
 
 /** Promesas de tu club: cuántas cumpliste y rompiste (pesa en tu reputación ante los jugadores libres). */
 function PromiseRecord({ teamId, revision }) {
@@ -213,6 +214,7 @@ export function MarketPage({ teams, initialTab = null, highlightId = null, prefi
   const status = useApiQuery(signal => endpoints.marketStatus(signal), [revision]);
   const profile = useApiQuery(signal => myTeamId ? endpoints.team(myTeamId, signal) : Promise.resolve({ data: null }), [myTeamId, revision]);
   const refresh = () => setRevision(value => value + 1);
+  const clock = useMarketClock(revision);
   const operates = isAdmin || Boolean(myTeamId);
   const figures = clubFigures(profile.data);
   const marketOpen = status.data ? Boolean(status.data.open) : undefined;
@@ -240,11 +242,14 @@ export function MarketPage({ teams, initialTab = null, highlightId = null, prefi
     ...(myTeam ? [{ id: 'seguidos', label: 'Seguidos' }] : []),
     { id: 'historial', label: 'Historial' },
   ];
-  const current = tabs.some(item => item.id === tab) ? tab : 'subastas';
+  // Sin pestaña elegida: con el mercado cerrado y sin subastas no tiene sentido abrir en "Subastas" vacías.
+  const fallback = marketOpen === false && !liveCount ? (operates ? 'venta' : 'historial') : 'subastas';
+  const current = tabs.some(item => item.id === tab) ? tab : fallback;
   return <Screen title="Mercado" tabs={tabs} active={current} onTab={setTab}>
     {isAdmin && <div className="screen-toolbar"><a className="ui-btn ui-btn--ghost ui-btn--sm" href="#/admin?tab=mercado">⚙ Administrar mercado</a></div>}
     <MarketPhaseBanner status={status.data} onChanged={refresh}/>
-    {operates && <MyClubPanel team={myTeam} figures={figures} profileQuery={myTeamId ? profile : null} status={status.data} statusQuery={status}>
+    {!operates && clock.ready && <p className={`market-clock ${clock.open ? 'is-open' : ''}`} role="status"><b>{clock.open ? 'MERCADO ABIERTO' : 'MERCADO CERRADO'}</b> · {clock.short}. <span>{clock.detail}</span></p>}
+    {operates && <MyClubPanel team={myTeam} figures={figures} profileQuery={myTeamId ? profile : null} status={status.data} statusQuery={status} clock={clock}>
       {myTeamId && <PromiseRecord teamId={myTeamId} revision={revision}/>}
       {myTeamId && <MyPreagreements data={pendingMoves.data}/>}
     </MyClubPanel>}
