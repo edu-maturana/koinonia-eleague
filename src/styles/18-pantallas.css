@@ -255,6 +255,9 @@ a.tile:focus-visible, button.tile:focus-visible { outline: 3px solid var(--c-yel
 .inbox-history li .player-face, .inbox-history li img { width: 32px; height: 32px; }
 .inbox-history li b { color: var(--c-ink); font-weight: 600; }
 .inbox-history li small { display: block; color: var(--c-ink-muted); font-size: var(--fs-sm); }
+.inbox-history-row { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.inbox-history-body { grid-column: 2; display: grid; gap: 6px; padding: 4px 0 6px; color: var(--c-ink); }
+.inbox-history-body > p { margin: 0; font: 400 var(--fs-md)/1.4 var(--font-body); }
 .club-strip > .leader-chip { display: flex; grid-template-columns: none; gap: 8px; padding: 5px 10px 5px 5px; }
 .club-strip > .leader-chip .reputation-chip { margin: 0; padding: 3px 6px; border: 1px solid var(--c-yellow); color: var(--c-yellow); background: transparent; font: 600 var(--fs-xs)/1 var(--font-ui); }
 .club-strip > .leader-chip .reputation-chip b { color: #fff; }
