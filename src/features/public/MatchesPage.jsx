@@ -1,3 +1,4 @@
+import { useHighlights } from '../home/Highlights.jsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { endpoints } from '../../api/endpoints.js';
 import { Scoreboard } from '../../components/Scoreboard.jsx';
@@ -24,7 +25,7 @@ const matchRound = match => match.roundNumber ?? match.round_number ?? match.mat
 
 // Tarjeta compacta estilo marcador: un equipo por línea, marcador a la derecha y
 // estado en una columna aparte, para ver muchos partidos sin hacer scroll.
-function FixtureCard({ match, resolveTeam, onSelect, showRound }) {
+function FixtureCard({ match, resolveTeam, onSelect, showRound, featured = null }) {
   const finished = match.status === 'finished';
   const live = match.status === 'live';
   const hasScore = finished || live;
@@ -40,7 +41,8 @@ function FixtureCard({ match, resolveTeam, onSelect, showRound }) {
       : match.status === 'cancelled'
         ? 'CANCELADO'
         : 'PENDIENTE';
-  return <button type="button" className={`fixture-card fixture-${match.status}${match.sanctioned ? ' fixture-sanctioned' : ''}${match.derby ? ' fixture-derby' : ''}${rivalry ? ` rivalry-${rivalry.kind}${rivalry.both ? ' rivalry-both' : ''}` : ''}`} onClick={() => onSelect(match.id)} aria-label={`${match.homeTeam?.name ?? 'Equipo local'} contra ${match.awayTeam?.name ?? 'Equipo visitante'}: ${state}`}>
+  return <button type="button" className={`fixture-card fixture-${match.status}${match.sanctioned ? ' fixture-sanctioned' : ''}${match.derby ? ' fixture-derby' : ''}${rivalry ? ` rivalry-${rivalry.kind}${rivalry.both ? ' rivalry-both' : ''}` : ''}${featured ? ' fixture-featured' : ''}`} onClick={() => onSelect(match.id)} title={featured ? `Partido de la fecha: ${featured.reasons.join(' · ')}` : undefined} aria-label={`${match.homeTeam?.name ?? 'Equipo local'} contra ${match.awayTeam?.name ?? 'Equipo visitante'}: ${state}`}>
+    {featured && <span className="fixture-featured-tag">⭐ PARTIDO DE LA FECHA</span>}
     <span className="fixture-teams" data-derby={rivalry ? rivalry.label.toUpperCase() : undefined}>{team('home', home)}{team('away', away)}{rivalry?.streak && <StreakMarquee text={rivalry.streak.text}/>}</span>
     <small className="fixture-footer"><span>{rivalry && <Icon name={rivalry.icon} size={12} className="fixture-derby-flame" title={rivalry.label}/>}{showRound ? matchRoundLabel(match) : 'FECHA POR DEFINIR'}</span>{match.penaltiesHome != null && <span className="fixture-pens" title="Se definió por penales">PEN. {match.penaltiesHome}–{match.penaltiesAway}</span>}<SanctionBadge match={match} compact/><SimulatedBadge match={match}/>{match.homeTeam?.stadium && <span className="match-venue" title={`Estadio de ${match.homeTeam.name}`}>🏟️ {match.homeTeam.stadium}</span>}</small>
   </button>;
@@ -269,6 +271,8 @@ export function MatchesPage({ mode = 'all', teams, navigate }) {
   useEffect(() => { setParticipantIds(null); }, [filters.tournament]);
   const chipTeams = participantIds?.size ? teams.filter(team => participantIds.has(team.id) || team.id === filters.team) : teams;
 
+  const featuredMatch = useHighlights().data?.matchOfTheDay ?? null;
+
   useEffect(() => saveMultiSlots(multiSlots), [multiSlots]);
   useEffect(() => saveFilters(mode, filters), [mode, filters]);
   // Un filtro guardado puede apuntar a un torneo que ya no está activo o a un equipo que ya no existe.
@@ -362,7 +366,7 @@ export function MatchesPage({ mode = 'all', teams, navigate }) {
       <TeamChipBar teams={chipTeams} value={filters.team} onChange={selectTeamFilter}/>
       <div className="filter-bar"><select name="tournament" value={filters.tournament} onChange={change} aria-label="Torneo"><option value="">TORNEOS ACTIVOS</option>{(tournaments.data ?? []).map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select><select name="status" value={filters.status} onChange={change} aria-label="Estado"><option value="">TODOS LOS ESTADOS</option>{Object.entries(labels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select>{filters.team && <select name="opponent" value={filters.opponent} onChange={change} aria-label="Rival para cruce directo"><option value="">CONTRA CUALQUIER RIVAL</option>{[...teams].filter(team => team.id !== filters.team).sort((a, b) => a.name.localeCompare(b.name, 'es')).map(team => <option value={team.id} key={team.id}>VS {team.name}</option>)}</select>}</div>
       <DataState query={matches} empty={null}/>{!matches.loading && !matches.error && (sections.length
-        ? <div className="fixture-board">{sections.map(section => <section className="fixture-group" key={section.key}>{section.label && <h3>{section.label} <small>{section.rows.filter(match => match.status === 'finished').length} / {section.rows.filter(match => !match.rest).length} JUGADOS</small></h3>}<div className={`fixture-grid ${!filters.team && section.rows.some(match => match.rest) ? 'fixture-grid-rounds' : ''}`} style={{ '--per-round': perRoundOf(section.rows) }}>{section.rows.map(match => match.rest ? <RestCard key={match.id} rest={match} resolveTeam={resolveTeam}/> : <FixtureCard key={match.id} match={match} showRound resolveTeam={resolveTeam} onSelect={selectMatch}/>)}</div></section>)}</div>
+        ? <div className="fixture-board">{sections.map(section => <section className="fixture-group" key={section.key}>{section.label && <h3>{section.label} <small>{section.rows.filter(match => match.status === 'finished').length} / {section.rows.filter(match => !match.rest).length} JUGADOS</small></h3>}<div className={`fixture-grid ${!filters.team && section.rows.some(match => match.rest) ? 'fixture-grid-rounds' : ''}`} style={{ '--per-round': perRoundOf(section.rows) }}>{section.rows.map(match => match.rest ? <RestCard key={match.id} rest={match} resolveTeam={resolveTeam}/> : <FixtureCard key={match.id} match={match} showRound resolveTeam={resolveTeam} onSelect={selectMatch} featured={featuredMatch?.id === match.id ? featuredMatch : null}/>)}</div></section>)}</div>
         : <p className="empty-copy">No hay partidos con estos filtros.</p>)}
     </>}
   </section></main>;
