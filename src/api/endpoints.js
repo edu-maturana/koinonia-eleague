@@ -129,6 +129,7 @@ export const endpoints = {
   setNotificationPreferences: (body, signal) => apiClient.put('/me/notification-preferences', body, { actor: 'web', signal }),
   contractInterest: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/contracts/interest`, body, { actor: 'web', signal }),
   resolveRequest: (teamId, requestId, body, signal) => apiClient.post(`/teams/${teamId}/requests/${requestId}/resolve`, body, { actor: 'web', signal }),
+  answerLetter: (teamId, messageId, body, signal) => apiClient.post(`/teams/${teamId}/letters/${messageId}/answer`, body, { actor: 'web', signal }),
   negotiateContract: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/contracts/negotiate`, body, { actor: 'web', signal }),
   renewContract: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/contracts/renew`, body, { actor: 'web', signal }),
   negotiateAllContracts: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/contracts/negotiate-all`, body, { actor: 'web', signal }),
