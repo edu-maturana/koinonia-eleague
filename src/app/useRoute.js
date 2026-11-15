@@ -15,6 +15,9 @@ function matchRoute(path) {
   if (path === '/resultados' || path === '/multipartido') return { name: 'section', path: '/partidos' };
   if (path === '/clasificacion/rankings') return { name: 'section', path: '/equipos/rankings' };
   if (path === '/clasificacion') return { name: 'section', path: '/torneos' };
+  // Direcciones que la gente escribe a mano: el menú dice "Mercado" y el pie "Reglamento".
+  if (path === '/mercado') return { name: 'section', path: '/transferencias' };
+  if (path === '/reglamento' || path === '/reglamento/') return { name: 'section', path: '/reglas' };
   if (path === '/jugadores') return { name: 'section', path: '/equipos/jugadores' };
   const newsMatch = path.match(/^\/noticias\/([^/]+)$/);
   if (newsMatch) return { name: 'newsArticle', path, newsId: decodeURIComponent(newsMatch[1]) };
@@ -65,7 +68,7 @@ export function useRoute() {
               ? 'Noticia'
             : route.name === 'scoreboard'
               ? 'Marcador en vivo'
-              : sectionContent[route.path]?.[0] ?? 'Koinonia e-League';
+              : sectionContent[route.path]?.[0] ?? 'Sección no encontrada';
     document.title = `${title} | Koinonia e-League`;
   }, [route]);
 

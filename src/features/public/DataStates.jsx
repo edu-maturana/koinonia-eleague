@@ -3,7 +3,9 @@ import { useEmbedded } from '../../ui/index.js';
 
 export function DataState({ query, empty = 'NO HAY REGISTROS PUBLICADOS.' }) {
   if (query.loading) return <div className="arcade-state compact">CARGANDO DATOS...</div>;
-  if (query.error) return <div className="data-error"><b>{query.error.status === 404 ? 'No disponible en la API actual' : 'NO FUE POSIBLE CARGAR'}</b><span>{query.error.message}</span><button onClick={query.retry}>REINTENTAR</button></div>;
+  // Un 404 no se arregla reintentando: se dice qué no existe y se ofrece volver.
+  if (query.error?.status === 404) return <div className="data-error"><b>NO LO ENCONTRAMOS</b><span>{query.error.message || 'Ya no existe o el enlace está mal.'}</span><button onClick={() => window.history.back()}>← VOLVER</button></div>;
+  if (query.error) return <div className="data-error"><b>NO FUE POSIBLE CARGAR</b><span>{query.error.message}</span><button onClick={query.retry}>REINTENTAR</button></div>;
   // empty={null}: la pantalla ya explica el vacío a su manera (así no salen dos mensajes seguidos).
   if (Array.isArray(query.data) && !query.data.length) return empty ? <p className="empty-copy data-empty">{empty}</p> : null;
   return null;

@@ -13,9 +13,12 @@ export function useApiQuery(loader, dependencies = [], { silentRefresh = false }
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
-    setResult(current => (silentRefresh && current.data != null && depsKey.current === depsKeyOf(dependencies)
+    const sameDeps = depsKey.current === depsKeyOf(dependencies);
+    // Con dependencias nuevas (otro jugador, otro club) se vacían los datos: si no, se veía el anterior con "cargando" encima y,
+    // si fallaba, el error junto a la ficha equivocada. Los reintentos del mismo recurso sí conservan lo que había.
+    setResult(current => (silentRefresh && current.data != null && sameDeps
       ? current
-      : { ...current, loading: true, error: null }));
+      : sameDeps ? { ...current, loading: true, error: null } : { data: null, pagination: null, loading: true, error: null }));
     depsKey.current = depsKeyOf(dependencies);
     loaderRef.current(controller.signal).then(response => {
       if (active) setResult({ data: response?.data ?? null, pagination: response?.pagination ?? null, loading: false, error: null });

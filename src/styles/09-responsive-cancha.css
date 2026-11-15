@@ -521,3 +521,8 @@
 .trophy-koi svg { width: 24px; height: 24px; }
 .trophy-gg small, .trophy-cup small { max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .calendar-cup-day { border-color: #b18b16; background: linear-gradient(#fff4cc, #fffaf0); }
+
+/* Leyenda de las medias de las cartas de la cancha. */
+.pitch-legend { margin: 0 0 var(--sp-2, 8px); font: 500 var(--fs-xs)/1.35 var(--font-ui); color: var(--c-ink-muted); }
+.pitch-legend b { color: var(--c-navy-900); font-family: var(--font-display); font-weight: 400; }
+.pitch-legend em { font-style: normal; font-weight: 700; color: var(--c-ink-muted); }

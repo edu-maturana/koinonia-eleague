@@ -39,7 +39,7 @@ const playerDirectoryBackPath = query => {
 
 export function App() {
   const { route, navigate } = useRoute();
-  const { league, teamDetail, squad, teamMatches, teamRecent, teamHistory, teamHistoryError, state, refresh, dismissError } = useLeagueData(route.teamId);
+  const { league, teamDetail, squad, teamMatches, teamRecent, teamHistory, teamHistoryError, teamError, state, refresh, dismissError } = useLeagueData(route.teamId);
   const indexedTeams = useMemo(() => new Map(league.teams.map(team => [team.id, team])), [league.teams]);
   const playlist = useMemo(() => {
     const anthems = league.teams
@@ -103,10 +103,10 @@ export function App() {
   } else if (route.name === 'team') {
     // La liga activa que juega este club (para "¿qué necesita?").
     const projectionTournament = activeTournaments.find(item => item.format === 'league' && (league.standingsByTournament?.[item.id] ?? []).some(row => row.team_id === route.teamId));
-    page = <TeamDetailPage key={route.teamId} team={teamDetail} teams={league.teams} tournaments={activeTournaments} squad={squad} standings={league.standings} standingsTournamentId={projectionTournament?.id ?? tournament?.id ?? null} matches={teamMatches} recentMatches={teamRecent} history={teamHistory} historyError={teamHistoryError} loading={state.loadingTeam} tab={route.query.tab} msg={route.query.msg} ver={route.query.ver ?? null} navigate={navigate} onTab={tab => navigate(`/equipos/${encodeURIComponent(route.teamId)}${tab ? `?tab=${tab}` : ''}`)} onBack={() => navigate('/equipos')} onChanged={refresh}
+    page = <TeamDetailPage key={route.teamId} team={teamDetail} teams={league.teams} tournaments={activeTournaments} squad={squad} standings={league.standings} standingsTournamentId={projectionTournament?.id ?? tournament?.id ?? null} matches={teamMatches} recentMatches={teamRecent} history={teamHistory} historyError={teamHistoryError} loadError={teamError} onRetry={refresh} loading={state.loadingTeam} tab={route.query.tab} msg={route.query.msg} ver={route.query.ver ?? null} navigate={navigate} onTab={tab => navigate(`/equipos/${encodeURIComponent(route.teamId)}${tab ? `?tab=${tab}` : ''}`)} onBack={() => navigate('/equipos')} onChanged={refresh}
       onProjection={projectionTournament ? () => navigate(projectionLink(projectionTournament.id, route.teamId)) : null}/>;
   } else if (route.name === 'player') {
-    page = <PlayerProfilePage playerId={route.playerId} teams={league.teams} backLabel={route.query.from === 'mercado' ? '← Volver al mercado' : '← Volver a jugadores'} onBack={() => navigate(route.query.from === 'mercado' ? '/transferencias' : playerDirectoryBackPath(route.query))}/>;
+    page = <PlayerProfilePage key={route.playerId} playerId={route.playerId} teams={league.teams} backLabel={route.query.from === 'mercado' ? '← Volver al mercado' : '← Volver a jugadores'} onBack={() => navigate(route.query.from === 'mercado' ? '/transferencias' : playerDirectoryBackPath(route.query))}/>;
   } else if (route.name === 'match') {
     page = <MatchCenterPage key={route.matchId} matchId={route.matchId} teams={league.teams} navigate={navigate}/>;
   } else if (route.name === 'card') {

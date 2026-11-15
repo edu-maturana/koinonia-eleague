@@ -12,6 +12,8 @@ export function useLeagueData(teamId) {
   const [teamRecent, setTeamRecent] = useState([]);
   const [teamHistory, setTeamHistory] = useState([]);
   const [teamHistoryError, setTeamHistoryError] = useState(null);
+  // Error al cargar la ficha del club (404 = no existe): sin esto la ficha se quedaba en "Cargando el club…" para siempre.
+  const [teamError, setTeamError] = useState(null);
   const [state, setState] = useState({ loading: true, loadingTeam: false, error: '' });
   const loadedTeamId = useRef(null);
 
@@ -56,6 +58,7 @@ export function useLeagueData(teamId) {
     // editar formación, plantel, etc.) se conservan los datos hasta que llegan los nuevos.
     const switchingTeam = loadedTeamId.current !== teamId;
     loadedTeamId.current = teamId;
+    setTeamError(null);
     if (switchingTeam) {
       setTeamDetail(null);
       setSquad([]);
@@ -84,7 +87,8 @@ export function useLeagueData(teamId) {
       setState(current => ({ ...current, loadingTeam: false }));
     }).catch(error => {
       if (error.code !== 'REQUEST_ABORTED') {
-        setState(current => ({ ...current, loadingTeam: false, error: 'No fue posible cargar la ficha completa del equipo.' }));
+        setTeamError(error);
+        setState(current => ({ ...current, loadingTeam: false, error: error.status === 404 ? current.error : 'No fue posible cargar la ficha completa del equipo.' }));
       }
     });
     return () => controller.abort();
@@ -98,6 +102,7 @@ export function useLeagueData(teamId) {
     teamRecent,
     teamHistory,
     teamHistoryError,
+    teamError,
     state,
     refresh: () => setRevision(value => value + 1),
     dismissError: () => setState(current => ({ ...current, error: '' })),

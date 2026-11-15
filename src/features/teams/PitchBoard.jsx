@@ -224,6 +224,8 @@ export function PitchBoard({ team, starters, substitutes = [], onChanged, readOn
   if (bare) return <div className="pitch-board pitch-board-bare" style={cardColors}>{field}</div>;
   return <section className={`club-card pitch-board is-editing ${className}`} style={cardColors}>
     <header><h3>ALINEACIÓN <small>{starters.length} TITULARES · {substitutes.length} SUPLENTES</small></h3>{aside}</header>
+    {/* La misma carta muestra hasta tres medias según dónde se mire: aquí manda el puesto en la cancha. */}
+    <p className="pitch-legend"><b>84</b> media en el puesto donde juega, con los potenciadores del DT · <em>81</em> la misma sin DT. En la ficha del jugador y en contratos va la media de su puesto natural.</p>
     {(busy || hint) && <p className="pitch-board-hint" role="status">{busy ? 'GUARDANDO…' : hint}</p>}
     {(formationPicker || actions) && <div className="pitch-board-tools">{formationPicker}{actions}</div>}
     {field}

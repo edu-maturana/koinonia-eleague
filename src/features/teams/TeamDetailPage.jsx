@@ -12,7 +12,7 @@ import { LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClas
 import { PlayerFace } from '../../components/PlayerFace.jsx';
 import { teamBalance, teamCoachName, teamCoachPhoto } from '../../utils/teamPresentation.js';
 import { readPersonProfile } from '../../utils/personProfile.js';
-import { compareUpcoming, matchRoundLabel } from '../../utils/matchPresentation.js';
+import { compareUpcoming, competitionTag, matchRoundLabel } from '../../utils/matchPresentation.js';
 import { CoachForm, PresidentForm, ProfileForm, SquadEditor } from '../admin/TeamAdminPanel.jsx';
 import { ManagerSummary } from './ManagerCard.jsx';
 import { ReputationModal, ReputationSummary } from './Reputation.jsx';
@@ -753,9 +753,11 @@ const finishedMatches = (matches, teamId, { leagueOnly = false } = {}) => matche
 function FormPills({ matches, teamId }) {
   const recent = finishedMatches(matches, teamId, { leagueOnly: true }).slice(0, 5).reverse();
   if (!recent.length) return null;
-  return <div className="club-form" aria-label="Racha de los últimos partidos">{recent.map(match => {
+  // Se lee de izquierda a derecha: el último jugado va a la derecha y lleva una marca. Cuenta liga, playoffs y copa (no giras).
+  return <div className="club-form" role="group" aria-label="Últimos 5 partidos oficiales (liga, playoffs y copa); el más reciente a la derecha" title="Últimos 5 oficiales (liga, playoffs y copa), el más reciente a la derecha">{recent.map((match, index) => {
     const result = resultFor(match, teamId);
-    return <EntityLink to="match" id={match.id} key={match.id} className={`club-form-pill form-${result}`} title={`${match.homeTeam?.name} ${match.homeScore}-${match.awayScore} ${match.awayTeam?.name}`}>{result}</EntityLink>;
+    const latest = index === recent.length - 1;
+    return <EntityLink to="match" id={match.id} key={match.id} className={`club-form-pill form-${result}${latest ? ' latest' : ''}`} title={`${competitionTag(match)}: ${match.homeTeam?.name} ${match.homeScore}-${match.awayScore} ${match.awayTeam?.name}${latest ? ' (el más reciente)' : ''}`}>{result}</EntityLink>;
   })}</div>;
 }
 
@@ -919,7 +921,7 @@ function useScrollTo(anchor, ready) {
   }, [anchor, ready]);
 }
 
-export function TeamDetailPage({ team, teams = [], tournaments = [], squad, standings, standingsTournamentId = null, matches = [], recentMatches = [], history = [], historyError, loading, tab = null, msg = null, ver = null, navigate, onTab, onChanged, onProjection = null }) {
+export function TeamDetailPage({ team, teams = [], tournaments = [], squad, standings, standingsTournamentId = null, matches = [], recentMatches = [], history = [], historyError, loadError = null, onRetry = null, onBack = null, loading, tab = null, msg = null, ver = null, navigate, onTab, onChanged, onProjection = null }) {
   const { canEditTeam, isPresidentOf, isAdmin } = useAuth();
   const canEdit = canEditTeam(team?.id);
   // Un admin ve en cada club lo mismo que su presidente (mensajes, nómina…) para poder ayudarlo.
@@ -966,6 +968,9 @@ export function TeamDetailPage({ team, teams = [], tournaments = [], squad, stan
   const colors = team?.colors ?? {};
   const position = (displayStandings ?? []).findIndex(row => (row.team_id ?? row.teamId) === team?.id) + 1 || null;
 
+  if (!loading && !team && loadError) return <main className="screen"><div className="data-error"><b>{loadError.status === 404 ? 'ESTE CLUB NO EXISTE' : 'NO FUE POSIBLE CARGAR EL CLUB'}</b>
+    <span>{loadError.status === 404 ? 'Puede que el enlace esté mal o que el club ya no esté en la liga.' : loadError.message}</span>
+    {loadError.status === 404 ? <button onClick={() => (onBack ? onBack() : (window.location.hash = '#/equipos'))}>← VER TODOS LOS CLUBES</button> : <button onClick={onRetry}>REINTENTAR</button>}</div></main>;
   if (loading || !team) return <main className="screen"><div className="arcade-state">Cargando el club…</div></main>;
   const hero = <div className="club-crest-wrap screen-crest" style={{ '--club-primary': colors.primary ?? '#062764' }}><TeamMark team={team} className="club-crest"/>{canEdit && <button type="button" className="club-crest-edit" onClick={() => setCrestEditorOpen(true)} aria-label="Editar escudo y nombre del club" title="Editar escudo y nombre">✎</button>}</div>;
   const isMine = isPresidentOf(team.id);
