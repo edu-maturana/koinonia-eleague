@@ -104,7 +104,7 @@ a.player-card { color: inherit; text-decoration: none; }
 }
 .playoff-workspace h3 small { display: block; margin-top: 4px; color: #fff; font: 600 12px/1.2 'Oswald', sans-serif; letter-spacing: .4px; }
 @media (max-width: 900px) {
-  .tournament-main { grid-template-columns: 1fr; }
+  .tournament-main { grid-template-columns: minmax(0, 1fr); }
   .tournament-history { margin-left: 0; }
 }
 @media (max-width: 560px) {
@@ -337,3 +337,6 @@ a.player-card { color: inherit; text-decoration: none; }
 /* Calendario: la copa que no cargó. */
 .calendar-warning { margin: 0; color: #a90020; font: 600 12px/1 'Oswald', sans-serif; }
 .calendar-retry { justify-self: start; margin-top: 4px; padding: 3px 8px; border: 1px solid #a90020; color: #a90020; background: transparent; font: 600 11px/1 'Oswald', sans-serif; cursor: pointer; }
+
+/* La tabla con FORMA es más ancha que un teléfono: que se desplace adentro de su caja y no estire toda la página. */
+.tournament-main, .tournament-main > *, .tournament-header { min-width: 0; }
