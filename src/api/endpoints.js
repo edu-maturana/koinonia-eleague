@@ -51,6 +51,8 @@ export const endpoints = {
   tournamentPrizes: (tournamentId, signal) => get(`/tournaments/${tournamentId}/prizes`, null, signal),
   grantTournamentPrizes: (tournamentId, body, signal) => apiClient.post(`/admin/tournaments/${tournamentId}/prizes`, body, { actor: 'web', signal }),
   scorers: (tournamentId, signal) => get(`/tournaments/${tournamentId}/scorers`, null, signal),
+  // Zonas según el formato real del torneo, forma (últimos 5) y puesto fecha a fecha.
+  tournamentProgression: (tournamentId, signal) => get(`/tournaments/${tournamentId}/progression`, null, signal),
   // Proyección "de mentira": el POST no escribe nada, solo manda los resultados fijados del escenario.
   projection: (tournamentId, query, signal) => get(`/tournaments/${tournamentId}/projection`, query, signal),
   projectionScenario: (tournamentId, body, signal) => apiClient.post(`/tournaments/${tournamentId}/projection`, body, { signal, timeoutMs: 30000 }),

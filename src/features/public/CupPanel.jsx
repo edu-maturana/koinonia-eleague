@@ -3,6 +3,7 @@ import { Card, Chip, Notice } from '../../ui/index.js';
 import { DataState, gp } from './DataStates.jsx';
 import { PreseasonBracket } from './PreseasonPanel.jsx';
 import { useApiQuery } from './useApiQuery.js';
+import { TournamentScorers } from './TournamentScorers.jsx';
 
 const upper = text => String(text ?? '').toUpperCase();
 const CUP_PLACES = { champion: 'CAMPEÓN', runnerUp: 'FINALISTA', third: '3.º', fourth: '4.º', quarterfinal: 'CUARTOS' };
@@ -32,6 +33,8 @@ export function CupPanel({ teams = [] }) {
   const cups = Array.isArray(query.data) ? query.data : null;
   if (!cups) return <DataState query={query}/>;
   const prizes = cups[0]?.prizes;
+  const teamIndex = new Map(teams.map(team => [team.id, team]));
+  const resolveTeam = team => ({ ...team, ...(teamIndex.get(team.id) ?? {}) });
   return <Card title="COPA GRANDE GIOCATORE" className="preseason-panel">
     <CupPauseNotice/>
     <p className="club-life-hint">Se sortea al arrancar cada torneo, con los 8 primeros de la tabla del torneo anterior, y se juega a mitad: al terminar la primera vuelta la liga se pausa hasta la final. El 1.º y el 2.º se cruzan de entrada en cuartos y los otros 6 se sortean. Todo a partido único y eliminación directa (empate: penales), de local el mejor ubicado; los que pierden las semis juegan el 3.er puesto el día de la final. El campeón suma un título a la vitrina (GG1, GG2…).{prizes?.third ? ` Premios: campeón ${gp(prizes.champion)}, finalista ${gp(prizes.runnerUp)}, 3.º ${gp(prizes.third)}, 4.º ${gp(prizes.fourth)} y cuartofinalistas ${gp(prizes.quarterfinal)}.` : ''}</p>
@@ -39,6 +42,8 @@ export function CupPanel({ teams = [] }) {
     {cups.map(cup => <section key={cup.id} className="preseason-item">
       <header><b>{upper(cup.name)}</b><Chip tone={cup.status === 'completed' ? 'green' : 'yellow'}>{cup.status === 'completed' ? 'TERMINADA' : 'EN JUEGO'}</Chip></header>
       <CupBracketView cup={cup} teams={teams} onChanged={query.retry}/>
+      {/* Goleadores de esta edición: la copa es su propio torneo, sus goles no se mezclan con los de la liga. */}
+      <TournamentScorers tournamentId={cup.id} resolveTeam={resolveTeam} title={`GOLEADORES · ${upper(cup.name)}`} empty="TODAVÍA NO HAY GOLES EN ESTA COPA."/>
     </section>)}
   </Card>;
 }
