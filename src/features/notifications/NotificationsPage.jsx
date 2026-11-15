@@ -10,6 +10,14 @@ import { useNotifications } from './NotificationsProvider.jsx';
 
 const TABS = [{ id: 'avisos', label: 'AVISOS' }, { id: 'preferencias', label: 'PREFERENCIAS' }];
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
+// Cómo llega cada categoría por Discord (los mismos valores que la API). "auto": lo urgente al tiro y lo demás en el resumen del día.
+const DISCORD_MODES = [
+  ['auto', 'LO URGENTE AL TIRO'],
+  ['now', 'TODO AL TIRO'],
+  ['digest', 'EN EL RESUMEN'],
+  ['off', 'NUNCA'],
+];
+const hourLabel = hour => `${String(hour).padStart(2, '0')}:00`;
 
 function Feed({ navigate }) {
   const { summary, version, markRead, markAll } = useNotifications();
@@ -66,28 +74,42 @@ function Preferences() {
   const quietValue = value => (value === null || value === undefined ? '' : String(value));
   const setQuiet = (from, to) => save({ quietFrom: from === '' ? null : Number(from), quietTo: to === '' ? null : Number(to) });
   return <section className="notif-prefs">
-    <p className="notif-note">Elige qué avisos quieres en la web, por Discord y con sonido (suena con la web abierta).</p>
+    <p className="notif-note">Elige qué avisos quieres en la web, por Discord y con sonido (suena con la web abierta). En Discord, cada categoría puede llegar al tiro, en el resumen del día o nunca.</p>
     {prefs.discordDmBlocked && <Notice tone="error">Discord no nos deja escribirte por mensaje directo. Activa «PERMITIR MENSAJES DIRECTOS DE MIEMBROS DEL SERVIDOR» en los ajustes de privacidad del servidor; con el próximo aviso se restablece solo. Mientras tanto todo se ve en la campana.</Notice>}
     <table className="notif-prefs-table">
       <thead><tr><th scope="col">CATEGORÍA</th><th scope="col">WEB</th><th scope="col">DISCORD</th><th scope="col">SONIDO</th></tr></thead>
       <tbody>{CATEGORIES.map(([id, label]) => <tr key={id}>
         <th scope="row">{label}</th>
         {['web', 'discord', 'sound'].map(channel => <td key={channel}>
-          <input type="checkbox" aria-label={`${label}: ${channel}`} checked={prefs.categories[id]?.[channel] ?? true} disabled={prefs.muted}
-            onChange={event => save({ categories: { [id]: { [channel]: event.target.checked } } })}/>
+          {channel === 'discord'
+            ? <select className="notif-discord-mode" aria-label={`${label}: Discord`} value={prefs.categories[id]?.discordMode ?? 'auto'} disabled={prefs.muted}
+              onChange={event => save({ categories: { [id]: { discordMode: event.target.value } } })}>
+              {DISCORD_MODES.map(([mode, text]) => <option key={mode} value={mode}>{text}</option>)}
+            </select>
+            : <input type="checkbox" aria-label={`${label}: ${channel}`} checked={prefs.categories[id]?.[channel] ?? true} disabled={prefs.muted}
+              onChange={event => save({ categories: { [id]: { [channel]: event.target.checked } } })}/>}
         </td>)}
       </tr>)}</tbody>
     </table>
+    <div className="notif-quiet notif-digest">
+      <div className="notif-hours">
+        <span>RESUMEN DIARIO POR DISCORD (HORA DE CHILE)</span>
+        <label><select aria-label="Hora del resumen diario" value={prefs.digestHour === null || prefs.digestHour === undefined ? '' : String(prefs.digestHour)} disabled={prefs.muted}
+          onChange={event => save({ digestHour: event.target.value === '' ? null : Number(event.target.value) })}>
+          {HOURS.map(hour => <option key={hour} value={hour}>{hourLabel(hour)}</option>)}<option value="">SIN RESUMEN</option></select></label>
+      </div>
+      <small>Por Discord te llega al tiro solo lo que pide que hagas algo o vence pronto: ofertas y préstamos que te hacen, jugadores que te piden algo o te escriben con opciones, contratos por renovar en el período de renovaciones, promesas que vencen, votaciones, caja en rojo, partidos castigados y jugadores que sigues que quedan disponibles. Antes de que algo venza te llega un recordatorio. Todo lo demás va en un solo resumen al día (si no hay nada nuevo, no llega).</small>
+    </div>
     <div className="notif-quiet">
       <label className="notif-mute"><input type="checkbox" checked={prefs.muted} onChange={event => save({ muted: event.target.checked })}/> Silenciar todos los avisos</label>
       <div className="notif-hours">
         <span>NO MOLESTAR (HORA DE CHILE)</span>
         <label>DESDE <select value={quietValue(prefs.quietFrom)} onChange={event => setQuiet(event.target.value, event.target.value === '' ? '' : quietValue(prefs.quietTo) || '8')}>
-          <option value="">SIN HORARIO</option>{HOURS.map(hour => <option key={hour} value={hour}>{String(hour).padStart(2, '0')}:00</option>)}</select></label>
+          <option value="">SIN HORARIO</option>{HOURS.map(hour => <option key={hour} value={hour}>{hourLabel(hour)}</option>)}</select></label>
         <label>HASTA <select value={quietValue(prefs.quietTo)} disabled={prefs.quietFrom === null} onChange={event => setQuiet(quietValue(prefs.quietFrom), event.target.value)}>
-          {HOURS.map(hour => <option key={hour} value={hour}>{String(hour).padStart(2, '0')}:00</option>)}</select></label>
+          {HOURS.map(hour => <option key={hour} value={hour}>{hourLabel(hour)}</option>)}</select></label>
       </div>
-      <small>El horario de silencio corta Discord y sonidos; la campana de la web sigue acumulando.</small>
+      <small>El horario de silencio corta Discord y sonidos (lo urgente y el resumen salen cuando termina); la campana de la web sigue acumulando.</small>
     </div>
     {error && <Notice tone="error">{error.message}</Notice>}
     <section className="notif-audio">

@@ -43,6 +43,7 @@
 .notif-prefs-table th[scope='row'], .notif-prefs-table thead th:first-child { text-align: left; font: 500 var(--fs-md)/1.2 var(--font-ui); letter-spacing: .3px; }
 .notif-prefs-table thead th:first-child { font-size: var(--fs-sm); }
 .notif-prefs-table input { width: 22px; height: 22px; accent-color: var(--c-navy-900); cursor: pointer; }
+.notif-discord-mode { min-height: 34px; max-width: 100%; padding: 0 6px; font: 500 var(--fs-xs)/1 var(--font-ui); letter-spacing: .3px; }
 .notif-quiet { display: grid; gap: var(--sp-3); padding: var(--sp-3); border: var(--border); background: var(--c-cream); }
 .notif-mute { display: inline-flex; gap: 8px; align-items: center; font: 500 var(--fs-md)/1 var(--font-ui); letter-spacing: .4px; cursor: pointer; }
 .notif-hours { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; font: 500 var(--fs-sm)/1 var(--font-ui); letter-spacing: .4px; }
@@ -63,6 +64,7 @@
 @media (max-width: 560px) {
   .bell-panel { position: fixed; top: 76px; right: 8px; left: 8px; width: auto; }
   .notif-prefs-table th, .notif-prefs-table td { padding: 8px 6px; }
+  .notif-discord-mode { width: 100%; min-width: 0; }
 }
 
 /* Barras de secciones hermanas (Torneos) y enlaces del pie */
