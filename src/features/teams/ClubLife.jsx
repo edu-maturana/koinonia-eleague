@@ -327,6 +327,15 @@ function TvSet({ channel, small = false }) {
 }
 
 /** Derechos de TV: tres canales ofrecen transmitir los partidos del club cada temporada; se cobra al cerrar el torneo de liga. */
+// Lo que paga un contrato de TV, en el orden en que se gana: fijo, play-in, playoffs, campeón de la Koinonia y de la Copa GG.
+const tvTerms = deal => [
+  { key: 'fixed', label: 'FIJO POR TORNEO', amount: deal.fixed, fixed: true },
+  { key: 'playin', label: 'SI TE QUEDAS EN EL PLAY-IN', amount: deal.playinBonus ?? 0 },
+  { key: 'playoffs', label: 'SI LLEGAS A PLAYOFFS', amount: deal.playoffBonus ?? 0 },
+  { key: 'title', label: 'CAMPEÓN KOINONIA', amount: deal.titleBonus ?? 0 },
+  { key: 'cup', label: 'CAMPEÓN COPA GG', amount: deal.cupTitleBonus ?? 0 },
+];
+
 export function TvRightsTab({ team, onChanged }) {
   const { canEditTeam } = useAuth();
   const canEdit = canEditTeam(team.id);
@@ -345,17 +354,17 @@ export function TvRightsTab({ team, onChanged }) {
         <small>TRANSMITE TUS PARTIDOS{sponsor.reach ? ` · ${upper(sponsor.reach)}` : ''} · CONTRATO {upper(sponsor.styleLabel)}</small>
         <h2>{upper(sponsor.brand)}</h2>
         <p>TORNEO {Math.min(sponsor.seasonsPaid + 1, sponsor.seasons)} DE {sponsor.seasons} · YA PAGÓ {gp(sponsor.paid)}</p>
-        <dl className="sponsor-terms"><div><dt>FIJO POR TORNEO</dt><dd>{gp(sponsor.fixed)}</dd></div>{sponsor.playoffBonus > 0 && <div><dt>SI LLEGAS A PLAYOFFS</dt><dd>+{gp(sponsor.playoffBonus)}</dd></div>}{sponsor.titleBonus > 0 && <div><dt>SI SALES CAMPEÓN</dt><dd>+{gp(sponsor.titleBonus)}</dd></div>}</dl>
+        <dl className="sponsor-terms">{tvTerms(sponsor).filter(term => term.fixed || term.amount > 0).map(term => <div key={term.key}><dt>{term.label}</dt><dd>{term.fixed ? '' : '+'}{gp(term.amount)}</dd></div>)}</dl>
       </div>
     </Card> : <Card title="DERECHOS DE TV" aside={<Chip icon="handshake">3 canales te quieren transmitir</Chip>}>
       <p className="club-life-hint">Elige un canal: paga al cerrar cada torneo de liga. Los más grandes pagan más.</p>
-      <HowItWorks><p>Cada canal paga según su tamaño y tus hinchas. Los gigantes globales (Prime Video, DAZN, ESPN) pagan más, pero solo llaman a clubes con mucha hinchada; la TV abierta paga menos y le transmite a cualquiera. La oferta <b>fija</b> es plata segura; la <b>arriesgada</b> paga poco fijo pero mucho si llegas a playoffs o sales campeón; la <b>mixta</b> va al medio.</p><p>Es aparte de la camiseta: las marcas de la camiseta de tu equipo base pagan por su lado (más arriba).</p></HowItWorks>
+      <HowItWorks><p>Cada canal paga según su tamaño y tus hinchas. Los gigantes globales (Prime Video, DAZN, ESPN) pagan más, pero solo llaman a clubes con mucha hinchada; la TV abierta paga menos y le transmite a cualquiera. La oferta <b>fija</b> es plata segura; la <b>arriesgada</b> paga poco fijo pero mucho si llegas lejos; la <b>mixta</b> va al medio.</p><p>Los bonos se pagan según hasta dónde llegas en la Koinonia: si te quedas en el <b>play-in</b> cobras ese bono; si llegas a <b>playoffs</b> (semis, directo o ganando el play-in) cobras el de playoffs en vez del otro. Salir <b>campeón de la Koinonia</b> paga su bono, y la <b>Copa GG</b>, que es media temporada, paga la mitad.</p><p>Es aparte de la camiseta: las marcas de la camiseta de tu equipo base pagan por su lado (más arriba).</p></HowItWorks>
       <div className="sponsor-offers">{data.sponsorOffers.map(offer => <article key={offer.key} className={`sponsor-offer style-${offer.style}`}>
         <TvSet channel={offer.brand} small/>
         <b>{upper(offer.brand)}</b>
         {offer.reach && <small className="tv-reach">{upper(offer.reach)}</small>}
         <Chip tone={offer.style === 'arriesgada' ? 'red' : offer.style === 'mixta' ? 'yellow' : 'green'}>{upper(offer.styleLabel)} · {offer.seasons} TORNEO{offer.seasons === 1 ? '' : 'S'}</Chip>
-        <dl><div><dt>FIJO POR TORNEO</dt><dd>{gp(offer.fixed)}</dd></div><div><dt>SI LLEGAS A PLAYOFFS</dt><dd>{offer.playoffBonus ? `+${gp(offer.playoffBonus)}` : '—'}</dd></div><div><dt>SI SALES CAMPEÓN</dt><dd>{offer.titleBonus ? `+${gp(offer.titleBonus)}` : '—'}</dd></div></dl>
+        <dl>{tvTerms(offer).map(term => <div key={term.key}><dt>{term.label}</dt><dd>{term.fixed ? gp(term.amount) : term.amount ? `+${gp(term.amount)}` : '—'}</dd></div>)}</dl>
         {canEdit && (confirm === offer.key
           ? <ConfirmStep message={`¿Firmar con ${upper(offer.brand)} por ${offer.seasons} torneo${offer.seasons === 1 ? '' : 'S'}? No se puede cambiar hasta que termine.`} confirmLabel="SÍ, FIRMAR" busy={sign.loading} onConfirm={() => sign.execute(offer.key)} onCancel={() => setConfirm(null)}/>
           : <Button size="sm" icon="contract" onClick={() => setConfirm(offer.key)}>FIRMAR</Button>)}
