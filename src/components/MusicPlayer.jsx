@@ -2,6 +2,9 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { AudioControls } from '../audio/AudioControls.jsx';
 import { useAudioSettings, setAudioSettings } from '../audio/settings.js';
 
+// Nombres de juego largos abreviados para que quepan en la barra.
+const shortArtist = artist => String(artist ?? '').replace('International Superstar Soccer Deluxe', 'ISS Deluxe').replace('International Superstar Soccer', 'ISS');
+
 export function MusicPlayer({ tracks = [] }) {
   const audioRef = useRef(null);
   const rootRef = useRef(null);
@@ -63,7 +66,8 @@ export function MusicPlayer({ tracks = [] }) {
     <button className={`radio-play ${playing ? 'playing' : ''}`} type="button" onClick={toggle} disabled={!tracks.length} aria-label={playing ? 'Pausar radio' : 'Reproducir radio'}>{playing ? '❚❚' : '▶'}</button>
     <button className="radio-info" type="button" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(value => !value)}>
       <small>{playing ? 'RADIO KOINONIA' : 'RADIO · TOCA PLAY'}</small>
-      <b>{track?.title ?? 'PLAYLIST PENDIENTE'}</b>
+      {/* Varios temas se llaman igual ("Main Menu"): sin el juego al lado parecía un texto de prueba. */}
+      <b title={track ? `${track.title} · ${track.artist}` : undefined}>{track ? `${track.title} · ${shortArtist(track.artist)}` : 'PLAYLIST PENDIENTE'}</b>
     </button>
     {open && <div className="radio-panel" id={panelId}>
       <div className="radio-controls">

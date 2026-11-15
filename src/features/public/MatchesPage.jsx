@@ -259,6 +259,16 @@ export function MatchesPage({ mode = 'all', teams, navigate }) {
     return [...groups.values()].sort((left, right) => left.order - right.order);
   }, [apiRows, tournaments.data, restingFor, filters.team, filters.opponent, filters.status, filters.tournament]);
 
+  // Los escudos del filtro: solo clubes que juegan en los torneos mostrados (un club inscrito en la liga pero fuera del torneo
+  // en curso salía y no mostraba nada). Se recuerda la lista sin filtro de club para que no se achique al elegir uno.
+  const [participantIds, setParticipantIds] = useState(null);
+  useEffect(() => {
+    if (filters.team || filters.opponent || filters.status || !apiRows.length) return;
+    setParticipantIds(new Set(apiRows.flatMap(match => [match.homeTeam?.id, match.awayTeam?.id]).filter(Boolean)));
+  }, [apiRows, filters.team, filters.opponent, filters.status]);
+  useEffect(() => { setParticipantIds(null); }, [filters.tournament]);
+  const chipTeams = participantIds?.size ? teams.filter(team => participantIds.has(team.id) || team.id === filters.team) : teams;
+
   useEffect(() => saveMultiSlots(multiSlots), [multiSlots]);
   useEffect(() => saveFilters(mode, filters), [mode, filters]);
   // Un filtro guardado puede apuntar a un torneo que ya no está activo o a un equipo que ya no existe.
@@ -349,7 +359,7 @@ export function MatchesPage({ mode = 'all', teams, navigate }) {
         {multiSlots.map((slot, index) => <MultiSlot key={index} index={index} teamId={slot.teamId} matchId={slot.matchId} matches={multiMatches} teams={teams} onSelectTeam={selectMultiTeam} onSelectMatch={selectMultiMatch} onClear={clearMultiSlot}/>)}
       </div>
     </> : <>
-      <TeamChipBar teams={teams} value={filters.team} onChange={selectTeamFilter}/>
+      <TeamChipBar teams={chipTeams} value={filters.team} onChange={selectTeamFilter}/>
       <div className="filter-bar"><select name="tournament" value={filters.tournament} onChange={change} aria-label="Torneo"><option value="">TORNEOS ACTIVOS</option>{(tournaments.data ?? []).map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select><select name="status" value={filters.status} onChange={change} aria-label="Estado"><option value="">TODOS LOS ESTADOS</option>{Object.entries(labels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select>{filters.team && <select name="opponent" value={filters.opponent} onChange={change} aria-label="Rival para cruce directo"><option value="">CONTRA CUALQUIER RIVAL</option>{[...teams].filter(team => team.id !== filters.team).sort((a, b) => a.name.localeCompare(b.name, 'es')).map(team => <option value={team.id} key={team.id}>VS {team.name}</option>)}</select>}</div>
       <DataState query={matches} empty={null}/>{!matches.loading && !matches.error && (sections.length
         ? <div className="fixture-board">{sections.map(section => <section className="fixture-group" key={section.key}>{section.label && <h3>{section.label} <small>{section.rows.filter(match => match.status === 'finished').length} / {section.rows.filter(match => !match.rest).length} JUGADOS</small></h3>}<div className={`fixture-grid ${!filters.team && section.rows.some(match => match.rest) ? 'fixture-grid-rounds' : ''}`} style={{ '--per-round': perRoundOf(section.rows) }}>{section.rows.map(match => match.rest ? <RestCard key={match.id} rest={match} resolveTeam={resolveTeam}/> : <FixtureCard key={match.id} match={match} showRound resolveTeam={resolveTeam} onSelect={selectMatch}/>)}</div></section>)}</div>
