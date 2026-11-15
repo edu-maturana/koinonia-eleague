@@ -39,14 +39,17 @@ function CalendarBlock({ match, resolveTeam, canMove, selected, dimmed, onSelect
 
 const CUP_ROUNDS = [['QF', 'CUARTOS'], ['SF', 'SEMIS'], ['3P', '3.ER PUESTO'], ['F', 'FINAL']];
 
-/** El día de la Copa Grande Giocatore: todo el cuadro ese día (o el aviso de que se sortea al cerrar la primera vuelta). */
-function CupDayColumn({ day, cup, resolveTeam, navigate }) {
+/** El día de la Copa Grande Giocatore: todo el cuadro ese día (o por qué todavía no aparece). */
+function CupDayColumn({ day, cup, cups, resolveTeam, navigate }) {
   const matches = cup?.matches ?? [];
+  // La copa se sortea al arrancar la liga (con la tabla del torneo anterior): si no aparece es que no cargó o que aún no se sortea.
+  const missing = cups?.loading ? 'CARGANDO LA COPA…' : cups?.error ? 'NO SE PUDO CARGAR LA COPA' : 'SE SORTEA AL ARRANCAR EL TORNEO';
   return <section className="calendar-day calendar-cup-day">
     <header>
       <h3>DÍA {day} · COPA</h3>
       <small>{cup ? `${matches.filter(match => match.status === 'finished').length} / ${matches.length} JUGADOS` : 'GRANDE GIOCATORE'}</small>
-      <p className="calendar-ok">{cup ? cup.name.toUpperCase() : 'SE SORTEA AL TERMINAR LA PRIMERA VUELTA'}</p>
+      <p className={cup || !cups?.error ? 'calendar-ok' : 'calendar-warning'}>{cup ? cup.name.toUpperCase() : missing}</p>
+      {!cup && cups?.error && <button type="button" className="calendar-retry" onClick={cups.retry}>REINTENTAR</button>}
     </header>
     <div className="calendar-blocks">{CUP_ROUNDS.map(([key, label]) => {
       const list = matches.filter(match => match.slot.startsWith(key) && (key !== 'F' || match.slot === 'F'));
@@ -158,7 +161,7 @@ export function CalendarPage({ teams, navigate }) {
     <DataState query={fixtures} empty={null}/>
     {!fixtures.loading && !fixtures.error && (columns.length
       ? <div className="calendar-board" style={{ '--days': columns.length }}>{columns.map(column => {
-        if (cupDay && column.day === cupDay && !column.rows.length) return <CupDayColumn key={column.key} day={cupDay} cup={cup} resolveTeam={resolveTeam} navigate={navigate}/>;
+        if (cupDay && column.day === cupDay && !column.rows.length) return <CupDayColumn key={column.key} day={cupDay} cup={cup} cups={cups} resolveTeam={resolveTeam} navigate={navigate}/>;
         const { offCount, repeated } = column.day ? dayWarnings(column.rows, participants, Number(perDay)) : { offCount: [], repeated: false };
         return <section key={column.key} className={`calendar-day ${dragOver === column.key ? 'drag-over' : ''} ${column.day ? '' : 'unscheduled'}`} {...dropProps(column.key, column.day)}>
           <header>

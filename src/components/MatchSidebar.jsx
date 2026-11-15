@@ -4,8 +4,9 @@ import { useApiQuery } from '../features/public/useApiQuery.js';
 import { matchRoundLabel } from '../utils/matchPresentation.js';
 import { EntityLink } from './EntityLink.jsx';
 import { TeamMark } from './TeamMark.jsx';
-import { LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClass, playoffZone } from './LiveStandings.jsx';
+import { LivePosition, LiveTableStatus, PlayoffLegend, RowMovement, liveRowClass, tableZones } from './LiveStandings.jsx';
 import { useLiveStandings } from '../features/public/useLiveStandings.js';
+import { playedKey, useTableProgression } from '../features/public/useTableProgression.js';
 import { TrophyCase } from './TrophyCase.jsx';
 
 const LIVE_REFRESH_MS = 12000;
@@ -20,10 +21,14 @@ function LiveMatches({ rows, resolveTeam }) {
 function StandingsPanel({ tournament, standings, resolveTeam, loading, navigate }) {
   const liveStandings = useLiveStandings(tournament?.id);
   const rows = Array.isArray(liveStandings.data) && liveStandings.data.length ? liveStandings.data : standings;
+  // Zonas según el formato del torneo y flecha de cuántos puestos se movió cada club desde la fecha anterior.
+  const progression = useTableProgression(tournament?.id, playedKey(rows)).data;
+  const zones = tableZones(rows, progression);
+  const progressOf = teamId => progression?.teams?.find(item => item.teamId === teamId);
   return <section className="score-panel standings-home-panel"><h2>TABLA <small>{tournament?.name ?? ''}</small></h2>
-    <LiveTableStatus rows={rows}/>{rows.length ? <table className="standings-home-table"><thead><tr><th>#</th><th>EQUIPO</th><th title="Partidos jugados">PJ</th><th title="Diferencia de goles">DG</th><th title="Puntos">PTS</th></tr></thead><tbody>{rows.map((row, index) => <tr key={row.team_id} className={liveRowClass(row, playoffZone(index, rows.length))}><td><LivePosition position={index + 1}/></td><td><EntityLink to="team" id={row.team_id} className="table-team-link"><LiveMovement row={row}/><TeamMark team={resolveTeam({ id: row.team_id, ...row })}/><span>{row.name}</span>{row.isPlayingLive && <em className="live-team-tag">EN VIVO</em>}</EntityLink></td><td>{row.played}</td><td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td><td><b>{row.points}</b></td></tr>)}</tbody></table>
+    <LiveTableStatus rows={rows}/>{rows.length ? <table className="standings-home-table"><thead><tr><th>#</th><th>EQUIPO</th><th title="Partidos jugados">PJ</th><th title="Diferencia de goles">DG</th><th title="Puntos">PTS</th></tr></thead><tbody>{rows.map((row, index) => <tr key={row.team_id} className={liveRowClass(row, zones.get(row.team_id))}><td><LivePosition position={index + 1}/></td><td><EntityLink to="team" id={row.team_id} className="table-team-link"><RowMovement row={row} progressionTeam={progressOf(row.team_id)}/><TeamMark team={resolveTeam({ id: row.team_id, ...row })}/><span>{row.name}</span>{row.isPlayingLive && <em className="live-team-tag">EN VIVO</em>}</EntityLink></td><td>{row.played}</td><td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td><td><b>{row.points}</b></td></tr>)}</tbody></table>
       : <p className="league-note">{loading || liveStandings.loading ? 'CARGANDO...' : 'SIN TABLA PUBLICADA.'}</p>}
-    {rows.length > 0 && <PlayoffLegend total={rows.length}/>}
+    {rows.length > 0 && <PlayoffLegend format={progression}/>}
     <button className="sidebar-more" type="button" onClick={() => navigate('/torneos')}>VER TORNEO COMPLETO →</button>
   </section>;
 }

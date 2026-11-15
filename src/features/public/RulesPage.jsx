@@ -7,7 +7,7 @@ const MatchRules = () => <section className="rules-section">
   <ul>
     <li><strong>Creación de la Sala (Localía):</strong> El jugador que figure como equipo local en el calendario tiene la responsabilidad de crear la sala de juego.</li>
     <li><strong>Formato de Liga:</strong> El partido debe configurarse en <strong>10 minutos</strong> y con la condición de los jugadores en <strong>“Excelente Estado”</strong> para ambos equipos.</li>
-    <li><strong>Formato del torneo:</strong> fase regular todos contra todos a <strong>dos vueltas</strong>. Clasifican los <strong>6 primeros</strong> a los playoffs: el <strong>1.º y el 2.º pasan directo a semifinales</strong> y del <strong>3.º al 6.º juegan el play-in</strong>. En el play-in, 3.º vs 4.º (el ganador enfrenta al 2.º en semis) y 5.º vs 6.º (el perdedor queda eliminado); el perdedor del 3.º-4.º juega contra el ganador del 5.º-6.º, y quien gane enfrenta al 1.º en semis. <strong>Play-in, semifinales y final son a partido único</strong>; juega de local el mejor ubicado en la tabla. Si queda empatado, se define por penales.</li>
+    <li><strong>Formato del torneo:</strong> fase regular todos contra todos a <strong>dos vueltas</strong>. Clasifican los <strong>6 primeros</strong> a los playoffs: el <strong>1.º y el 2.º pasan directo a semifinales</strong> y del <strong>3.º al 6.º juegan el play-in</strong>. En el play-in, 3.º vs 4.º (el ganador enfrenta al 2.º en semis) y 5.º vs 6.º (el perdedor queda eliminado); el perdedor del 3.º-4.º juega contra el ganador del 5.º-6.º, y quien gane enfrenta al 1.º en semis. El <strong>play-in es a partido único</strong> y juega de local el mejor ubicado en la tabla. Las <strong>semifinales y la final son a ida y vuelta</strong>: el mejor ubicado juega de local la vuelta y pasa quien suma más goles en los dos partidos. Si el partido único o el global quedan empatados, se define por penales.</li>
     <li><strong>Formato de Copa (Eliminatorias):</strong> En los encuentros de eliminación directa deben estar activadas obligatoriamente las opciones de <strong>Prórroga y Penales</strong>.</li>
     <li><strong>Interrupciones y Caídas del Servidor:</strong> Se deberá crear una nueva sala y jugar un partido de <strong>5 minutos</strong> para simular el tiempo restante. Alternativamente, ambos jugadores pueden acordar un partido normal de 10 minutos disputando únicamente un tiempo.</li>
   </ul>
@@ -104,7 +104,7 @@ const Contracts = ({ payrollCap }) => <section className="rules-section">
   <p>Con el sistema de contratos la reputación de todos los clubes parte de cero. Los títulos y finales (palmarés) se mantienen intactos.</p>
 </section>;
 
-const ClubSystems = () => <>
+const ClubSystems = ({ superclasico = null }) => <>
   <section className="rules-section">
     <h2>7. Roles, Ánimo y Peticiones de Jugadores</h2>
     <ul>
@@ -168,7 +168,7 @@ const ClubSystems = () => <>
     <h2>13. Clásicos, Superclásicos y Derbis</h2>
     <ul>
       <li><strong>Clásico:</strong> cada Presidente <strong>elige</strong> su clásico y lo cambia cuando quiera (la web sugiere el de más historial: partidos, eliminatorias, finales, goleadas y traspasos entre ambos). Vale desde los dos lados: si te eligen, ese partido también es clásico para ti; si se eligen los dos, es clásico de los dos. En un clásico la demanda de entradas sube 60% y ganar o perder mueve el doble de hinchas y ánimo.</li>
-      <li><strong>El Superclásico:</strong> uno solo en toda la liga, el que define la administración (hoy, Laloo Kura vs Real Potente). La demanda sube 90%, el estadio casi se llena y la noticia del partido sale con su etiqueta. Dos clubes que se tienen de clásico mutuamente siguen siendo un clásico.</li>
+      <li><strong>El Superclásico:</strong> uno solo en toda la liga, el que define la administración{superclasico ? ` (hoy, ${superclasico})` : ''}. La demanda sube 90%, el estadio casi se llena y la noticia del partido sale con su etiqueta. Dos clubes que se tienen de clásico mutuamente siguen siendo un clásico.</li>
       <li><strong>Derbis:</strong> las rivalidades de vecinos. El Presidente elige <strong>hasta 3</strong> (se sugieren los clubes de su país y los que tienen la hinchada cerca) y los cambia cuando quiera. En un derbi viaja el triple de hinchada visitante, el estadio llena al menos el 85% y <strong>la visita se lleva el 20% de la taquilla</strong>. Un partido puede ser clásico y derbi a la vez.</li>
       <li><strong>Nombre de la rivalidad:</strong> cualquiera de los dos presis propone un nombre ("El Clásico del Sur") y el otro lo acepta o lo rechaza. Aceptado, sale en los partidos y en las noticias.</li>
       <li>En las tarjetas de partido cada rivalidad tiene su color (rojo el clásico, dorado el superclásico, azul el derbi) y muestra la racha cuando alguien lleva 3 o más partidos sin perder o sin ganar ante el otro (con el apodo del club, si tiene).</li>
@@ -178,7 +178,7 @@ const ClubSystems = () => <>
     <h2>14. Hinchada y Taquilla</h2>
     <ul>
       <li>Cada club tiene <strong>hinchas</strong>: personas que se declaran hinchas del club (no seguidores de redes). Cuántos tiene depende de su grandeza (historial de títulos, finales y playoffs, y valor del plantel). Una parte vive en Chile, que se reparten entre todos los clubes, y el resto en el país del club. En la ficha del club hay un mapa con dónde viven. Desde ahí crecen o bajan con resultados, clásicos, títulos y eventos. También hay un <strong>ánimo de la hinchada</strong> que cambia partido a partido.</li>
-      <li>Al terminar cada partido de clubes, el local cobra las entradas: la asistencia depende de sus hinchas que viven cerca (los de su país y unos pocos de afuera que viajan), el rival, si es clásico o playoffs, el ánimo de la gente y el precio que fijó el Presidente (popular 35 €, normal 60 €, premium 95 €). El aforo es el techo. Los partidos importantes tienen piso: unos <strong>cuartos de final llenan el 90%</strong>, una <strong>semifinal casi se llena</strong> (95% o más) y <strong>una final se llena</strong>; en la liga, un clásico, la visita de un grande o un partido decisivo del tramo final (dos de arriba de la tabla) llenan casi todo el estadio aunque el local tenga poca hinchada. La final a partido único se juega en el estadio más grande de los dos y la taquilla se reparte mitad y mitad.</li>
+      <li>Al terminar cada partido de clubes, el local cobra las entradas: la asistencia depende de sus hinchas que viven cerca (los de su país y unos pocos de afuera que viajan), el rival, si es clásico o playoffs, el ánimo de la gente y el precio que fijó el Presidente (popular 35 €, normal 60 €, premium 95 €). El aforo es el techo. Los partidos importantes tienen piso: unos <strong>cuartos de final llenan el 90%</strong>, una <strong>semifinal casi se llena</strong> (95% o más) y <strong>una final se llena</strong>; en la liga, un clásico, la visita de un grande o un partido decisivo del tramo final (dos de arriba de la tabla) llenan casi todo el estadio aunque el local tenga poca hinchada. La final es a ida y vuelta: cada club juega un partido de local en su estadio, los dos se llenan y cada local cobra la taquilla de su partido (si un día se jugara una final a partido único, iría al estadio más grande de los dos y la taquilla se repartiría mitad y mitad).</li>
       <li>La taquilla cobra <strong>desde el v11</strong>. En el v10 se registra el público y los hinchas se mueven con los resultados, pero sin plata (lo que se alcanzó a cobrar se devolvió).</li>
       <li>Un castigo (W.O.) se juega a puertas cerradas: no hay taquilla. Si un partido se reabre o se anula, la taquilla y los hinchas se devuelven.</li>
       <li><strong>El marcador no cambia</strong>: la hinchada y el estadio mueven plata, hinchas y ánimo, nunca el resultado del partido.</li>
@@ -229,9 +229,13 @@ export function RulesPage() {
   const squadValueLimit = Number(rules.data?.squadValueLimit) > 0 ? Number(rules.data.squadValueLimit) : null;
   const payrollCap = Number(rules.data?.payrollCap) > 0 ? Number(rules.data.payrollCap) : null;
   const contractsEnabled = Boolean(rules.data?.contractsEnabled);
+  // El superclásico lo fija la administración: se lee de las rivalidades, no se deja escrito a mano.
+  const rivalries = useApiQuery(signal => endpoints.rivalries(signal).catch(() => ({ data: [] })), []);
+  const superPair = (Array.isArray(rivalries.data) ? rivalries.data : []).filter(club => club.superclasicoRivalId);
+  const superclasico = superPair.length === 2 ? superPair.map(club => club.name).join(' vs ') : null;
   return <main className="newspaper"><article className="data-paper rules-paper">
     <header className="rules-header"><p>KOINONIA e-LEAGUE · DOCUMENTO OFICIAL</p><h1>Reglamento Oficial de la Liga eFootball</h1></header>
     <p className="rules-intro">Este documento establece la normativa oficial para el desarrollo de la liga, incluyendo reglas de jugabilidad, sanciones, sistema de divisiones, mercado de fichajes y sistema de premiación. Todos los presidentes y participantes están obligados a cumplir estas normativas.</p>
-    <MatchRules/><Sanctions/><Divisions/><Transfers squadValueLimit={squadValueLimit} payrollCap={payrollCap} contractsEnabled={contractsEnabled}/><Prizes/><Contracts payrollCap={payrollCap}/>{contractsEnabled && <ClubSystems/>}<SoundCredits/>
+    <MatchRules/><Sanctions/><Divisions/><Transfers squadValueLimit={squadValueLimit} payrollCap={payrollCap} contractsEnabled={contractsEnabled}/><Prizes/><Contracts payrollCap={payrollCap}/>{contractsEnabled && <ClubSystems superclasico={superclasico}/>}<SoundCredits/>
   </article></main>;
 }

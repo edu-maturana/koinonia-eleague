@@ -4,7 +4,7 @@ import { PreseasonBracket } from './PreseasonPanel.jsx';
 import { CupBracketView } from './CupPanel.jsx';
 import { endpoints } from '../../api/endpoints.js';
 import { EntityLink } from '../../components/EntityLink.jsx';
-import { LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClass, playoffZone } from '../../components/LiveStandings.jsx';
+import { FormChips, LivePosition, LiveTableStatus, PlayoffLegend, RowMovement, liveRowClass, tableZones } from '../../components/LiveStandings.jsx';
 import { TeamMark } from '../../components/TeamMark.jsx';
 import { FormFeedback } from '../admin/FormFeedback.jsx';
 import { useAuth } from '../../app/AuthGate.jsx';
@@ -12,10 +12,24 @@ import { useApiMutation } from '../admin/useApiMutation.js';
 import { DataState, PageHeader, gp } from './DataStates.jsx';
 import { useApiQuery } from './useApiQuery.js';
 import { useLiveStandings } from './useLiveStandings.js';
+import { playedKey, useTableProgression } from './useTableProgression.js';
+import { SeasonBumpChart } from './SeasonBumpChart.jsx';
+import { ScorersList, TournamentScorers } from './TournamentScorers.jsx';
 import { Button, Notice, useEmbedded } from '../../ui/index.js';
 
-function StandingsTable({ rows, resolveTeam, zones = false }) {
-  return <><LiveTableStatus rows={rows}/><div className="table-scroll"><table className="league-table"><colgroup><col className="rank-column"/><col className="team-column"/><col className="stat-column" span="8"/></colgroup><thead><tr><th>#</th><th>EQUIPO</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th className="optional-stat">GF</th><th className="optional-stat">GC</th><th className="optional-stat">DG</th><th>PTS</th></tr></thead><tbody>{rows.map((row, index) => <tr key={row.team_id ?? row.id} className={liveRowClass(row, zones ? playoffZone(index, rows.length) : '')}><td><LivePosition position={index + 1}/></td><td><EntityLink to="team" id={row.team_id ?? row.id} className="table-team-link"><LiveMovement row={row}/><TeamMark team={resolveTeam(row)}/>{row.name}{row.isPlayingLive && <em className="live-team-tag">EN VIVO</em>}</EntityLink></td><td>{row.played}</td><td>{row.wins}</td><td>{row.draws}</td><td>{row.losses}</td><td className="optional-stat">{row.gf}</td><td className="optional-stat">{row.ga}</td><td className="optional-stat">{row.gd}</td><td><b>{row.points}</b></td></tr>)}</tbody></table></div>{zones && <PlayoffLegend total={rows.length}/>}</>;
+/**
+ * Tabla de posiciones. Con `progression` (evolución del torneo) suma la flecha de cuántos puestos se movió cada club desde
+ * la fecha anterior y la columna FORMA; con `zones`, pinta los cupos según el formato real del torneo.
+ */
+function StandingsTable({ rows, resolveTeam, progression = null, zones = false }) {
+  const zoneOf = zones ? tableZones(rows, progression) : new Map();
+  const progressOf = teamId => progression?.teams?.find(team => team.teamId === teamId);
+  const showForm = Boolean(progression?.teams?.length);
+  return <><LiveTableStatus rows={rows}/><div className="table-scroll"><table className={`league-table${showForm ? ' has-form' : ''}`}><colgroup><col className="rank-column"/><col className="team-column"/><col className="stat-column" span="8"/>{showForm && <col className="form-column"/>}</colgroup>
+    <thead><tr><th>#</th><th>EQUIPO</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th className="optional-stat">GF</th><th className="optional-stat">GC</th><th className="optional-stat">DG</th><th>PTS</th>{showForm && <th className="form-head" title="Últimos 5 de la liga, el más reciente a la derecha">FORMA</th>}</tr></thead>
+    <tbody>{rows.map((row, index) => { const teamId = row.team_id ?? row.id; return <tr key={teamId} className={liveRowClass(row, zoneOf.get(teamId) ?? '')}><td><LivePosition position={index + 1}/></td><td><EntityLink to="team" id={teamId} className="table-team-link"><RowMovement row={row} progressionTeam={progressOf(teamId)}/><TeamMark team={resolveTeam(row)}/>{row.name}{row.isPlayingLive && <em className="live-team-tag">EN VIVO</em>}</EntityLink></td><td>{row.played}</td><td>{row.wins}</td><td>{row.draws}</td><td>{row.losses}</td><td className="optional-stat">{row.gf}</td><td className="optional-stat">{row.ga}</td><td className="optional-stat">{row.gd}</td><td><b>{row.points}</b></td>{showForm && <td className="form-cell"><FormChips form={progressOf(teamId)?.form}/></td>}</tr>; })}</tbody></table></div>
+    {zones && <PlayoffLegend format={progression}/>}
+    {showForm && <p className="form-legend"><b>FORMA</b> ÚLTIMOS 5 DE LA LIGA, EL MÁS RECIENTE A LA DERECHA (SUBRAYADO) · G GANÓ · E EMPATÓ · P PERDIÓ · ▲▼ PUESTOS QUE SE MOVIÓ DESDE LA FECHA ANTERIOR</p>}</>;
 }
 
 function GroupStandings({ tournamentId, groupLabel, resolveTeam }) {
@@ -97,13 +111,6 @@ const tournamentStartTime = tournament => {
   return Number.isNaN(parsed) ? 0 : parsed;
 };
 
-function ScorersPanel({ query }) {
-  const rows = Array.isArray(query.data) ? query.data : [];
-  return <section className="workspace-panel tournament-scorers"><h3>GOLEADORES</h3><DataState query={query} empty={null}/>
-    {!query.loading && !query.error && (rows.length ? <ol className="tournament-scorer-list">{rows.map((row, index) => <li key={row.playerId ?? row.name}><b>{index + 1}</b><EntityLink to="player" id={row.playerId}>{row.playerName ?? row.name}</EntityLink><strong>{row.goals ?? 0}</strong></li>)}</ol> : <p className="empty-copy">AÚN NO HAY GOLES.</p>)}
-  </section>;
-}
-
 // Rondas de los playoffs: con 8 clasificados parte en cuartos. Los cuartos se muestran en orden de cuadro
 // (1.º-8.º y 4.º-5.º alimentan la semi 1; 2.º-7.º y 3.º-6.º, la semi 2).
 const PLAYOFF_ROUNDS = { playin: { label: 'PLAY-IN', slots: [1, 2, 3] }, quarterfinal: { label: 'CUARTOS DE FINAL', slots: [1, 4, 2, 3] }, semifinal: { label: 'SEMIFINALES', slots: [1, 2] }, final: { label: 'FINAL', slots: [1] } };
@@ -133,14 +140,19 @@ function PlayoffsSection({ tournamentId, resolveTeam, playoffsEnabled = true }) 
   const preview = useApiQuery(signal => endpoints.playoffsPreview(tournamentId, signal), [tournamentId]);
   const data = playoffs.data;
   const view = preview.data;
-  if (playoffs.loading || playoffs.error) return null;
+  // Cargando o con error: se dice (con reintento), no se deja la pestaña en blanco.
+  if ((playoffs.loading && !data) || playoffs.error) return <section className="workspace-panel playoff-workspace"><h3>PLAYOFFS</h3><DataState query={{ ...playoffs, retry: () => { playoffs.retry(); preview.retry(); } }}/></section>;
+  if (!data && ((preview.loading && !view) || preview.error)) return <section className="workspace-panel playoff-workspace"><h3>PLAYOFFS</h3><DataState query={preview}/></section>;
   const count = Number(data?.qualifiedCount ?? view?.qualifiedCount ?? 0);
   const done = data?.status === 'completed';
   // Sin playoffs creados todavía, o con parte del cuadro por jugar: se muestra cómo irían los cruces con la tabla de hoy.
   const pairs = !done && playoffsEnabled ? (view?.pairs ?? []) : [];
   if (!data && !pairs.length) return <section className="workspace-panel playoff-workspace"><h3>PLAYOFFS</h3><p className="league-note">TODAVÍA NO HAY TABLA SUFICIENTE PARA PROYECTAR LOS CRUCES.</p></section>;
-  const rounds = count === 8 ? ['quarterfinal', 'semifinal', 'final'] : count === 6 ? ['playin', 'semifinal', 'final'] : ['semifinal', 'final'];
-  const legs = { playin: 1, quarterfinal: data?.quarterfinalLegs ?? 2, semifinal: data?.semifinalLegs ?? (count === 6 ? 1 : 2), final: data?.finalLegs ?? (count === 6 ? 1 : 2) };
+  // Rondas y vueltas las informa el servidor: las guardadas si los playoffs ya existen, o las que usará al armarlos (hoy: play-in a
+  // partido único; semis y final, ida y vuelta). El respaldo por cupo solo cubre una API antigua sin esos campos.
+  const rounds = data?.rounds ?? view?.rounds ?? (count === 8 ? ['quarterfinal', 'semifinal', 'final'] : count === 6 ? ['playin', 'semifinal', 'final'] : ['semifinal', 'final']);
+  const serverLegs = data?.legs ?? view?.legs ?? {};
+  const legs = { playin: 1, quarterfinal: serverLegs.quarterfinal ?? data?.quarterfinalLegs ?? 2, semifinal: serverLegs.semifinal ?? data?.semifinalLegs ?? view?.semifinalLegs ?? 2, final: serverLegs.final ?? data?.finalLegs ?? view?.finalLegs ?? 2 };
   const final = data?.series?.find(series => series.round === 'final');
   const champion = final?.winnerTeamId ? [resolveTeam(final.homeTeam), resolveTeam(final.awayTeam)].find(team => String(team.id) === String(final.winnerTeamId)) : null;
   const summary = rounds.map(round => `${PLAYOFF_ROUNDS[round].label} ${legsText(legs[round])}`).join(' · ');
@@ -165,13 +177,13 @@ function PlayoffsSection({ tournamentId, resolveTeam, playoffsEnabled = true }) 
     {(data?.qualifiers ?? []).filter(row => row.withdrawn).map(row => <p className="playoff-note" key={row.teamId}><b>{row.name}</b> ({row.tableRank}.º DE LA TABLA) SE RETIRÓ DE LOS PLAYOFFS: LOS DE ABAJO SUBIERON UN PUESTO. CONSERVA SU PUESTO Y SU PREMIO DE LA TABLA.</p>)}
     {!done && pairs.length > 0 && <p className="playoff-note">LOS CRUCES SE ARMAN CON LA TABLA DE HOY Y SE CONFIRMAN CUANDO LOS DOS PUESTOS QUEDAN ASEGURADOS.</p>}
     {count === 6 && <details className="playoff-howto-box"><summary>CÓMO FUNCIONAN LOS PLAYOFFS</summary><ol>
-      <li><b>Clasifican los 6 primeros de la tabla.</b> Todos los partidos son únicos: no hay vuelta.</li>
+      <li><b>Clasifican los 6 primeros de la tabla.</b> El play-in es a {legsText(legs.playin).toLowerCase()}; las semifinales, {legsText(legs.semifinal).toLowerCase()}, y la final, {legsText(legs.final).toLowerCase()}. {legs.semifinal === 2 || legs.final === 2 ? 'En ida y vuelta el mejor ubicado de la tabla juega de local la vuelta; ' : ''}si el global queda empatado, penales.</li>
       <li><b>El 1.º y el 2.º pasan directo a las semifinales</b> y esperan descansados.</li>
       <li><b>Del 3.º al 6.º juegan el play-in:</b> el 3.º contra el 4.º (Play-in 1) y el 5.º contra el 6.º (Play-in 2).</li>
       <li><b>Play-in 1:</b> el que gana pasa a semifinales; el que pierde tiene una segunda oportunidad.</li>
       <li><b>Play-in 2:</b> el que gana sigue vivo; el que pierde queda eliminado.</li>
       <li><b>Play-in 3 (segunda oportunidad):</b> el perdedor del Play-in 1 contra el ganador del Play-in 2. El que gana pasa a semifinales; el que pierde queda eliminado.</li>
-      <li><b>Semifinales:</b> el 1.º contra el ganador del Play-in 3, y el 2.º contra el ganador del Play-in 1. Los dos ganadores juegan la <b>final</b>.</li></ol></details>}
+      <li><b>Semifinales ({legsText(legs.semifinal).toLowerCase()}):</b> el 1.º contra el ganador del Play-in 3, y el 2.º contra el ganador del Play-in 1. Los dos ganadores juegan la <b>final ({legsText(legs.final).toLowerCase()})</b>.</li></ol></details>}
     <div className={`playoff-tree rounds-${rounds.length}`}>{rounds.map(round => <section className={`playoff-col playoff-col-${round}`} key={round}>
       <h4>{PLAYOFF_ROUNDS[round].label}</h4>
       {PLAYOFF_ROUNDS[round].slots.map(slot => {
@@ -190,8 +202,10 @@ function PlayoffsSection({ tournamentId, resolveTeam, playoffsEnabled = true }) 
 /** La Copa Grande Giocatore se ve como su cuadro, con los cupos que dio la tabla del torneo anterior. */
 function CupWorkspace({ tournamentId, teams, onChanged }) {
   const bracket = useApiQuery(signal => endpoints.cupBracket(tournamentId, signal), [tournamentId]);
+  const teamIndex = useMemo(() => new Map(teams.map(team => [team.id, team])), [teams]);
   if (!bracket.data) return <DataState query={bracket}/>;
-  return <section className="workspace-panel"><CupBracketView cup={bracket.data} teams={teams} onChanged={() => { bracket.retry(); onChanged?.(); }}/></section>;
+  return <><section className="workspace-panel"><CupBracketView cup={bracket.data} teams={teams} onChanged={() => { bracket.retry(); onChanged?.(); }}/></section>
+    <TournamentScorers tournamentId={tournamentId} resolveTeam={team => ({ ...team, ...(teamIndex.get(team.id) ?? {}) })} title="GOLEADORES DE LA COPA" empty="TODAVÍA NO HAY GOLES EN ESTA COPA."/></>;
 }
 
 /** Una gira se ve como su cuadro (no tiene tabla ni goleadores propios). */
@@ -214,17 +228,13 @@ function TournamentWorkspace({ tournamentId, teams, onChanged, onDeleted, hideNa
   const standings = useLiveStandings(tournamentId);
   const scorers = useApiQuery(signal => endpoints.scorers(tournamentId, signal), [tournamentId]);
   const standingRows = Array.isArray(standings.data) ? standings.data : [];
+  // Forma, movimiento fecha a fecha y zonas según el formato del torneo; se vuelve a pedir cuando termina un partido.
+  const progression = useTableProgression(tournamentId, playedKey(standingRows));
   const teamIndex = useMemo(() => new Map(teams.map(team => [team.id, team])), [teams]);
   const resolveTeam = team => ({ ...team, ...(teamIndex.get(team?.id ?? team?.team_id) ?? {}) });
   const groupLabels = useMemo(() => [...new Set((detail.data?.teams ?? []).map(team => team.groupLabel).filter(Boolean))]
     .sort((left, right) => String(left).localeCompare(String(right))), [detail.data]);
-  const refresh = () => { detail.retry(); standings.retry(); scorers.retry(); onChanged?.(); };
-  const remove = useApiMutation(signal => endpoints.deleteTournament(tournamentId, signal), { onSuccess: () => onDeleted?.() });
-  const deleteTournament = () => {
-    const played = standingRows.reduce((sum, row) => sum + Number(row.played ?? 0), 0);
-    const warning = played ? ` Tiene partidos jugados: se borran sus resultados, goles y títulos.` : '';
-    if (window.confirm(`¿Eliminar ${detail.data?.name ?? 'este torneo'} para siempre?${warning} Esto no se puede deshacer.`)) remove.execute();
-  };
+  const refresh = () => { detail.retry(); standings.retry(); scorers.retry(); progression.retry(); onChanged?.(); };
   useEffect(() => { setWorkspaceTab(initialTab); }, [tournamentId]);
   useEffect(() => { if (embedded) setWorkspaceTabState(['standings', 'scorers', 'playoffs', 'awards'].includes(initialTab) ? initialTab : 'standings'); }, [initialTab, embedded]);
   const data = detail.data;
@@ -238,7 +248,7 @@ function TournamentWorkspace({ tournamentId, teams, onChanged, onDeleted, hideNa
     : null;
 
   return <section className="tournament-workspace"><DataState query={detail}/>{data && <>
-    <header className="tournament-header"><div><small>{data.format === 'league' ? 'LIGA' : data.format === 'knockout' ? 'ELIMINACIÓN DIRECTA' : 'GRUPOS + ELIMINACIÓN'}{data.format === 'league' ? ` · CAMPEONES: ${data.championPolicy === 'both' ? 'LIGA REGULAR + PLAYOFFS' : data.championPolicy === 'playoffs' ? 'PLAYOFFS' : 'TABLA'}` : ''}</small>{hideName ? null : <h2>{data.name}</h2>}</div><b className={`status status-${data.status}`}>{statusLabel}</b>{isAdmin && <a className="tournament-manage-button" href={`#/admin?tab=torneos&id=${data.id}`}>⚙ Gestionar en la sala de control</a>}{isAdmin && <Button variant="danger" type="button" disabled={remove.loading} onClick={deleteTournament}>ELIMINAR TORNEO</Button>}</header>{isAdmin && (remove.error || remove.success) && <FormFeedback mutation={remove}/>}
+    <header className="tournament-header"><div><small>{data.format === 'league' ? 'LIGA' : data.format === 'knockout' ? 'ELIMINACIÓN DIRECTA' : 'GRUPOS + ELIMINACIÓN'}{data.format === 'league' ? ` · CAMPEONES: ${data.championPolicy === 'both' ? 'LIGA REGULAR + PLAYOFFS' : data.championPolicy === 'playoffs' ? 'PLAYOFFS' : 'TABLA'}` : ''}</small>{hideName ? null : <h2>{data.name}</h2>}</div><b className={`status status-${data.status}`}>{statusLabel}</b>{isAdmin && <a className="tournament-manage-button" href={`#/admin?tab=torneos&id=${data.id}`}>⚙ Gestionar en la sala de control</a>}</header>
     {data.rules?.kind === 'grande_giocatore' ? <CupWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : data.rules?.kind === 'preseason' ? <PreseasonWorkspace tournamentId={tournamentId} teams={teams} onChanged={refresh}/> : <>
       {!embedded && <nav className="tournament-subtabs" aria-label="Secciones del torneo" role="tablist">
         <button type="button" role="tab" aria-selected={workspaceTab === 'standings'} className={workspaceTab === 'standings' ? 'active' : ''} onClick={() => setWorkspaceTab('standings')}>TABLA DE POSICIONES</button>
@@ -249,8 +259,9 @@ function TournamentWorkspace({ tournamentId, teams, onChanged, onDeleted, hideNa
       <div className="tournament-main">
         {workspaceTab === 'standings' && (groupLabels.length > 0
           ? <section className="workspace-panel standings-workspace-panel"><h3>CLASIFICACIÓN POR GRUPOS</h3><div className="tournament-groups">{groupLabels.map(groupLabel => <GroupStandings key={groupLabel} tournamentId={tournamentId} groupLabel={groupLabel} resolveTeam={resolveTeam}/>)}</div></section>
-          : <section className="workspace-panel standings-workspace-panel"><h3>TABLA DE POSICIONES</h3><DataState query={standings}/>{standingRows.length > 0 && <StandingsTable rows={standingRows} resolveTeam={resolveTeam} zones={data?.format === 'league' && data?.championPolicy !== 'regular_season'}/>} {regularChampion && <div className="playoff-champion" role="status"><span aria-hidden="true">🏆</span><TeamMark team={regularChampion}/><strong>CAMPEÓN: {regularChampion.name}</strong></div>}</section>)}
-        {workspaceTab === 'scorers' && <ScorersPanel query={scorers}/>}
+          : <section className="workspace-panel standings-workspace-panel"><h3>TABLA DE POSICIONES</h3><DataState query={standings}/>{standingRows.length > 0 && <StandingsTable rows={standingRows} resolveTeam={resolveTeam} progression={data?.format === 'league' ? progression.data : null} zones={data?.format === 'league' && data?.championPolicy !== 'regular_season'}/>} {regularChampion && <div className="playoff-champion" role="status"><span aria-hidden="true">🏆</span><TeamMark team={regularChampion}/><strong>CAMPEÓN: {regularChampion.name}</strong></div>}</section>)}
+        {workspaceTab === 'standings' && groupLabels.length === 0 && data.format === 'league' && progression.data && <SeasonBumpChart progression={progression.data} resolveTeam={resolveTeam}/>}
+        {workspaceTab === 'scorers' && <ScorersList query={scorers} resolveTeam={resolveTeam}/>}
         {workspaceTab === 'playoffs' && data.format === 'league' && <PlayoffsSection tournamentId={tournamentId} resolveTeam={resolveTeam} playoffsEnabled={data.championPolicy !== 'regular_season'}/>}
         {workspaceTab === 'awards' && (data.format === 'league' && data.competitorKind !== 'national_team'
           ? <AwardsPanel tournament={data} resolveTeam={resolveTeam}/>

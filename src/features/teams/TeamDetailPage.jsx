@@ -8,7 +8,7 @@ import { SanctionBadge } from '../../components/SanctionBadge.jsx';
 import { SimulatedBadge } from '../../components/SimulatedBadge.jsx';
 import { DerbyBadge } from '../../components/DerbyBadge.jsx';
 import { EntityLink } from '../../components/EntityLink.jsx';
-import { LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClass, playoffZone } from '../../components/LiveStandings.jsx';
+import { LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClass, tableZones } from '../../components/LiveStandings.jsx';
 import { PlayerFace } from '../../components/PlayerFace.jsx';
 import { teamBalance, teamCoachName, teamCoachPhoto } from '../../utils/teamPresentation.js';
 import { readPersonProfile } from '../../utils/personProfile.js';
@@ -22,6 +22,7 @@ import { FormFeedback } from '../admin/FormFeedback.jsx';
 import { useApiMutation } from '../admin/useApiMutation.js';
 import { useApiQuery } from '../public/useApiQuery.js';
 import { useLiveStandings } from '../public/useLiveStandings.js';
+import { playedKey, useTableProgression } from '../public/useTableProgression.js';
 import { useNotifications } from '../notifications/NotificationsProvider.jsx';
 import { MessagesTab } from './MessagesTab.jsx';
 import { EventsTab, FansTab, TvRightsTab, VenueTab } from './ClubLife.jsx';
@@ -146,14 +147,16 @@ function ClubPeople({ president: { key: presidentKey, ...president }, coach: { k
 }
 
 // Tabla acotada al equipo: el de arriba y el de abajo; en los extremos, los dos siguientes.
-function ClubStandingSnippet({ standings, teamId, teams, onMore }) {
+function ClubStandingSnippet({ standings, teamId, teams, onMore, format = null }) {
+  // Zonas según el formato real del torneo (no según cuántas filas tiene la tabla).
+  const zones = tableZones(standings, format);
   const index = standings.findIndex(row => row.team_id === teamId);
   if (index < 0) return null;
   const start = Math.max(0, Math.min(index - 1, standings.length - 3));
   const rows = standings.slice(start, start + 3);
   const teamIndex = new Map(teams.map(team => [team.id, team]));
   return <section className="club-card club-standing-snippet"><h3>TABLA <button type="button" className="club-link-button" onClick={onMore}>VER COMPLETA →</button></h3><LiveTableStatus rows={standings}/>
-    <table><thead><tr><th>#</th><th>EQUIPO</th><th>PJ</th><th>DG</th><th>PTS</th></tr></thead><tbody>{rows.map(row => { const position = standings.indexOf(row) + 1; return <tr key={row.team_id} className={liveRowClass(row, `${row.team_id === teamId ? 'current-team' : ''} ${playoffZone(position - 1, standings.length)}`.trim())}><td><LivePosition position={position}/></td><td><EntityLink to="team" id={row.team_id} className="table-team-link"><LiveMovement row={row}/><TeamMark team={{ ...row, ...(teamIndex.get(row.team_id) ?? {}) }}/><span>{row.name}</span>{row.isPlayingLive && <em className="live-team-tag">EN VIVO</em>}</EntityLink></td><td>{row.played}</td><td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td><td><b>{row.points}</b></td></tr>; })}</tbody></table>
+    <table><thead><tr><th>#</th><th>EQUIPO</th><th>PJ</th><th>DG</th><th>PTS</th></tr></thead><tbody>{rows.map(row => { const position = standings.indexOf(row) + 1; return <tr key={row.team_id} className={liveRowClass(row, `${row.team_id === teamId ? 'current-team' : ''} ${zones.get(row.team_id) ?? ''}`.trim())}><td><LivePosition position={position}/></td><td><EntityLink to="team" id={row.team_id} className="table-team-link"><LiveMovement row={row}/><TeamMark team={{ ...row, ...(teamIndex.get(row.team_id) ?? {}) }}/><span>{row.name}</span>{row.isPlayingLive && <em className="live-team-tag">EN VIVO</em>}</EntityLink></td><td>{row.played}</td><td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td><td><b>{row.points}</b></td></tr>; })}</tbody></table>
   </section>;
 }
 
@@ -759,10 +762,11 @@ function FormPills({ matches, teamId }) {
   })}</div>;
 }
 
-function ClubTable({ standings, teamId, teams }) {
+function ClubTable({ standings, teamId, teams, format = null }) {
+  const zones = tableZones(standings, format);
   const teamIndex = new Map(teams.map(team => [team.id, team]));
   if (!standings.length) return <p className="empty-copy">SIN TABLA PUBLICADA.</p>;
-  return <><LiveTableStatus rows={standings}/><div className="table-scroll"><table className="league-table club-league-table"><thead><tr><th>#</th><th>EQUIPO</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th><th>PTS</th></tr></thead><tbody>{standings.map((row, index) => <tr key={row.team_id} className={liveRowClass(row, `${row.team_id === teamId ? 'current-team' : ''} ${playoffZone(index, standings.length)}`.trim())}><td><LivePosition position={index + 1}/></td><td><EntityLink to="team" id={row.team_id} className="table-team-link"><LiveMovement row={row}/><TeamMark team={{ ...row, ...(teamIndex.get(row.team_id) ?? {}) }}/>{row.name}{row.isPlayingLive && <em className="live-team-tag">EN VIVO</em>}</EntityLink></td><td>{row.played}</td><td>{row.wins}</td><td>{row.draws}</td><td>{row.losses}</td><td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td><td><b>{row.points}</b></td></tr>)}</tbody></table></div><PlayoffLegend total={standings.length}/></>;
+  return <><LiveTableStatus rows={standings}/><div className="table-scroll"><table className="league-table club-league-table"><thead><tr><th>#</th><th>EQUIPO</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>DG</th><th>PTS</th></tr></thead><tbody>{standings.map((row, index) => <tr key={row.team_id} className={liveRowClass(row, `${row.team_id === teamId ? 'current-team' : ''} ${zones.get(row.team_id) ?? ''}`.trim())}><td><LivePosition position={index + 1}/></td><td><EntityLink to="team" id={row.team_id} className="table-team-link"><LiveMovement row={row}/><TeamMark team={{ ...row, ...(teamIndex.get(row.team_id) ?? {}) }}/>{row.name}{row.isPlayingLive && <em className="live-team-tag">EN VIVO</em>}</EntityLink></td><td>{row.played}</td><td>{row.wins}</td><td>{row.draws}</td><td>{row.losses}</td><td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td><td><b>{row.points}</b></td></tr>)}</tbody></table></div><PlayoffLegend format={format}/></>;
 }
 
 const MOVE_LABELS = { purchase: 'COMPRA', assignment: 'ASIGNADO', transfer: 'TRASPASO', release: 'LIBERADO', trade: 'TRUEQUE' };
@@ -947,6 +951,7 @@ export function TeamDetailPage({ team, teams = [], tournaments = [], squad, stan
   useScrollTo(anchor, !loading && Boolean(team));
   const liveStandings = useLiveStandings(standingsTournamentId);
   const displayStandings = Array.isArray(liveStandings.data) && liveStandings.data.length ? liveStandings.data : standings;
+  const tableFormat = useTableProgression(standingsTournamentId, playedKey(displayStandings)).data;
   const roster = [...squad].sort((a, b) => (a.squadOrder ?? 999) - (b.squadOrder ?? 999));
   const starters = roster.filter(player => player.section === 'starters' || (!player.section && player.squadOrder <= 11));
   const substitutes = roster.filter(player => player.section === 'substitutes' || (!player.section && player.squadOrder > 11));
@@ -997,7 +1002,7 @@ export function TeamDetailPage({ team, teams = [], tournaments = [], squad, stan
         {financeView === 'caja' && <LedgerTab team={team} balance={balance}/>}
         {financeView === 'simulador' && <FinanceSimulator team={team} squad={squad} balance={balance} onChanged={onChanged} onTab={onTab} currentPosition={position}/>}
       </div>)}
-    {activeTab === 'partidos' && <div className="club-matches-page"><ClubStandingSnippet standings={displayStandings} teamId={team.id} teams={teams} onMore={() => navigate?.('/torneos')}/><ClubMatches matches={matches} teams={teams} teamId={team.id}/></div>}
+    {activeTab === 'partidos' && <div className="club-matches-page"><ClubStandingSnippet standings={displayStandings} format={tableFormat} teamId={team.id} teams={teams} onMore={() => navigate?.('/torneos')}/><ClubMatches matches={matches} teams={teams} teamId={team.id}/></div>}
     {activeTab === 'estadio' && <div className="stadium-page">
       <VenueTab team={team}/>
       <section id="ver-hinchada"><FansTab team={team}/></section>
