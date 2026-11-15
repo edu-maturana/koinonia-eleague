@@ -61,7 +61,6 @@ export function NewsHighlights({ teams = [], navigate }) {
   return <section className="home-news hub-highlights">
     {stories.length ? <NewsStories items={stories} teams={teams} onOpen={setSelected}/> : <div className="arcade-state">{loading ? 'Cargando noticias…' : 'Aún no hay noticias publicadas.'}</div>}
     {news.length > 0 && <button type="button" className="home-news-all" onClick={() => navigate('/noticias')}>VER TODAS LAS NOTICIAS →</button>}
-    <HighlightsRow teams={teams}/>
     {selected && <NewsModal item={selected} teams={teams} onClose={closeSelected}/>}
   </section>;
 }
@@ -77,6 +76,7 @@ export function HomePage({ teams = [], navigate }) {
     <header className="home-news-masthead"><h1><span>KOINONIA <em>e-LEAGUE</em> NEWS</span></h1><p>FÚTBOL VIRTUAL. PASIÓN REAL.</p>{newsDate(news[0]) && <small>ÚLTIMA HORA · {formatDate(newsDate(news[0]))}</small>}</header>
     {stories.length ? <NewsStories items={stories} teams={teams} onOpen={setSelected}/> : <div className="arcade-state">{loading ? 'CARGANDO NOTICIAS…' : 'Aún no hay noticias publicadas.'}</div>}
     {news.length > 0 && <button type="button" className="home-news-all" onClick={() => navigate('/noticias')}>VER TODAS LAS NOTICIAS →</button>}
+    <HighlightsRow teams={teams}/>
     {selected && <NewsModal item={selected} teams={teams} onClose={closeSelected}/>}
   </main>;
 }
