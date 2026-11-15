@@ -23,7 +23,7 @@ export function SiteLayout({ route, navigate, children, sidebar, error, dismissE
         <div className="header-tools"><NotificationBell navigate={navigate}/><AccountMenu navigate={navigate} teams={teams}/></div>
       </div>
     </header>
-    <div className={`site-body ${sidebar ? 'with-sidebar' : ''} ${route.name === 'home' || route.name === 'newsArticle' ? 'home-body' : ''}`}>
+    <div className={`site-body ${sidebar ? 'with-sidebar' : ''} ${route.name === 'home' ? 'home-body' : ''}`}>
       <div className="site-content">{children}</div>
       {sidebar}
     </div>

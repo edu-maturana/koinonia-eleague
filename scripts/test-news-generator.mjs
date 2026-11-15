@@ -160,3 +160,15 @@ assert.equal(generateTransferNews({ id: 'incomplete' }), null);
 assert.equal(generateSanctionNews({ id: 'incomplete' }), null);
 
 console.log(`Generador verificado: 14 subcategorías, ${templateCount} plantillas y selección determinista.`);
+
+// Contracciones con apodos ("a el" → "al", "de el" → "del"), sin tocar nombres propios.
+{
+  const { contract, withPreposition } = await import('../src/utils/spanish.js');
+  const { fillTemplate } = await import('../src/features/news/newsEngine.js');
+  assert.equal(fillTemplate('{equipo} no le gana a {rival}', { equipo: 'Los Poruños', rival: 'el Lado Oscuro' }), 'Los Poruños no le gana al Lado Oscuro');
+  assert.equal(fillTemplate('TRIUNFO DE {equipo}', { equipo: 'EL LUCARIO' }), 'TRIUNFO DEL LUCARIO');
+  assert.equal(contract('Llegó desde El Tanque FC'), 'Llegó desde El Tanque FC');
+  assert.equal(contract('La Poruña el domingo'), 'La Poruña el domingo');
+  assert.equal(withPreposition('de', 'El Tranque'), 'del Tranque');
+  assert.equal(withPreposition('a', 'los Poruños'), 'a los Poruños');
+}

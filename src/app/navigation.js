@@ -15,7 +15,7 @@ const TOURNAMENT_PATHS = new Set(['/torneos', '/calculadora', '/clasificacion', 
 
 /** A qué ítem del menú pertenece la pantalla actual (null si no cuelga de ninguno, como Reglas o Notificaciones). */
 export function activeNavigationPath(route) {
-  if (route.name === 'home' || route.name === 'newsArticle') return '/';
+  if (route.name === 'home') return '/';
   if (route.name === 'player' || route.name === 'card' || route.path.startsWith('/equipos/jugadores')) return '/equipos/jugadores';
   if (route.path === '/transferencias') return '/transferencias';
   if (route.name === 'match' || MATCH_PATHS.has(route.path) || (route.path === '/liga' && route.query?.tab === 'partidos')) return '/partidos';
