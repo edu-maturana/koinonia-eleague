@@ -116,6 +116,8 @@ a.tile:focus-visible, button.tile:focus-visible { outline: 3px solid var(--c-yel
 .hub-results em.form-G { background: var(--c-green-bright); } .hub-results em.form-E { background: #8a8270; } .hub-results em.form-P { background: var(--c-red); }
 .hub-results b { font: 400 var(--fs-lg)/1 var(--font-display); color: var(--c-navy-900); }
 .hub-results .ui-icon { color: var(--c-red); }
+.hub-results span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hub-results .hub-results-tag { font: 600 var(--fs-xs)/1.1 var(--font-ui); letter-spacing: .04em; text-transform: uppercase; color: var(--c-ink-muted); }
 .mini-table { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
 .mini-table li { display: grid; grid-template-columns: 26px 28px 1fr auto; align-items: center; gap: var(--sp-2); padding: 6px; font: 400 var(--fs-md)/1.2 var(--font-body); }
 .mini-table li b { font: 600 var(--fs-md)/1 var(--font-ui); color: var(--c-ink-muted); text-align: right; }

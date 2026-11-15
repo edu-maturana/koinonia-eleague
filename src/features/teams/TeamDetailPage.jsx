@@ -12,7 +12,7 @@ import { LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClas
 import { PlayerFace } from '../../components/PlayerFace.jsx';
 import { teamBalance, teamCoachName, teamCoachPhoto } from '../../utils/teamPresentation.js';
 import { readPersonProfile } from '../../utils/personProfile.js';
-import { matchRoundLabel } from '../../utils/matchPresentation.js';
+import { compareUpcoming, matchRoundLabel } from '../../utils/matchPresentation.js';
 import { CoachForm, PresidentForm, ProfileForm, SquadEditor } from '../admin/TeamAdminPanel.jsx';
 import { ManagerSummary } from './ManagerCard.jsx';
 import { ReputationModal, ReputationSummary } from './Reputation.jsx';
@@ -100,7 +100,7 @@ function ClubMatches({ matches, teams, teamId }) {
     : matchTeam;
   const upcoming = matches
     .filter(match => match.status === 'pending' || match.status === 'live')
-    .sort((left, right) => (left.roundNumber ?? Number.MAX_SAFE_INTEGER) - (right.roundNumber ?? Number.MAX_SAFE_INTEGER) || (left.tournament?.name ?? '').localeCompare(right.tournament?.name ?? '', 'es'));
+    .sort(compareUpcoming);
   const played = matches
     .filter(match => match.status === 'finished')
     .sort((left, right) => String(right.finishedAt ?? '').localeCompare(String(left.finishedAt ?? '')));

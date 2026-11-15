@@ -4,7 +4,7 @@ import { PlayerFace } from '../../components/PlayerFace.jsx';
 import { FormFeedback } from '../admin/FormFeedback.jsx';
 import { useApiMutation } from '../admin/useApiMutation.js';
 import { DataState, OverallBadge, PageHeader, Pagination, gp } from './DataStates.jsx';
-import { PLAYING_STYLES, skillLabel, STAT_GROUPS } from './EfootballCard.jsx';
+import { PLAYING_STYLES, efootballPrice, profileLevel, skillLabel, STAT_GROUPS } from './EfootballCard.jsx';
 import { useApiQuery } from './useApiQuery.js';
 import { addToComparison, comparisonCandidate, readComparison, writeComparison } from '../../utils/playerComparison.js';
 import { gpLabel, gpNumber } from '../../utils/money.js';
@@ -155,13 +155,13 @@ function ComparisonLoader({ selection, onData }) {
 const COMPARISON_FACTS = [
   ['MEDIA eFOOTBALL', ({ player, card }) => card?.overall ?? player?.external?.overall],
   ['VALOR LIGA', ({ player }) => player?.gpValue, gp],
-  ['VALOR eFOOTBALL', ({ player, card }) => card?.gpPrice ?? player?.external?.gpPrice, gp],
+  ['PRECIO EN eFOOTBALL', ({ player, card }) => card?.gpPrice ?? player?.external?.gpPrice, efootballPrice],
   ['GOLES HISTÓRICOS', ({ player }) => player ? player.goals ?? 0 : null],
   ['ALTURA', ({ card }) => card?.height, value => `${value} CM`],
-  ['USO PIE MALO', ({ card }) => card?.profile?.weakFootUsage, value => `${value}/4`],
-  ['PRECISIÓN PIE MALO', ({ card }) => card?.profile?.weakFootAccuracy, value => `${value}/4`],
-  ['FORMA', ({ card }) => card?.profile?.form, value => `${value}/8`],
-  ['RESIST. LESIONES', ({ card }) => card?.profile?.injuryResistance, value => `${value}/3`],
+  ['USO PIE MALO', ({ card }) => card?.profile?.weakFootUsage, value => profileLevel('weakFootUsage', value)],
+  ['PRECISIÓN PIE MALO', ({ card }) => card?.profile?.weakFootAccuracy, value => profileLevel('weakFootAccuracy', value)],
+  ['FORMA', ({ card }) => card?.profile?.form, value => profileLevel('form', value)],
+  ['RESIST. LESIONES', ({ card }) => card?.profile?.injuryResistance, value => profileLevel('injuryResistance', value)],
 ];
 
 const comparisonProfile = data => {

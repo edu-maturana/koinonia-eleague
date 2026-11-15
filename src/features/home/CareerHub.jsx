@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { endpoints } from '../../api/endpoints.js';
 import { TeamMark } from '../../components/TeamMark.jsx';
-import { matchRoundLabel } from '../../utils/matchPresentation.js';
+import { compareRecent, compareUpcoming, competitionTag, matchRoundLabel } from '../../utils/matchPresentation.js';
 import { teamBalance } from '../../utils/teamPresentation.js';
 import { Card, Icon, Screen, Tile } from '../../ui/index.js';
 import { gp } from '../public/DataStates.jsx';
@@ -78,7 +78,8 @@ function LatestNews({ teams }) {
 /** Inicio = la central de tu club, como el menú del modo carrera: lo próximo, lo pendiente y los atajos. */
 export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
   const team = useApiQuery(signal => endpoints.team(teamId, signal), [teamId]);
-  const matches = useApiQuery(signal => endpoints.teamMatches(teamId, signal), [teamId]);
+  const matches = useApiQuery(signal => endpoints.teamUpcoming(teamId, signal), [teamId]);
+  const recent = useApiQuery(signal => endpoints.teamRecent(teamId, signal), [teamId]);
   const rivalry = useApiQuery(signal => endpoints.teamRivalry(teamId, signal).catch(() => ({ data: null })), [teamId]);
   const market = useApiQuery(signal => endpoints.marketStatus(signal).catch(() => ({ data: { open: false } })), []);
   const business = useApiQuery(signal => endpoints.teamBusiness(teamId, signal).catch(() => ({ data: null })), [teamId]);
@@ -86,8 +87,10 @@ export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
   const todo = useTodo(teamId, business.data);
   const club = team.data ? { ...team.data, ...(teams.find(item => item.id === teamId) ?? {}) } : teams.find(item => item.id === teamId);
   const all = list(matches.data);
-  const next = all.filter(match => ['live', 'pending'].includes(match.status)).sort((a, b) => (a.status === 'live' ? -1 : 0) - (b.status === 'live' ? -1 : 0) || (a.roundNumber ?? 999) - (b.roundNumber ?? 999))[0] ?? null;
-  const finished = all.filter(match => match.status === 'finished').sort((a, b) => String(b.finishedAt ?? '').localeCompare(String(a.finishedAt ?? '')));
+  const next = all.filter(match => ['live', 'pending'].includes(match.status)).sort(compareUpcoming)[0] ?? null;
+  // Los terminados vienen de su propia consulta (los más recientes primero): la de todos los partidos se corta en 100 y un club
+  // ya pasa los 150, así que los de la liga en curso quedaban fuera y aparecían partidos de copa o de gira viejos.
+  const finished = list(recent.data).filter(match => match.status === 'finished').sort(compareRecent);
   // Sin partido por jugar, el último va en la tarjeta grande y la lista sigue desde el anterior (no se repite).
   const last = next ? null : finished[0] ?? null;
   const played = finished.slice(last ? 1 : 0, last ? 6 : 5);
@@ -111,10 +114,10 @@ export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
       {next
         ? <Tile tone={derby ? 'red' : 'navy'} href={`#/partidos/${next.id}`} icon={<Icon name={derby ? 'fire' : 'ball'} size={18}/>}
           title={next.status === 'live' ? 'Jugando ahora' : derby ? `Próximo partido · ¡${next?.rivalry?.label ?? 'Clásico'}!` : 'Próximo partido'}
-          value={`vs ${nextRival?.name ?? '—'}`} detail={`${matchRoundLabel(next)} · ${sideOf(next, teamId) === 'home' ? 'de local' : 'de visita'}`}/>
+          value={`${sideOf(next, teamId) === 'home' ? 'vs' : 'en casa de'} ${nextRival?.name ?? '—'}`} detail={`${competitionTag(next)} · ${sideOf(next, teamId) === 'home' ? 'de local' : 'de visita'}`}/>
         : last && <Tile tone="navy" href={`#/partidos/${last.id}`} icon={<Icon name="ball" size={18}/>} title="Último partido"
           value={`${{ G: 'Ganaste', E: 'Empataste', P: 'Perdiste' }[resultOf(last, teamId)]} ${scoreFor(last, teamId)}`}
-          detail={`${sideOf(last, teamId) === 'home' ? 'Contra' : 'En casa de'} ${rivalOf(last, teamId)?.name ?? '—'}. No tienes partidos por jugar.`}/>}
+          detail={`${sideOf(last, teamId) === 'home' ? 'Contra' : 'En casa de'} ${rivalOf(last, teamId)?.name ?? '—'} (${competitionTag(last)}). No tienes partidos por jugar.`}/>}
       <Tile href={`#/equipos/${teamId}?tab=finanzas&ver=caja`} icon={<Icon name="coin" size={18}/>} title="Caja" value={balance === null ? '—' : gp(balance)} detail="Sueldos, ingresos y gastos."/>
       <Tile tone={market.data?.open ? 'gold' : 'paper'} href="#/transferencias" icon={<Icon name="handshake" size={18}/>} title="Mercado"
         value={market.data?.open ? 'Abierto' : 'Cerrado'} detail={market.data?.open ? `Cierra el ${when(market.data.closesAt) ?? 'pronto'}.` : 'Igual puedes buscar jugadores y hablarles.'}/>
@@ -128,7 +131,7 @@ export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
           <ul className="hub-results">{played.map(match => {
             const result = resultOf(match, teamId);
             const other = rivalOf(match, teamId);
-            return <li key={match.id}><a href={`#/partidos/${match.id}`}><em className={`form-${result}`}>{result}</em><span>{sideOf(match, teamId) === 'home' ? 'vs' : 'en casa de'} {other?.name}</span>
+            return <li key={match.id}><a href={`#/partidos/${match.id}`}><em className={`form-${result}`}>{result}</em><span>{sideOf(match, teamId) === 'home' ? 'vs' : 'en casa de'} {other?.name}<small className="hub-results-tag">{competitionTag(match)}</small></span>
               <b>{scoreFor(match, teamId)}</b>{(match.derby || (rival && other?.id === rival.id)) && <Icon name="fire" size={14}/>}</a></li>;
           })}</ul>
         </Card>}

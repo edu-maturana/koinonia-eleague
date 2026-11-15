@@ -18,6 +18,12 @@ export const endpoints = {
   teamTitles: (teamId, signal) => get(`/teams/${teamId}/titles`, null, signal),
   // La API pagina de 20 en 20; la ficha del club necesita todo su historial (máximo permitido: 100).
   teamMatches: (teamId, signal) => get(`/teams/${teamId}/matches`, { pageSize: 100 }, signal),
+  // Inicio: los por jugar (pocos) y los últimos terminados, cada uno con su consulta para no depender del corte de 100.
+  teamUpcoming: (teamId, signal) => Promise.all([
+    get(`/teams/${teamId}/matches`, { status: 'live', pageSize: 10 }, signal),
+    get(`/teams/${teamId}/matches`, { status: 'pending', pageSize: 40 }, signal),
+  ]).then(([live, pending]) => ({ data: [...(live?.data ?? []), ...(pending?.data ?? [])] })),
+  teamRecent: (teamId, signal) => get(`/teams/${teamId}/matches`, { status: 'finished', order: 'recent', pageSize: 6 }, signal),
   teamMoves: (teamId, signal) => get(`/teams/${teamId}/moves`, null, signal),
   teamScorers: (teamId, query, signal) => get(`/teams/${teamId}/scorers`, query, signal),
   presidents: (query, signal) => get('/presidents', query, signal),

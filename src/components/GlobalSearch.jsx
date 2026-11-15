@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { endpoints } from '../api/endpoints.js';
 import { PlayerFace } from './PlayerFace.jsx';
 import { TeamMark } from './TeamMark.jsx';
-import { matchRoundLabel } from '../utils/matchPresentation.js';
+import { compareUpcoming, matchRoundLabel } from '../utils/matchPresentation.js';
 
 const MIN_QUERY = 2;
 const gp = value => typeof value === 'number' ? gpLabel(value) : '—';
@@ -72,7 +72,7 @@ export function detectTeams(term, teams) {
 function pickMatches(rows, [first, second]) {
   const involved = second ? rows.filter(match => [match.homeTeam?.id, match.awayTeam?.id].includes(second.id)) : rows;
   const live = involved.filter(match => match.status === 'live');
-  const pending = involved.filter(match => match.status === 'pending').sort((a, b) => (a.roundNumber ?? 999) - (b.roundNumber ?? 999));
+  const pending = involved.filter(match => match.status === 'pending').sort(compareUpcoming);
   const played = involved.filter(match => match.status === 'finished').sort((a, b) => String(b.finishedAt ?? '').localeCompare(String(a.finishedAt ?? '')));
   return second ? [...live, ...pending.slice(0, 1), ...played.slice(0, 4)] : [...live, ...pending.slice(0, 2), ...played.slice(0, 2)];
 }

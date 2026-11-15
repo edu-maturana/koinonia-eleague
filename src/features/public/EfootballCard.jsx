@@ -33,7 +33,23 @@ const PITCH_POSITIONS = [['cf', 'DC', 50, 10], ['ss', 'SD', 50, 24], ['lwf', 'EX
 
 const statTier = value => value >= 90 ? 'elite' : value >= 80 ? 'great' : value >= 70 ? 'good' : 'low';
 
-const scale = (value, max) => value == null ? '—' : `${value}/${max}`;
+// eFootballDB guarda estos niveles corridos en uno (el más bajo llega como 2): uso y precisión del pie malo van de 1 a 4, forma
+// y resistencia a lesiones de 1 a 3. Antes se mostraban crudos sobre otro máximo ("5/4", "4/3").
+const PROFILE_LEVELS = {
+  weakFootUsage: ['Casi nunca', 'Rara vez', 'Seguido', 'Muy seguido'],
+  weakFootAccuracy: ['Muy baja', 'Baja', 'Media', 'Alta'],
+  form: ['Irregular', 'Estable', 'Inquebrantable'],
+  injuryResistance: ['Baja', 'Media', 'Alta'],
+};
+/** "Alta (4/4)" a partir del valor crudo de eFootballDB. */
+export function profileLevel(key, raw) {
+  const levels = PROFILE_LEVELS[key];
+  if (raw == null || !levels) return '—';
+  const level = Math.min(Math.max(Number(raw) - 1, 1), levels.length);
+  return `${levels[level - 1]} (${level}/${levels.length})`;
+}
+/** El precio de la carta en el juego (GP de eFootball), que no tiene nada que ver con el GP de la liga. */
+export const efootballPrice = value => value == null ? '—' : `${Number(value).toLocaleString('es-CL')} GP del juego`;
 
 export function EfootballCardDetails({ card }) {
   const stats = card.stats ?? {};
@@ -48,10 +64,10 @@ export function EfootballCardDetails({ card }) {
       <section className="card-profile"><h3>PERFIL</h3><dl>
         <div><dt>ESTILO DE JUEGO</dt><dd>{PLAYING_STYLES[card.playingStyle] ?? '—'}</dd></div>
         <div><dt>PIE HÁBIL</dt><dd>{card.strongFoot === 1 ? 'Izquierdo' : card.strongFoot === 0 ? 'Derecho' : '—'}</dd></div>
-        <div><dt>USO PIE MALO</dt><dd>{scale(profile.weakFootUsage, 4)}</dd></div>
-        <div><dt>PRECISIÓN PIE MALO</dt><dd>{scale(profile.weakFootAccuracy, 4)}</dd></div>
-        <div><dt>FORMA</dt><dd>{scale(profile.form, 8)}</dd></div>
-        <div><dt>RESIST. A LESIONES</dt><dd>{scale(profile.injuryResistance, 3)}</dd></div>
+        <div><dt>USO PIE MALO</dt><dd>{profileLevel('weakFootUsage', profile.weakFootUsage)}</dd></div>
+        <div><dt>PRECISIÓN PIE MALO</dt><dd>{profileLevel('weakFootAccuracy', profile.weakFootAccuracy)}</dd></div>
+        <div><dt>FORMA</dt><dd>{profileLevel('form', profile.form)}</dd></div>
+        <div><dt>RESIST. A LESIONES</dt><dd>{profileLevel('injuryResistance', profile.injuryResistance)}</dd></div>
       </dl></section>
       <section className="card-skills"><h3>HABILIDADES <small>{card.skills?.length ?? 0}</small></h3>{card.skills?.length ? <ul>{card.skills.map(key => <li key={key}>{skillLabel(key)}</li>)}</ul> : <p className="empty-copy">SIN HABILIDADES REGISTRADAS.</p>}</section>
     </div>
@@ -78,7 +94,7 @@ export function EfootballCardPage({ pesId, variation = 0, navigate, onBack, back
       <header className="card-hero">
         <PlayerFace src={data.faceUrl} name={data.name} className="card-hero-face"/>
         <div className="card-hero-copy"><small>CARTA eFOOTBALL · {data.positionCode ?? data.position}</small><h1>{data.name}</h1><p>{[data.nationality, data.age ? `${data.age} AÑOS` : null, data.height ? `${data.height} CM` : null, data.clubName].filter(Boolean).join(' · ')}</p></div>
-        <div className="card-hero-price"><OverallBadge value={data.overall} className="overall-badge-hero"/><small>PRECIO eFOOTBALL</small><b>{data.gpPrice != null ? data.gpPrice.toLocaleString('es-CL') : '—'}</b><span>GP</span></div>
+        <div className="card-hero-price"><OverallBadge value={data.overall} className="overall-badge-hero"/><small>PRECIO EN eFOOTBALL</small><b>{data.gpPrice != null ? data.gpPrice.toLocaleString('es-CL') : '—'}</b><span title="GP del juego eFootball, no de la liga">GP DEL JUEGO</span></div>
       </header>
       <div className="card-league-status">{data.league ? <>
         {data.league.team ? <span className="search-status owned">{data.league.team.imageUrl && <img src={data.league.team.imageUrl} alt=""/>}LO TIENE {data.league.team.name}</span> : <span className="search-status free">AGENTE LIBRE</span>}
