@@ -1,3 +1,4 @@
+import { HighlightsRow } from './Highlights.jsx';
 import { useCallback, useEffect, useState } from 'react';
 import { useAutomaticNews } from '../news/useAutomaticNews.js';
 import { formatDate } from '../public/DataStates.jsx';
@@ -60,6 +61,7 @@ export function NewsHighlights({ teams = [], navigate }) {
   return <section className="home-news hub-highlights">
     {stories.length ? <NewsStories items={stories} teams={teams} onOpen={setSelected}/> : <div className="arcade-state">{loading ? 'Cargando noticias…' : 'Aún no hay noticias publicadas.'}</div>}
     {news.length > 0 && <button type="button" className="home-news-all" onClick={() => navigate('/noticias')}>VER TODAS LAS NOTICIAS →</button>}
+    <HighlightsRow teams={teams}/>
     {selected && <NewsModal item={selected} teams={teams} onClose={closeSelected}/>}
   </section>;
 }

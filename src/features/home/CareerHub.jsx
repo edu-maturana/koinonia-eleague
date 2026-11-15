@@ -13,6 +13,7 @@ import { NewsArtwork } from '../../components/NewsArtwork.jsx';
 import { NewsModal } from '../news/NewsModal.jsx';
 import { useAutomaticNews } from '../news/useAutomaticNews.js';
 import { NewsHighlights } from './HomePage.jsx';
+import { HighlightsRow } from './Highlights.jsx';
 
 const list = value => (Array.isArray(value) ? value : []);
 const when = value => {
@@ -126,6 +127,8 @@ export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
       <Tile href={`#/equipos/${teamId}`} icon={<Icon name="shirt" size={18}/>} title="Mi club" badge={unread} value={club?.name ?? 'Tu club'}
         detail={unread ? `${unread} mensaje${unread === 1 ? '' : 's'} sin leer · plantel, finanzas y estadio.` : 'Plantel, mensajes, finanzas y estadio.'}/>
     </div>
+
+    <HighlightsRow teams={teams}/>
 
     <div className="hub-columns hub-columns--single">
       <div className="hub-column">

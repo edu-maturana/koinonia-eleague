@@ -5,6 +5,7 @@ const get = (path, query, signal) => apiClient.get(path, { query, signal });
 export const endpoints = {
   health: signal => get('/health', null, signal),
   home: signal => get('/home', null, signal),
+  highlights: signal => get('/highlights', null, signal),
   activity: (query, signal) => get('/activity', query, signal),
   news: (query, signal) => get('/news', query, signal),
   newsTokens: signal => get('/news/tokens', null, signal),
