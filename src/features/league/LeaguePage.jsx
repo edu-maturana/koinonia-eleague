@@ -101,8 +101,8 @@ export function ClubsScreen({ tab, teams = [], navigate }) {
 }
 
 /** Noticias y reglamento: pantallas sueltas (se llega desde el pie, el inicio o el menú de cuenta). */
-export function NewsScreen({ teams = [] }) {
-  return <Screen kicker="Koinonia e-League" title="Noticias" intro="Todo lo que pasó en la liga."><NewsPage teams={teams}/></Screen>;
+export function NewsScreen({ teams = [], openNewsId = null, onOpenNews = null, onCloseNews = null }) {
+  return <Screen kicker="Koinonia e-League" title="Noticias" intro="Todo lo que pasó en la liga."><NewsPage teams={teams} openNewsId={openNewsId} onOpenNews={onOpenNews} onCloseNews={onCloseNews}/></Screen>;
 }
 export function RulesScreen() {
   return <Screen kicker="Koinonia e-League" title="Reglamento" intro="Las reglas de la liga."><RulesPage/></Screen>;

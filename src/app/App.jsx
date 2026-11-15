@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef } from 'react';
 import { SiteLayout } from '../components/SiteLayout.jsx';
 import { MatchSidebar } from '../components/MatchSidebar.jsx';
 import { HomePage } from '../features/home/HomePage.jsx';
@@ -56,7 +56,17 @@ export function App() {
   const tournament = activeTournaments.find(item => item.format === 'league') ?? activeTournaments[0];
   const { teamId: myTeamId } = useAuth();
   // Una pantalla nueva parte arriba (salvo que el enlace pida una parte: &ver=…).
-  useEffect(() => { if (!route.query.ver) window.scrollTo(0, 0); }, [route.path]);
+  // Abrir o cerrar una noticia (#/noticias ↔ #/noticias/<id>) no mueve el listado de lugar.
+  const previousPath = useRef(route.path);
+  useEffect(() => {
+    const isNews = path => path === '/noticias' || path.startsWith('/noticias/');
+    const betweenNews = isNews(previousPath.current) && isNews(route.path);
+    previousPath.current = route.path;
+    if (!route.query.ver && !betweenNews) window.scrollTo(0, 0);
+  }, [route.path]);
+  // Noticias: cada una tiene su enlace (#/noticias/<id>) y se abre sobre el listado; cerrar vuelve a #/noticias.
+  const openNewsArticle = useCallback(item => navigate(`/noticias/${encodeURIComponent(item.id)}`), [navigate]);
+  const closeNewsArticle = useCallback(() => navigate('/noticias'), [navigate]);
   // Cada ruta de Partidos, Torneos y Equipos es una pestaña de su pantalla. Los enlaces de la versión anterior
   // (#/liga?tab=…, que guardaron algunos avisos) se traducen aquí.
   const areaRoute = (() => {
@@ -98,7 +108,7 @@ export function App() {
     const calculatorTournament = activeTournaments.find(item => String(item.id) === String(route.query.torneo)) ?? tournament;
     if (areaRoute.area === 'matches') page = <MatchesScreen tab={areaRoute.tab} teams={league.teams} navigate={navigate} matchesMode={areaRoute.matchesMode}/>;
     else if (areaRoute.area === 'tournaments') page = <TournamentsScreen tab={areaRoute.tab} teams={league.teams} navigate={navigate} query={route.query} tournament={calculatorTournament}/>;
-    else if (areaRoute.area === 'news') page = <NewsScreen teams={league.teams}/>;
+    else if (areaRoute.area === 'news') page = <NewsScreen teams={league.teams} onOpenNews={openNewsArticle}/>;
     else if (areaRoute.area === 'rules') page = <RulesScreen/>;
     else page = <ClubsScreen tab={areaRoute.tab} teams={league.teams} navigate={navigate}/>;
   } else if (route.name === 'home') {
@@ -121,7 +131,7 @@ export function App() {
     const tab = route.query.tab;
     page = <MarketPage key={`${route.query.jugador ?? ''}`} teams={league.teams} initialTab={tab} highlightId={route.query.id} query={route.query} importing={route.path.endsWith('/importar')} navigate={navigate} prefill={route.query.jugador ? { playerId: route.query.jugador, teamId: route.query.club ?? '', op: route.query.op ?? null } : null}/>;
   } else if (route.name === 'newsArticle') {
-    page = <HomePage teams={league.teams} navigate={navigate} openNewsId={route.newsId} onCloseNews={() => navigate('/')}/>;
+    page = <NewsScreen teams={league.teams} openNewsId={route.newsId} onOpenNews={openNewsArticle} onCloseNews={closeNewsArticle}/>;
   } else if (route.path === '/notificaciones') {
     page = <NotificationsPage navigate={navigate} initialTab={route.query.tab}/>;
   } else if (route.path === '/admin' || route.path === '/personas') {
@@ -130,6 +140,6 @@ export function App() {
     page = <SectionPage path={route.path}/>;
   }
 
-  const sidebar = route.name === 'home' || route.name === 'newsArticle' ? <MatchSidebar tournament={tournament} activeTournaments={activeTournaments} standings={league.standings} teams={league.teams} resolveTeam={resolveTeam} loading={state.loading} navigate={navigate}/> : null;
+  const sidebar = route.name === 'home' ? <MatchSidebar tournament={tournament} activeTournaments={activeTournaments} standings={league.standings} teams={league.teams} resolveTeam={resolveTeam} loading={state.loading} navigate={navigate}/> : null;
   return <SiteLayout route={route} navigate={navigate} sidebar={sidebar} error={state.error} dismissError={dismissError} playlist={playlist} teams={league.teams}><Suspense fallback={<main className="screen"><div className="arcade-state">Cargando…</div></main>}>{page}</Suspense></SiteLayout>;
 }

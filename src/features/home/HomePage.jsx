@@ -4,7 +4,7 @@ import { useAutomaticNews } from '../news/useAutomaticNews.js';
 import { formatDate } from '../public/DataStates.jsx';
 import { NewsArtwork } from '../../components/NewsArtwork.jsx';
 import { rememberNews } from '../news/newsCache.js';
-import { NewsModal, useNewsItem } from '../news/NewsModal.jsx';
+import { NewsModal } from '../news/NewsModal.jsx';
 
 const STORY_LIMIT = 10;
 // Titulares largos se achican para que quepan junto al botón en la historia destacada.
@@ -66,20 +66,17 @@ export function NewsHighlights({ teams = [], navigate }) {
   </section>;
 }
 
-// openNewsId llega desde un enlace directo (#/noticias/:id): se abre el modal sobre el inicio.
-export function HomePage({ teams = [], navigate, openNewsId, onCloseNews }) {
+// Los enlaces directos (#/noticias/:id) se abren sobre el listado de noticias (App.jsx); acá el modal abre en el lugar.
+export function HomePage({ teams = [], navigate }) {
   const { news, loading } = useAutomaticNews();
   const [selected, setSelected] = useState(null);
-  const linked = useNewsItem(openNewsId);
   useEffect(() => { rememberNews(news); }, [news]);
   const stories = news.slice(0, STORY_LIMIT);
-  const closeLinked = useCallback(() => onCloseNews?.(), [onCloseNews]);
   const closeSelected = useCallback(() => setSelected(null), []);
   return <main className="newspaper home-news">
     <header className="home-news-masthead"><h1><span>KOINONIA <em>e-LEAGUE</em> NEWS</span></h1><p>FÚTBOL VIRTUAL. PASIÓN REAL.</p>{newsDate(news[0]) && <small>ÚLTIMA HORA · {formatDate(newsDate(news[0]))}</small>}</header>
     {stories.length ? <NewsStories items={stories} teams={teams} onOpen={setSelected}/> : <div className="arcade-state">{loading ? 'CARGANDO NOTICIAS…' : 'Aún no hay noticias publicadas.'}</div>}
     {news.length > 0 && <button type="button" className="home-news-all" onClick={() => navigate('/noticias')}>VER TODAS LAS NOTICIAS →</button>}
     {selected && <NewsModal item={selected} teams={teams} onClose={closeSelected}/>}
-    {openNewsId && !selected && <NewsModal item={linked.item} loading={linked.loading} teams={teams} onClose={closeLinked}/>}
   </main>;
 }

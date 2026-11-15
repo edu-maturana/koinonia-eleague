@@ -1,4 +1,5 @@
 import { endpoints } from '../../api/endpoints.js';
+import { apiUrl } from '../../api/client.js';
 
 // La API no expone /news/:id: las noticias que ya se cargaron (inicio, página de
 // noticias) quedan en memoria, y si se abre un enlace directo se recorre el feed.
@@ -28,3 +29,6 @@ export async function findNews(id, signal) {
 }
 
 export const newsPath = item => `/noticias/${encodeURIComponent(item.id)}`;
+
+/** Enlace público para compartir: una página con la vista previa (titular, bajada, imagen) que redirige a la noticia. */
+export const newsShareUrl = item => new URL(apiUrl(`/share/news/${encodeURIComponent(item.id)}`), window.location.origin).toString();

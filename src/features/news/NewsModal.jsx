@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NewsArtwork } from '../../components/NewsArtwork.jsx';
 import { formatDate } from '../public/DataStates.jsx';
-import { cachedNews, findNews, newsPath } from './newsCache.js';
+import { cachedNews, findNews, newsPath, newsShareUrl } from './newsCache.js';
 
 const newsDate = item => item?.publishedAt ?? item?.date;
 
@@ -33,8 +33,20 @@ export function NewsModal({ item, loading, teams = [], onClose }) {
     document.body.style.overflow = 'hidden';
     return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = overflow; };
   }, [onClose]);
+  // Abierta desde el inicio o la central del club, la barra de direcciones igual muestra el enlace de la noticia
+  // (#/noticias/<id>) sin cambiar de pantalla; al cerrar vuelve la dirección de antes.
+  const itemId = item?.id ?? null;
+  useEffect(() => {
+    if (!itemId) return undefined;
+    const own = `#${newsPath({ id: itemId })}`;
+    const previous = window.location.hash;
+    if (previous === own) return undefined;
+    window.history.replaceState(window.history.state, '', own);
+    return () => { if (window.location.hash === own) window.history.replaceState(window.history.state, '', previous || '#/'); };
+  }, [itemId]);
+  // Se comparte el enlace público (/api/share/news/<id>): trae la vista previa para Discord o WhatsApp y lleva a la noticia.
   const share = async () => {
-    const url = `${window.location.origin}${window.location.pathname}#${newsPath(item)}`;
+    const url = newsShareUrl(item);
     try {
       if (navigator.share) await navigator.share({ title: item.headline, url });
       else { await navigator.clipboard.writeText(url); setCopied(true); window.setTimeout(() => setCopied(false), 2000); }

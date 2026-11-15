@@ -1,6 +1,7 @@
 import { newsTemplates } from './newsTemplates.js';
 import { getNewsImage } from './newsImageSelector.js';
 import { deterministicItem, hashString } from './deterministic.js';
+import { contract } from '../../utils/spanish.js';
 
 export { deterministicItem, hashString } from './deterministic.js';
 
@@ -15,8 +16,9 @@ const categories = {
 const hasValue = value => value !== undefined && value !== null && value !== '';
 const numericScore = value => hasValue(value) && Number.isFinite(Number(value)) ? Number(value) : null;
 
+// "a el Lado Oscuro" → "al Lado Oscuro" cuando el valor insertado es un apodo.
 export function fillTemplate(text, values) {
-  return text.replace(/\{(\w+)\}/g, (placeholder, key) => hasValue(values[key]) ? String(values[key]) : placeholder);
+  return contract(text.replace(/\{(\w+)\}/g, (placeholder, key) => hasValue(values[key]) ? String(values[key]) : placeholder));
 }
 
 export function classifyMatchResult(event) {
