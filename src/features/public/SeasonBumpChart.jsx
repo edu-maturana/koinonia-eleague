@@ -5,6 +5,10 @@ import { TeamMark } from '../../components/TeamMark.jsx';
 // Los colores de los clubes no son una paleta pensada para distinguirse (hay varios rojos), así que la identidad la
 // llevan las etiquetas: el escudo al final de cada línea, los botones de club y la tabla. El color acompaña.
 
+// El servidor manda las fechas cerradas y, si hay fechas a medio jugar (se adelantan y se atrasan), un último punto 'hoy'.
+const roundLabel = round => (round === 'hoy' ? 'HOY' : `F${round}`);
+const roundName = round => (round === 'hoy' ? 'HOY' : `FECHA ${round}`);
+
 const SURFACE = '#f3ead5';
 const MUTED_LINE = '#c9bea4';
 const INK = '#4d4839';
@@ -127,12 +131,12 @@ export function SeasonBumpChart({ progression, resolveTeam, title = 'MOMENTO DE 
   const lineState = team => (!active ? 'is-idle' : active === team.teamId ? 'is-active' : 'is-faded');
   const activeTeam = teams.find(team => team.teamId === active);
 
-  return <section className="workspace-panel season-chart-panel"><h3>{title} <small>PUESTO AL CERRAR CADA FECHA</small></h3>
+  return <section className="workspace-panel season-chart-panel"><h3>{title} <small>PUESTO AL CERRAR CADA FECHA{rounds.at(-1) === 'hoy' ? ' Y HOY' : ''}</small></h3>
     <p className="season-chart-hint">Toca o pasa el mouse por un club para seguir su camino; toca de nuevo para soltarlo.</p>
     <div className="season-chart-scroll" ref={ref}>
       <div className="season-chart-canvas" style={{ width: svgWidth }}>
         <svg className="season-chart" width={svgWidth} height={height} viewBox={`0 0 ${svgWidth} ${height}`} role="img"
-          aria-label={`Puesto de cada club fecha a fecha, de la fecha ${rounds[0]} a la ${rounds.at(-1)}. El detalle está en la tabla de abajo.`}
+          aria-label={`Puesto de cada club fecha a fecha, de la fecha ${rounds[0]} ${rounds.at(-1) === 'hoy' ? 'a hoy' : `a la ${rounds.at(-1)}`}. El detalle está en la tabla de abajo.`}
           onMouseMove={onMove} onMouseLeave={() => { setColumn(null); setHovered(null); }}>
           {/* Zonas de clasificación del formato del torneo, de fondo. */}
           {zones.map(zone => zone.from <= count && <rect key={zone.kind} className={`season-zone zone-${zone.kind}`} x={LEFT - 14} width={step * (rounds.length - 1) + 28}
@@ -140,7 +144,7 @@ export function SeasonBumpChart({ progression, resolveTeam, title = 'MOMENTO DE 
           {teams.map((team, index) => <text key={`rank-${team.teamId}`} className="season-axis" x={LEFT - 20} y={y(index + 1) + 4} textAnchor="end">{index + 1}</text>)}
           {rounds.map((round, index) => <g key={round}>
             <line className="season-grid" x1={x(index)} x2={x(index)} y1={TOP} y2={height - BOTTOM + 4}/>
-            {(index % labelEvery === 0 || index === rounds.length - 1) && <text className="season-axis" x={x(index)} y={height - 10} textAnchor="middle">F{round}</text>}
+            {(index % labelEvery === 0 || index === rounds.length - 1) && <text className="season-axis" x={x(index)} y={height - 10} textAnchor="middle">{roundLabel(round)}</text>}
           </g>)}
           {column != null && <line className="season-crosshair" x1={x(column)} x2={x(column)} y1={TOP} y2={height - BOTTOM + 4}/>}
           {/* Primero las líneas apagadas y al final la elegida, para que quede encima. */}
@@ -163,7 +167,7 @@ export function SeasonBumpChart({ progression, resolveTeam, title = 'MOMENTO DE 
           </li>)}
         </ol>
         {column != null && <div className="season-tooltip" role="status" style={{ left: Math.min(x(column) + 12, svgWidth - 190), top: 4 }}>
-          <b>FECHA {rounds[column]}</b>
+          <b>{roundName(rounds[column])}</b>
           {activeTeam
             ? <span><TeamMark team={activeTeam.full}/>{activeTeam.name}: <b>{ordinal(activeTeam.positions[column])}</b></span>
             : <ol>{ordered.map(team => <li key={team.teamId}><b>{team.positions[column]}</b>{team.name}</li>)}</ol>}
@@ -179,7 +183,7 @@ export function SeasonBumpChart({ progression, resolveTeam, title = 'MOMENTO DE 
     <details className="season-chart-table">
       <summary>VER COMO TABLA</summary>
       <div className="table-scroll"><table className="season-table">
-        <thead><tr><th>CLUB</th>{rounds.map(round => <th key={round}>F{round}</th>)}</tr></thead>
+        <thead><tr><th>CLUB</th>{rounds.map(round => <th key={round}>{roundLabel(round)}</th>)}</tr></thead>
         <tbody>{teams.map(team => <tr key={team.teamId}><td>{team.name}</td>{team.positions.map((position, index) => <td key={index}>{position}</td>)}</tr>)}</tbody>
       </table></div>
     </details>

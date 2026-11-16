@@ -258,7 +258,9 @@ a.player-card { color: inherit; text-decoration: none; }
 .tournament-main .standings-workspace-panel > .playoff-legend, .tournament-main .standings-workspace-panel > .form-legend { padding: 0 10px; }
 .tournament-main .standings-workspace-panel > .form-legend:last-child { padding-bottom: 10px; }
 @media (max-width: 560px) {
-  .tournament-main .league-table.has-form th:nth-child(2), .tournament-main .league-table.has-form td:nth-child(2) { width: auto; }
+  /* Las columnas G…DG se esconden: su <col> también, o siguen reservando el ancho y la fila queda corta. El club se lleva lo que sobra. */
+  .tournament-main .league-table.has-form col.stat-column { display: none; }
+  .tournament-main .league-table.has-form th:nth-child(2), .tournament-main .league-table.has-form td:nth-child(2) { width: 100%; }
   .league-table .form-column { width: 84px; }
   .form-chips { gap: 1px; }
   .form-chip { width: 15px; height: 16px; font-size: 10px; }
