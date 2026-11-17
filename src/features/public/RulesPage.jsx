@@ -130,8 +130,8 @@ const ClubSystems = ({ superclasico = null }) => <>
         <ul>
           <li><strong>Candidato al título:</strong> terminar entre los 2 primeros (15 M GP) y llegar a la final de los playoffs (30 M GP).</li>
           <li><strong>Alto:</strong> terminar entre los 4 primeros (10 M GP) y llegar al menos a semifinales (20 M GP).</li>
-          <li><strong>Medio:</strong> terminar entre los 6 primeros (5 M GP) y clasificar a playoffs (10 M GP).</li>
-          <li><strong>Bajo:</strong> clasificar a playoffs (5 M GP). Un club recién llegado a la liga parte siempre acá.</li>
+          <li><strong>Medio:</strong> terminar entre los 6 primeros (5 M GP) y clasificar a playoffs (10 M GP). Clasificar a playoffs es <strong>pasar el play-in y llegar a semifinales</strong>: terminar entre los 6 primeros solo da el cupo para jugarlo.</li>
+          <li><strong>Bajo:</strong> clasificar a playoffs, o sea pasar el play-in y llegar a semifinales (5 M GP). Un club recién llegado a la liga parte siempre acá.</li>
         </ul>
       </li>
       <li><strong>Salir campeón no se le exige a nadie:</strong> el que lo logra cobra un bono de 10 M GP, tenga la meta que tenga. Superar la meta de tabla por dos puestos o más paga 5 M GP por cada puesto de más.</li>
