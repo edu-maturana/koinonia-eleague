@@ -222,3 +222,5 @@
 .minute-promises-list li.is-kept { border-color: var(--c-green-bright); }
 .minute-promises-list li.is-broken { border-color: var(--c-red); }
 .minute-promises-question { min-width: 0; }
+.minute-promises-badge { display: inline-block; margin: 2px 6px 0 0; padding: 2px 6px; background: var(--c-gold-bg); border: 1px solid var(--c-gold-line); font: 700 var(--fs-xs)/1.2 var(--font-ui); letter-spacing: .4px; color: var(--c-ink); }
+.minute-promises-badge.is-disputed { background: var(--c-white); border-color: var(--c-red); color: var(--c-red); }

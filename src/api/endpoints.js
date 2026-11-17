@@ -242,6 +242,8 @@ export const endpoints = {
   // Promesas de minutos de un partido: recordatorio al iniciar y confirmación al terminar.
   matchMinutePromises: (matchId, signal) => get(`/matches/${matchId}/minute-promises`, null, signal),
   resolveMinutePromise: (matchId, promiseId, body, signal) => apiClient.post(`/matches/${matchId}/minute-promises/${promiseId}`, body, { actor: 'web', signal }),
+  declareMinutePromise: (matchId, promiseId, body, signal) => apiClient.post(`/matches/${matchId}/minute-promises/${promiseId}/declare`, body, { actor: 'web', signal }),
+  disputeMinutePromise: (matchId, promiseId, signal) => apiClient.post(`/matches/${matchId}/minute-promises/${promiseId}/dispute`, {}, { actor: 'web', signal }),
   playerChat: (playerId, teamId, signal) => get(`/players/${playerId}/chat`, { teamId }, signal),
   teamChats: (teamId, signal) => get(`/teams/${teamId}/chats`, null, signal),
   teamCourting: (teamId, signal) => get(`/teams/${teamId}/courting`, null, signal),
