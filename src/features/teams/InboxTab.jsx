@@ -179,7 +179,12 @@ export function InboxTab({ team, onTab, onRead, highlightId = null }) {
         <div className="inbox-meta"><b>{message.playerName}</b><small><span aria-hidden="true">{icon}</span> {label} · {formatDate(message.createdAt)}</small></div>
         <h4>{message.subject}</h4>
         <p>{message.body}</p>
-        {message.meta?.moodLabel && !['renewal', 'arrival'].includes(message.kind) && <div className="inbox-mood"><MoodMeter mood={message.meta.mood} label={message.meta.moodLabel}/>{message.meta.role && <small>ROL: {roleLabel(message.meta.role)}</small>}</div>}
+        {message.meta?.moodLabel && !['renewal', 'arrival'].includes(message.kind) && <div className="inbox-mood">
+          {/* El ánimo y el rol de hoy (si sigue en el plantel); el de la carta es el de cuando escribió y no refleja lo que hizo el presi después. */}
+          <MoodMeter mood={nowRow?.mood ?? message.meta.mood} label={nowRow?.moodLabel ?? message.meta.moodLabel}/>
+          {(nowRow?.role ?? message.meta.role) && <small>ROL: {roleLabel(nowRow?.role ?? message.meta.role)}</small>}
+          {nowRow && Math.round(nowRow.mood) !== Math.round(message.meta.mood) && <small>AL ESCRIBIR: {Math.round(message.meta.mood)}</small>}
+        </div>}
         {actions && ['expired', 'expiring', 'arrival'].includes(message.kind) && <Button onClick={() => onTab?.('nomina')}>{message.kind === 'expiring' ? 'Ver contrato' : 'Ir a la hoja de firma'}</Button>}
         {actions && message.request && <RequestActions team={team} request={message.request} locked={marketOpen} onDone={replies => answered(message, replies)}/>}
         {event && <LetterActions team={team} message={message} locked={marketOpen} onDone={() => answered(message)}/>}
