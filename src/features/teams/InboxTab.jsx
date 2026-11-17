@@ -94,6 +94,9 @@ export function InboxTab({ team, onTab, onRead, highlightId = null }) {
   // Rol actual de cada jugador (el del mensaje puede estar desactualizado) para cambiarlo desde la propia bandeja.
   const rolesQuery = useApiQuery(signal => endpoints.teamRoles(team.id, signal), [team.id]);
   const roleOf = new Map((Array.isArray(rolesQuery.data) ? rolesQuery.data : []).map(row => [row.playerId, row]));
+  // Promesas de minutos del club: cuentan cómo terminó lo que el presi le prometió al jugador.
+  const promisesQuery = useApiQuery(signal => endpoints.teamMinutePromises(team.id, signal).catch(() => ({ data: [] })), [team.id]);
+  const promiseOf = playerId => (Array.isArray(promisesQuery.data) ? promisesQuery.data : []).find(item => item.playerId === playerId) ?? null;
   const marketOpen = useMarketOpen();
   const { refresh: refreshNotifications } = useNotifications();
   const [readNow, setReadNow] = useState(() => new Set());
@@ -170,7 +173,10 @@ export function InboxTab({ team, onTab, onRead, highlightId = null }) {
   const open = message => { if (!isRead(message)) markRead([message.id]); };
   const toggle = message => { open(message); setOpened(current => { const next = new Set(current); next.has(message.id) ? next.delete(message.id) : next.add(message.id); return next; }); };
   const card = (message, { actions = true } = {}) => {
-    const [icon, label] = KIND[message.kind] ?? ['✉️', 'MENSAJE'];
+    // Una queja ya respondida no debe leerse como el ánimo de hoy (el ánimo va en el medidor).
+    const answeredComplaint = message.kind === 'unhappy' && !needsYou(message);
+    const [icon, label] = answeredComplaint ? ['💬', 'QUEJA POR SU ROL · RESPONDIDA'] : (KIND[message.kind] ?? ['✉️', 'MENSAJE']);
+    const promise = message.request?.resolution === 'minutes' ? promiseOf(message.playerId) : null;
     const nowRow = roleOf.get(message.playerId);
     const event = Boolean(message.meta?.event);
     return <li key={message.id} id={`msg-${message.id}`} className={`inbox-item kind-${message.kind} ${event ? 'is-event' : ''} ${isRead(message) ? '' : 'unread'} ${String(message.id) === String(highlightId) ? 'is-highlighted' : ''}`} onClick={() => open(message)}>
@@ -181,10 +187,17 @@ export function InboxTab({ team, onTab, onRead, highlightId = null }) {
         <p>{message.body}</p>
         {message.meta?.moodLabel && !['renewal', 'arrival'].includes(message.kind) && <div className="inbox-mood">
           {/* El ánimo y el rol de hoy (si sigue en el plantel); el de la carta es el de cuando escribió y no refleja lo que hizo el presi después. */}
+          <small className="inbox-mood-now">{nowRow ? 'AHORA' : 'ÁNIMO'}</small>
           <MoodMeter mood={nowRow?.mood ?? message.meta.mood} label={nowRow?.moodLabel ?? message.meta.moodLabel}/>
           {(nowRow?.role ?? message.meta.role) && <small>ROL: {roleLabel(nowRow?.role ?? message.meta.role)}</small>}
-          {nowRow && Math.round(nowRow.mood) !== Math.round(message.meta.mood) && <small>AL ESCRIBIR: {Math.round(message.meta.mood)}</small>}
+          {nowRow && Math.round(nowRow.mood) !== Math.round(message.meta.mood) && <small className="inbox-mood-then">ESCRIBIÓ CON {Math.round(message.meta.mood)} · {String(message.meta.moodLabel).toUpperCase()}</small>}
         </div>}
+        {promise && <p className={`inbox-promise-outcome is-${promise.status}`}>{{
+          kept: `✅ Le prometiste ${promise.minutesLabel} y le cumpliste: sube su ánimo.`,
+          broken: `❌ Le prometiste ${promise.minutesLabel} y no se cumplió: baja su ánimo.`,
+          attached: `⏳ Le prometiste ${promise.minutesLabel}: falta confirmar si jugó (ficha del partido).`,
+          pending: `⏳ Le prometiste ${promise.minutesLabel} en el próximo partido de tu club.`,
+        }[promise.status] ?? ''}</p>}
         {actions && ['expired', 'expiring', 'arrival'].includes(message.kind) && <Button onClick={() => onTab?.('nomina')}>{message.kind === 'expiring' ? 'Ver contrato' : 'Ir a la hoja de firma'}</Button>}
         {actions && message.request && <RequestActions team={team} request={message.request} locked={marketOpen} onDone={replies => answered(message, replies)}/>}
         {event && <LetterActions team={team} message={message} locked={marketOpen} onDone={() => answered(message)}/>}

@@ -80,6 +80,10 @@
 .inbox-body h4 { margin: 0; color: #062764; font: 600 16px/1.2 'Oswald', sans-serif; }
 .inbox-body p { margin: 0; font: 500 14px/1.45 'Roboto Condensed', sans-serif; }
 .inbox-mood { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.inbox-mood-now { font: 700 var(--fs-xs)/1 var(--font-ui); letter-spacing: .6px; color: var(--c-navy-800); }
+.inbox-mood-then { font: 600 var(--fs-xs)/1.2 var(--font-ui); letter-spacing: .3px; color: var(--c-ink-muted); }
+.inbox-promise-outcome { margin: 6px 0 0; font: 600 var(--fs-sm)/1.4 var(--font-body); color: var(--c-ink); }
+.inbox-promise-outcome.is-broken { color: var(--c-red); }
 .inbox-body .ui-btn { justify-self: start; }
 
 .sheet-terms { margin: 0; color: #062764; font: 500 14px/1.4 'Roboto Condensed', sans-serif; }

@@ -240,6 +240,7 @@ export const endpoints = {
   setContractLimit: (body, signal) => apiClient.post('/market/contract-limit', body, { actor: 'web', signal }),
   startTransactions: signal => apiClient.post('/market/start-transactions', {}, { actor: 'web', signal }),
   // Promesas de minutos de un partido: recordatorio al iniciar y confirmación al terminar.
+  teamMinutePromises: (teamId, signal) => get(`/teams/${teamId}/minute-promises`, null, signal),
   matchMinutePromises: (matchId, signal) => get(`/matches/${matchId}/minute-promises`, null, signal),
   resolveMinutePromise: (matchId, promiseId, body, signal) => apiClient.post(`/matches/${matchId}/minute-promises/${promiseId}`, body, { actor: 'web', signal }),
   declareMinutePromise: (matchId, promiseId, body, signal) => apiClient.post(`/matches/${matchId}/minute-promises/${promiseId}/declare`, body, { actor: 'web', signal }),
