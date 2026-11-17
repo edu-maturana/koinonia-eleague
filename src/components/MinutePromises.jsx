@@ -7,9 +7,9 @@ import { Button, Modal } from '../ui/index.js';
 /**
  * Promesas de minutos ("juega el próximo partido") de un partido. Quien maneja la ficha (puede ser un espectador) ve un
  * recordatorio al iniciar y, al terminar, responde si se cumplió. Se habla del jugador en tercera persona.
- * `moment`: 'start' abre el recordatorio; 'finish' abre la pregunta. Sin respuesta, a las 24 horas se da por cumplida.
+ * `moment`: 'start' abre el recordatorio; 'finish' abre la pregunta. Sin respuesta, a las 24 horas se da por NO cumplida.
  * Antes del partido el presi DECLARA que lo va a poner (lo ve el rival); al terminar, el rival puede DISPUTARLO y entonces
- * no se da por cumplida sola: la zanja un admin.
+ * no se resuelve sola: la zanja un admin.
  */
 export function MinutePromises({ match, moment = null, onMomentSeen }) {
   const { canEditTeam, isAdmin } = useAuth();
@@ -67,7 +67,7 @@ export function MinutePromises({ match, moment = null, onMomentSeen }) {
       <Button variant="positive" onClick={() => setOpen(null)}>ENTENDIDO</Button>
     </Modal>}
     {open === 'finish' && <Modal title="¿SE CUMPLIERON LAS PROMESAS?" onClose={() => setOpen(null)}>
-      <p className="minute-promises-lead">Responde quien manejó el partido. Si nadie responde, a las 24 horas se dan por cumplidas.</p>
+      <p className="minute-promises-lead">Responde quien manejó el partido. Si nadie responde, a las 24 horas se dan por NO cumplidas (−16 de ánimo).</p>
       <ul className="minute-promises-list">{toAnswer.map(item => <li key={item.id}>
         <span className="minute-promises-question">{item.question} <small>({item.teamName})</small>
           {item.declared && <span className="minute-promises-badge">✋ DECLARADO ANTES DEL PARTIDO</span>}
