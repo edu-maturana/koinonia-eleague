@@ -96,8 +96,7 @@ export function TrophyCase({ teams = [] }) {
       <EntityLink to="team" id={club.id} className="trophy-team"><TeamMark team={club}/><span>{club.name}</span></EntityLink>
       <span className="trophy-stars" aria-label={`${stars.length} título${stars.length === 1 ? '' : 's'}`}>{items.map(item => item.double
         ? <span key={item.double[0].id} className="trophy-double" title={`DOBLETE: ${item.double[0].name} y ${item.double[1].name}`}>
-          <span className="trophy-double-stars">{item.double.map(star => <Star key={star.id} star={star}/>)}</span>
-          <em>DOBLETE</em></span>
+          {item.double.map(star => <Star key={star.id} star={star}/>)}</span>
         : <Star key={item.star.id} star={item.star}/>)}</span>
     </li>)}</ul>
   </section>;
