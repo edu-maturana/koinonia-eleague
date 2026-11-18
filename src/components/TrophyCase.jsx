@@ -36,17 +36,37 @@ export function buildTourShowcase(clubs, titles) {
     .sort((a, b) => b.cups.length - a.cups.length || a.recent - b.recent || a.club.name.localeCompare(b.club.name));
 }
 
+/**
+ * Doblete: liga y Copa GG de la misma temporada (GG1 se juega dentro de v15). Esa liga y su copa quedan juntas, en el lugar de la liga.
+ * Devuelve una lista de { star } o { double: [liga, copa] }; el orden cronológico se mantiene.
+ */
+export function groupDoubles(stars) {
+  const leagueByName = new Map(stars.filter(star => !star.cup).map(star => [star.name, star]));
+  const pairedCups = new Map(stars.filter(star => star.cup && leagueByName.has(star.seasonName)).map(cup => [cup.seasonName, cup]));
+  const pairedIds = new Set([...pairedCups.values()].map(cup => cup.id));
+  return stars.filter(star => !pairedIds.has(star.id)).map(star => {
+    const cup = !star.cup ? pairedCups.get(star.name) : null;
+    return cup ? { double: [star, cup] } : { star };
+  });
+}
+
 export function buildShowcase(clubs, titleLists) {
   return clubs.map((club, index) => ({
     club,
-    stars: (titleLists[index] ?? []).map(title => ({ id: title.id, name: title.name, ...starLabel(title.name) }))
+    stars: (titleLists[index] ?? []).map(title => ({ id: title.id, name: title.name, seasonName: title.seasonName ?? title.name, ...starLabel(title.name) }))
       .sort((a, b) => a.order - b.order || String(a.name).localeCompare(b.name)),
-  })).filter(row => row.stars.length)
+  })).filter(row => row.stars.length).map(row => ({ ...row, items: groupDoubles(row.stars) }))
     // Más títulos primero; a igual cantidad, gana el campeón más reciente (mayor edición).
     .sort((a, b) => b.stars.length - a.stars.length || latest(b) - latest(a) || a.club.name.localeCompare(b.club.name));
 }
 
 const CUP_ICON = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v4a6 6 0 0 1-12 0V3zM6 5H3v2a4 4 0 0 0 4 4M18 5h3v2a4 4 0 0 1-4 4M12 13v4M8 21h8M9 17h6v4H9z"/></svg>;
+
+function Star({ star }) {
+  return <span className={`trophy-star ${star.cup ? 'trophy-gg' : 'trophy-koi'}`} title={star.name}>
+    {star.cup ? GG_TROPHY_ICON : LEAGUE_TROPHY_ICON}
+    <small>{star.text}</small></span>;
+}
 
 // Vitrina del inicio: cada campeón con una estrella por título de liga (LT, v1, v2…) y una copa dorada por Copa Grande Giocatore (GG1, GG2…).
 export function TrophyCase({ teams = [] }) {
@@ -72,12 +92,13 @@ export function TrophyCase({ teams = [] }) {
         <span key={cup.id} className="trophy-star trophy-cup" title={`${cup.name}${cup.season ? ` · ${cup.season}` : ''}`}>
           {CUP_ICON}
           <small>{tourShortName(cup.name)}</small></span>)}</span>
-    </li>) : shown.map(({ club, stars }) => <li key={club.id}>
+    </li>) : shown.map(({ club, stars, items }) => <li key={club.id}>
       <EntityLink to="team" id={club.id} className="trophy-team"><TeamMark team={club}/><span>{club.name}</span></EntityLink>
-      <span className="trophy-stars" aria-label={`${stars.length} título${stars.length === 1 ? '' : 's'}`}>{stars.map(star =>
-        <span key={star.id} className={`trophy-star ${star.cup ? 'trophy-gg' : 'trophy-koi'}`} title={star.name}>
-          {star.cup ? GG_TROPHY_ICON : LEAGUE_TROPHY_ICON}
-          <small>{star.text}</small></span>)}</span>
+      <span className="trophy-stars" aria-label={`${stars.length} título${stars.length === 1 ? '' : 's'}`}>{items.map(item => item.double
+        ? <span key={item.double[0].id} className="trophy-double" title={`DOBLETE: ${item.double[0].name} y ${item.double[1].name}`}>
+          <span className="trophy-double-stars">{item.double.map(star => <Star key={star.id} star={star}/>)}</span>
+          <em>DOBLETE</em></span>
+        : <Star key={item.star.id} star={item.star}/>)}</span>
     </li>)}</ul>
   </section>;
 }

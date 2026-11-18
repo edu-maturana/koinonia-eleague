@@ -520,6 +520,10 @@
 .trophy-gg svg { width: 16px; height: 22px; }
 .trophy-koi svg { width: 24px; height: 24px; }
 .trophy-gg small, .trophy-cup small { max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Doblete: liga y copa de la misma temporada, juntas en un recuadro dorado. */
+.trophy-double { display: grid; justify-items: center; gap: 2px; padding: 2px 5px 3px; border: 1.5px solid #b18b16; border-radius: 8px; background: linear-gradient(#fff4cc, #ffe9a3); }
+.trophy-double-stars { display: flex; gap: 6px; }
+.trophy-double em { color: #7a5400; font: 700 8px/1 'Oswald', sans-serif; font-style: normal; letter-spacing: 1px; }
 .calendar-cup-day { border-color: #b18b16; background: linear-gradient(#fff4cc, #fffaf0); }
 
 /* Leyenda de las medias de las cartas de la cancha. */
