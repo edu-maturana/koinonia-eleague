@@ -499,11 +499,11 @@
 .trophy-list { display: grid; margin: 0; padding: 0; list-style: none; }
 .trophy-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 4px; border-top: 1px solid #b8b199; }
 .trophy-list li:first-child { border-top: 0; }
-.trophy-team { display: flex; align-items: center; gap: 8px; min-width: min(100%, 138px); color: inherit; font: 600 15px/1.1 'Roboto Condensed', sans-serif; text-decoration: none; }
+.trophy-team { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; color: inherit; font: 600 15px/1.1 'Roboto Condensed', sans-serif; text-decoration: none; }
 .trophy-team:hover { color: #a90020; }
 .trophy-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .trophy-team .team-mark { width: 26px; height: 26px; flex: 0 0 26px; }
-.trophy-stars { display: flex; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; gap: 4px 3px; }
+.trophy-stars { display: flex; flex: 0 0 auto; flex-wrap: nowrap; justify-content: flex-end; gap: 3px; }
 .trophy-star { display: grid; justify-items: center; gap: 1px; min-width: 20px; }
 .trophy-star svg { display: block; width: 20px; height: 19px; overflow: visible; }
 .trophy-star polygon { fill: #f2b705; stroke: #7a5400; stroke-width: 7; stroke-linejoin: round; }
@@ -522,6 +522,16 @@
 .trophy-gg small, .trophy-cup small { max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Doblete: liga y copa de la misma temporada, juntas en un recuadro dorado. El margen negativo evita que haga más alta la fila. */
 .trophy-double { display: flex; gap: 3px; margin: -3px 0; padding: 2px 4px; border: 1.5px solid #b18b16; border-radius: 8px; background: linear-gradient(#fff4cc, #ffe9a3); }
+/* Todo en una sola línea: con 6 o más recuadros de trofeo, en pantallas angostas se achican para que el nombre del club se vea completo. */
+@media (max-width: 480px) {
+  .trophy-stars.dense { gap: 2px; }
+  .trophy-stars.dense .trophy-star { min-width: 18px; }
+  .trophy-stars.dense .trophy-koi svg { width: 18px; height: 18px; }
+  .trophy-stars.dense .trophy-gg svg { width: 12px; height: 17px; }
+  .trophy-stars.dense .trophy-star small { font-size: 9px; }
+  .trophy-stars.dense .trophy-double { gap: 2px; padding: 2px 3px; margin: -3px 0; }
+  .trophy-list li { gap: 6px; }
+}
 .calendar-cup-day { border-color: #b18b16; background: linear-gradient(#fff4cc, #fffaf0); }
 
 /* Leyenda de las medias de las cartas de la cancha. */
