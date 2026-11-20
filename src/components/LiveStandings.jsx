@@ -1,3 +1,5 @@
+import { EntityLink } from './EntityLink.jsx';
+
 export function LiveTableStatus({ rows = [] }) {
   const live = rows.some(row => row.hasLiveMatches);
   return live ? <small className="live-table-status" role="status"><i aria-hidden="true"/>TABLA EN VIVO</small> : null;
@@ -40,13 +42,30 @@ export function RowMovement({ row, progressionTeam }) {
 
 const RESULT_WORD = { G: 'ganó', E: 'empató', P: 'perdió' };
 
-/** Forma: últimos 5 partidos de la liga, del más antiguo al más reciente (el último, marcado). */
-export function FormChips({ form = [] }) {
-  if (!form.length) return <span className="form-chips is-empty" aria-label="Sin partidos de liga jugados">—</span>;
+const competitionOf = entry => {
+  if (entry.stage === 'playoffs') return 'Playoffs';
+  if (entry.stage === 'knockout') return /giocatore/i.test(entry.tournamentName ?? '') ? 'Copa GG' : 'Copa';
+  return `Liga · Fecha ${entry.round ?? '—'}`;
+};
+
+/**
+ * Forma del club: sus últimos 5 partidos oficiales (liga, playoffs y copa), en el orden en que se jugaron; el más reciente a la
+ * derecha y marcado. Es la misma en toda la web: la calcula el servidor (`form`), este es el único lugar que la dibuja.
+ * `size` "lg" es para fichas y portadas; `linkMatches` hace que cada chip lleve al partido.
+ */
+export function FormChips({ form = [], size = 'sm', linkMatches = false }) {
+  if (!form.length) return <span className="form-chips is-empty" aria-label="Sin partidos oficiales jugados">—</span>;
   const summary = form.map(entry => entry.result).join(', ');
-  return <span className="form-chips" role="img" aria-label={`Últimos ${form.length} de la liga, el más reciente a la derecha: ${summary}`} title="Últimos 5 de la liga, el más reciente a la derecha">
-    {form.map((entry, index) => <i key={entry.matchId} className={`form-chip is-${entry.result}${index === form.length - 1 ? ' is-latest' : ''}`}
-      title={`Fecha ${entry.round ?? '—'}: ${RESULT_WORD[entry.result]} ${entry.goalsFor}-${entry.goalsAgainst} ${entry.home ? 'ante' : 'en casa de'} ${entry.opponentName ?? 'su rival'}${index === form.length - 1 ? ' (el más reciente)' : ''}`}>{entry.result}</i>)}
+  const label = `Últimos ${form.length} partidos oficiales (liga, playoffs y copa), el más reciente a la derecha: ${summary}`;
+  return <span className={`form-chips form-chips--${size}`} role={linkMatches ? 'group' : 'img'} aria-label={label} title="Últimos 5 oficiales (liga, playoffs y copa), el más reciente a la derecha">
+    {form.map((entry, index) => {
+      const latest = index === form.length - 1;
+      const className = `form-chip is-${entry.result}${latest ? ' is-latest' : ''}`;
+      const title = `${competitionOf(entry)}: ${RESULT_WORD[entry.result]} ${entry.goalsFor}-${entry.goalsAgainst} ${entry.home ? 'ante' : 'en casa de'} ${entry.opponentName ?? 'su rival'}${latest ? ' (el más reciente)' : ''}`;
+      return linkMatches
+        ? <EntityLink to="match" id={entry.matchId} key={entry.matchId} className={className} title={title}>{entry.result}</EntityLink>
+        : <i key={entry.matchId} className={className} title={title}>{entry.result}</i>;
+    })}
   </span>;
 }
 

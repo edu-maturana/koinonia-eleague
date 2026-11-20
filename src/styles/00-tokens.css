@@ -10,6 +10,8 @@
   --c-red-dark: #8c0019;
   --c-green: #07502a;
   --c-green-bright: #1c7a3e;
+  /* Forma (G / E / P): los mismos tres colores en la tabla, la ficha del club y el inicio. */
+  --form-g: #1c7a3e; --form-e: #e0b400; --form-p: #a90020;
   --c-cream: #fff9e8;
   --c-gold-bg: #fff3c4;
   --c-gold-line: #e3c764;

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { endpoints } from '../../api/endpoints.js';
+import { FormChips } from '../../components/LiveStandings.jsx';
 import { TeamMark } from '../../components/TeamMark.jsx';
-import { compareRecent, compareUpcoming, competitionTag, matchRoundLabel } from '../../utils/matchPresentation.js';
+import { compareRecent, compareUpcoming, competitionTag, matchRoundLabel, resultForTeam } from '../../utils/matchPresentation.js';
 import { teamBalance } from '../../utils/teamPresentation.js';
 import { Card, Icon, Screen, Tile } from '../../ui/index.js';
 import { gp } from '../public/DataStates.jsx';
@@ -24,12 +25,6 @@ const when = value => {
 const sideOf = (match, teamId) => (match.homeTeam?.id === teamId ? 'home' : 'away');
 const rivalOf = (match, teamId) => (sideOf(match, teamId) === 'home' ? match.awayTeam : match.homeTeam);
 const scoreFor = (match, teamId) => (sideOf(match, teamId) === 'home' ? `${match.homeScore}-${match.awayScore}` : `${match.awayScore}-${match.homeScore}`);
-function resultOf(match, teamId) {
-  const mine = sideOf(match, teamId) === 'home' ? match.homeScore : match.awayScore;
-  const theirs = sideOf(match, teamId) === 'home' ? match.awayScore : match.homeScore;
-  return mine > theirs ? 'G' : mine < theirs ? 'P' : 'E';
-}
-
 /** Lo que espera una decisión tuya, cada cosa con su enlace exacto. */
 function useTodo(teamId, base) {
   const contracts = useApiQuery(signal => endpoints.teamContracts(teamId, signal).catch(() => ({ data: null })), [teamId]);
@@ -118,7 +113,7 @@ export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
           title={next.status === 'live' ? 'Jugando ahora' : derby ? `Próximo partido · ¡${next?.rivalry?.label ?? 'Clásico'}!` : 'Próximo partido'}
           value={`${sideOf(next, teamId) === 'home' ? 'vs' : 'en casa de'} ${nextRival?.name ?? '—'}`} detail={`${competitionTag(next)} · ${sideOf(next, teamId) === 'home' ? 'de local' : 'de visita'}`}/>
         : last && <Tile tone="navy" href={`#/partidos/${last.id}`} icon={<Icon name="ball" size={18}/>} title="Último partido"
-          value={`${{ G: 'Ganaste', E: 'Empataste', P: 'Perdiste' }[resultOf(last, teamId)]} ${scoreFor(last, teamId)}`}
+          value={`${{ G: 'Ganaste', E: 'Empataste', P: 'Perdiste' }[resultForTeam(last, teamId)]} ${scoreFor(last, teamId)}`}
           detail={`${sideOf(last, teamId) === 'home' ? 'Contra' : 'En casa de'} ${rivalOf(last, teamId)?.name ?? '—'} (${competitionTag(last)}). No tienes partidos por jugar.`}/>}
       <Tile href={`#/equipos/${teamId}?tab=finanzas&ver=caja`} icon={<Icon name="coin" size={18}/>} title="Caja" value={balance === null ? '—' : gp(balance)} detail="Sueldos, ingresos y gastos."/>
       <Tile tone={market.open ? 'gold' : 'paper'} href="#/transferencias" icon={<Icon name="handshake" size={18}/>} title="Mercado"
@@ -133,8 +128,9 @@ export function CareerHub({ teamId, teams = [], standings = [], navigate }) {
     <div className="hub-columns hub-columns--single">
       <div className="hub-column">
         {played.length > 0 && <Card title="Últimos partidos" aside={<a className="card-link" href="#/partidos">Todos ›</a>}>
+          <div className="hub-form"><small>FORMA</small><FormChips form={club?.form} size="lg" linkMatches/></div>
           <ul className="hub-results">{played.map(match => {
-            const result = resultOf(match, teamId);
+            const result = resultForTeam(match, teamId);
             const other = rivalOf(match, teamId);
             return <li key={match.id}><a href={`#/partidos/${match.id}`}><em className={`form-${result}`}>{result}</em><span>{sideOf(match, teamId) === 'home' ? 'vs' : 'en casa de'} {other?.name}<small className="hub-results-tag">{competitionTag(match)}</small></span>
               <b>{scoreFor(match, teamId)}</b>{(match.derby || (rival && other?.id === rival.id)) && <Icon name="fire" size={14}/>}</a></li>;

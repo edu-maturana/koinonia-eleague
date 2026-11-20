@@ -8,11 +8,11 @@ import { SanctionBadge } from '../../components/SanctionBadge.jsx';
 import { SimulatedBadge } from '../../components/SimulatedBadge.jsx';
 import { DerbyBadge } from '../../components/DerbyBadge.jsx';
 import { EntityLink } from '../../components/EntityLink.jsx';
-import { LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClass, tableZones } from '../../components/LiveStandings.jsx';
+import { FormChips, LiveMovement, LivePosition, LiveTableStatus, PlayoffLegend, liveRowClass, tableZones } from '../../components/LiveStandings.jsx';
 import { PlayerFace } from '../../components/PlayerFace.jsx';
 import { teamBalance, teamCoachName, teamCoachPhoto } from '../../utils/teamPresentation.js';
 import { readPersonProfile } from '../../utils/personProfile.js';
-import { compareUpcoming, competitionTag, matchRoundLabel } from '../../utils/matchPresentation.js';
+import { compareUpcoming, competitionTag, matchRoundLabel, resultForTeam } from '../../utils/matchPresentation.js';
 import { CoachForm, PresidentForm, ProfileForm, SquadEditor } from '../admin/TeamAdminPanel.jsx';
 import { ManagerSummary } from './ManagerCard.jsx';
 import { ReputationModal, ReputationSummary } from './Reputation.jsx';
@@ -72,19 +72,9 @@ function RosterHeader() {
   return <div className="roster-columns" aria-hidden="true"><b>NÚMERO</b><b>NOMBRE</b><b>POS. / OVR</b><b>VALOR MERCADO</b></div>;
 }
 
-// Resultado desde el marcador; winnerTeamId solo decide empates definidos por penales.
-const resultFor = (match, teamId) => {
-  if (match.status !== 'finished') return null;
-  const own = match.homeTeam?.id === teamId ? match.homeScore : match.awayScore;
-  const rival = match.homeTeam?.id === teamId ? match.awayScore : match.homeScore;
-  if (own !== rival) return own > rival ? 'G' : 'P';
-  if (!match.winnerTeamId) return 'E';
-  return match.winnerTeamId === teamId ? 'G' : 'P';
-};
-
 function ClubMatchRow({ match, resolveTeam, teamId }) {
   const finished = match.status === 'finished';
-  const result = resultFor(match, teamId);
+  const result = resultForTeam(match, teamId);
   return <EntityLink to="match" id={match.id} className={`club-match-row ${{ G: 'won', P: 'lost', E: 'drawn' }[result] ?? ''}`}>
     <small><DerbyBadge match={match}/><SanctionBadge match={match} compact/><SimulatedBadge match={match}/>{match.stage === 'preseason' && <em className="tour-tag">GIRA</em>}{match.tournament?.name ?? 'TORNEO'} · {matchRoundLabel(match, { leagueRound: match.stage === 'preseason' ? 'RONDA' : 'JORNADA' })}{match.homeTeam?.stadium ? <span className="match-venue compact"> · 🏟️ {match.homeTeam.stadium}</span> : null}</small>
     <div><span><TeamMark team={resolveTeam(match.homeTeam)}/><b>{match.homeTeam?.name ?? 'LOCAL'}</b></span><strong>{finished ? `${match.homeScore ?? 0} - ${match.awayScore ?? 0}` : 'VS'}</strong><span><b>{match.awayTeam?.name ?? 'VISITA'}</b><TeamMark team={resolveTeam(match.awayTeam)}/></span></div>
@@ -749,20 +739,9 @@ function FinanceSimulator({ team, squad, balance, onChanged, onTab, currentPosit
   </section>;
 }
 
-const finishedMatches = (matches, teamId, { leagueOnly = false } = {}) => matches
-  .filter(match => match.status === 'finished' && !(leagueOnly && match.stage === 'preseason') && (match.homeTeam?.id === teamId || match.awayTeam?.id === teamId))
+const finishedMatches = (matches, teamId) => matches
+  .filter(match => match.status === 'finished' && (match.homeTeam?.id === teamId || match.awayTeam?.id === teamId))
   .sort((left, right) => String(right.finishedAt ?? '').localeCompare(String(left.finishedAt ?? '')));
-
-function FormPills({ matches, teamId }) {
-  const recent = finishedMatches(matches, teamId, { leagueOnly: true }).slice(0, 5).reverse();
-  if (!recent.length) return null;
-  // Se lee de izquierda a derecha: el último jugado va a la derecha y lleva una marca. Cuenta liga, playoffs y copa (no giras).
-  return <div className="club-form" role="group" aria-label="Últimos 5 partidos oficiales (liga, playoffs y copa); el más reciente a la derecha" title="Últimos 5 oficiales (liga, playoffs y copa), el más reciente a la derecha">{recent.map((match, index) => {
-    const result = resultFor(match, teamId);
-    const latest = index === recent.length - 1;
-    return <EntityLink to="match" id={match.id} key={match.id} className={`club-form-pill form-${result}${latest ? ' latest' : ''}`} title={`${competitionTag(match)}: ${match.homeTeam?.name} ${match.homeScore}-${match.awayScore} ${match.awayTeam?.name}${latest ? ' (el más reciente)' : ''}`}>{result}</EntityLink>;
-  })}</div>;
-}
 
 function ClubTable({ standings, teamId, teams, format = null }) {
   const zones = tableZones(standings, format);
@@ -986,7 +965,7 @@ export function TeamDetailPage({ team, teams = [], tournaments = [], squad, stan
     actions={<div className="club-strip">
       <div><small>Valor del plantel</small><b>{gp(team.squadValue)}</b></div>
       {ownerMode && <div><small>En caja</small><b>{balance === null ? '—' : gp(balance)}</b></div>}
-      <FormPills matches={matches} teamId={team.id}/>
+      <div className="club-form"><FormChips form={team.form} size="lg" linkMatches/></div>
       {onProjection && <Button size="sm" variant="ghost" className="club-projection-button" onClick={onProjection}>¿Qué necesita para clasificar?</Button>}
     </div>}
     tabs={tabs} active={activeTab} onTab={id => onTab?.(id)}>

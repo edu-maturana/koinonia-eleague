@@ -46,3 +46,14 @@ export function competitionTag(match) {
 }
 
 const titleCase = text => text.toLowerCase().replace(/(^|[\s·-])(\p{L})/gu, (_, gap, letter) => gap + letter.toUpperCase());
+
+/** G, E o P de un partido terminado, visto desde un club. Sale del marcador; si quedó igualado y se definió por penales, gana quien pasó. */
+export function resultForTeam(match, teamId) {
+  if (match.status !== 'finished') return null;
+  const home = match.homeTeam?.id === teamId;
+  const own = home ? match.homeScore : match.awayScore;
+  const rival = home ? match.awayScore : match.homeScore;
+  if (own !== rival) return own > rival ? 'G' : 'P';
+  if (!match.winnerTeamId) return 'E';
+  return match.winnerTeamId === teamId ? 'G' : 'P';
+}

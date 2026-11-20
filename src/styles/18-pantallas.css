@@ -113,7 +113,7 @@ a.tile:focus-visible, button.tile:focus-visible { outline: 3px solid var(--c-yel
   font: 400 var(--fs-md)/1.2 var(--font-body); border-bottom: 1px dashed var(--c-paper-line); }
 .hub-results a:hover { background: var(--c-gold-bg); }
 .hub-results em { display: grid; place-items: center; width: 26px; height: 26px; color: #fff; font: 700 var(--fs-sm)/1 var(--font-ui); font-style: normal; }
-.hub-results em.form-G { background: var(--c-green-bright); } .hub-results em.form-E { background: #8a8270; } .hub-results em.form-P { background: var(--c-red); }
+.hub-results em.form-G { background: var(--form-g); } .hub-results em.form-E { color: #11120e; background: var(--form-e); } .hub-results em.form-P { background: var(--form-p); }
 .hub-results b { font: 400 var(--fs-lg)/1 var(--font-display); color: var(--c-navy-900); }
 .hub-results .ui-icon { color: var(--c-red); }
 .hub-results span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
