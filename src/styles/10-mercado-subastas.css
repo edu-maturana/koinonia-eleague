@@ -643,3 +643,53 @@ html.pc-locked, html.pc-locked body { overflow: hidden; }
 .market-clock.is-open { border-left-color: #167a45; }
 .market-clock b { font-family: 'Oswald', sans-serif; letter-spacing: .5px; }
 .market-clock span { color: var(--c-ink-muted); }
+
+/* Fichajes de la liga: todos los movimientos cerrados, con caras y escudos. */
+.league-moves .lm-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.league-moves .lm-filters button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border: 2px solid #10285b; color: #10285b; background: #fff; font: 600 13px/1 'Oswald', sans-serif; letter-spacing: .4px; text-transform: uppercase; cursor: pointer; }
+.league-moves .lm-filters button small { color: #a90020; font-size: 12px; }
+.league-moves .lm-filters button.active { color: #fff; background: #10285b; }
+.league-moves .lm-filters button.active small { color: #ffd42a; }
+.lm-search { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 6px; margin-bottom: 12px; }
+.lm-search select, .lm-search input { min-width: 0; height: 38px; padding: 0 10px; border: 2px solid #092e77; background: #fff; font: 600 14px/1 'Roboto Condensed', sans-serif; }
+.lm-day + .lm-day { margin-top: 14px; }
+.lm-day h3 { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 2px solid #10285b; color: #062764; font: 600 14px/1 'Oswald', sans-serif; letter-spacing: .5px; }
+.lm-day h3 small { color: #a90020; }
+.lm-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 8px; }
+.lm-card { display: grid; gap: 8px; align-content: start; min-width: 0; padding: 8px 10px; border: 1px solid #d0c4a8; border-left: 4px solid #1c7a3e; background: #fff; }
+.lm-card.is-out { border-left-color: #a90020; }
+.lm-card.is-trade { border-left-color: #c47a00; }
+.lm-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.lm-head time { margin-left: auto; color: #625d4e; font: 500 12px/1 'Roboto Condensed', sans-serif; }
+.lm-kind { padding: 3px 6px; color: #fff; background: #1c7a3e; font: 600 12px/1 'Oswald', sans-serif; letter-spacing: .5px; }
+.lm-kind.kind-trade { background: #c47a00; }
+.lm-kind.kind-loan { background: #0b5f8a; }
+.lm-kind.kind-release, .lm-kind.kind-termination, .lm-kind.kind-lapsed { background: #a90020; }
+.lm-tag { color: #625d4e; font: 600 11px/1 'Oswald', sans-serif; letter-spacing: .4px; }
+.lm-player { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 10px; min-width: 0; color: inherit; text-decoration: none; }
+.lm-player .player-photo { width: 52px; height: 52px; object-fit: cover; background: #d9cfb8; font-size: 18px; }
+.lm-player span { display: grid; gap: 3px; min-width: 0; }
+.lm-player b { overflow: hidden; font: 700 16px/1.1 'Roboto Condensed', sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.lm-player:hover b { color: #a90020; }
+.lm-player small { display: flex; align-items: center; gap: 6px; color: #625d4e; font: 600 12px/1 'Oswald', sans-serif; }
+.lm-route { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; }
+.lm-arrow, .lm-swap { color: #a90020; font: 700 18px/1 'Oswald', sans-serif; }
+.lm-club { display: flex; align-items: center; gap: 6px; min-width: 0; color: #10285b; font: 600 13px/1.1 'Oswald', sans-serif; text-decoration: none; }
+.lm-club span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lm-club .team-mark { width: 24px; height: 24px; flex: 0 0 24px; font-size: 18px; line-height: 24px; text-align: center; }
+.lm-club.is-none { color: #625d4e; }
+.lm-club-mark { width: 24px; flex: 0 0 24px; font-size: 18px; text-align: center; }
+.lm-trade { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; }
+.lm-side { display: grid; gap: 6px; min-width: 0; }
+.lm-side .lm-player { grid-template-columns: 40px minmax(0, 1fr); gap: 6px; }
+.lm-side .lm-player .player-photo { width: 40px; height: 40px; font-size: 14px; }
+.lm-side .lm-player b { font-size: 14px; }
+.lm-to { display: flex; align-items: center; gap: 4px; min-width: 0; color: #a90020; font: 700 13px/1 'Oswald', sans-serif; }
+.lm-amount { color: #a90020; font: 600 14px/1.2 'Oswald', sans-serif; }
+.lm-more { display: block; width: 100%; margin-top: 12px; padding: 10px; border: 2px solid #10285b; color: #10285b; background: #fff; font: 600 14px/1 'Oswald', sans-serif; letter-spacing: .5px; cursor: pointer; }
+.lm-more:hover { color: #fff; background: #10285b; }
+@media (max-width: 560px) {
+  .lm-search { grid-template-columns: 1fr; }
+  .lm-trade { grid-template-columns: 1fr; }
+  .lm-swap { justify-self: center; transform: rotate(90deg); }
+}

@@ -16,6 +16,7 @@ import { ForSaleSection } from './market/ForSaleSection.jsx';
 import { LeavingSection } from './market/LeavingSection.jsx';
 import { MyPreagreements } from '../teams/PendingMoves.jsx';
 import { AuctionHistory } from './market/AuctionHistory.jsx';
+import { LeagueMovesSection } from './market/LeagueMovesSection.jsx';
 import { SealedAuctionsSection } from './market/SealedAuctionsSection.jsx';
 import { gpLabel } from '../../utils/money.js';
 import { GpInput } from '../../components/GpInput.jsx';
@@ -237,13 +238,14 @@ export function MarketPage({ teams, initialTab = null, highlightId = null, prefi
   const incoming = (Array.isArray(offers.data) ? offers.data : []).filter(offer => offer.direction === 'incoming').length;
   const tabs = [
     { id: 'subastas', label: 'Subastas', badge: liveCount },
+    { id: 'fichajes', label: 'Fichajes' },
     ...(operates ? [{ id: 'libres', label: 'Fichar libres' }, { id: 'ofertas', label: 'Ofertas', badge: incoming }, { id: 'venta', label: 'A la venta' }] : []),
     { id: 'se-van', label: 'Se quieren ir' },
     ...(myTeam ? [{ id: 'seguidos', label: 'Seguidos' }] : []),
     { id: 'historial', label: 'Historial' },
   ];
   // Sin pestaña elegida: con el mercado cerrado y sin subastas no tiene sentido abrir en "Subastas" vacías.
-  const fallback = marketOpen === false && !liveCount ? (operates ? 'venta' : 'historial') : 'subastas';
+  const fallback = marketOpen === false && !liveCount ? (operates ? 'venta' : 'fichajes') : 'subastas';
   const current = tabs.some(item => item.id === tab) ? tab : fallback;
   return <Screen title="Mercado" tabs={tabs} active={current} onTab={setTab}>
     {isAdmin && <div className="screen-toolbar"><a className="ui-btn ui-btn--ghost ui-btn--sm" href="#/admin?tab=mercado">⚙ Administrar mercado</a></div>}
@@ -266,6 +268,7 @@ export function MarketPage({ teams, initialTab = null, highlightId = null, prefi
     {current === 'venta' && <ForSaleSection teams={teams} revision={revision} onChanged={refresh}/>}
     {current === 'se-van' && <LeavingSection teams={teams} revision={revision}/>}
     {current === 'seguidos' && myTeam && <WatchlistTab team={myTeam}/>}
+    {current === 'fichajes' && <LeagueMovesSection teams={teams} revision={revision}/>}
     {current === 'historial' && <AuctionHistory revision={revision} teams={teams}/>}
   </Screen>;
 }

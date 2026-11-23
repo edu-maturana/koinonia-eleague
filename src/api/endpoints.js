@@ -60,6 +60,7 @@ export const endpoints = {
   match: (matchId, signal) => get(`/matches/${matchId}`, null, signal),
   transfers: (query, signal) => get('/market/transfers', query, signal),
   trades: (query, signal) => get('/market/trades', query, signal),
+  marketMoves: (query, signal) => get('/market/moves', query, signal),
   freeAgents: (query, signal) => get('/market/free-agents', query, signal),
   createTeam: (body, signal) => apiClient.post('/teams', body, { actor: 'web', signal }),
   updateTeam: (teamId, body, signal) => apiClient.patch(`/teams/${teamId}`, body, { actor: 'web', signal }),
