@@ -58,6 +58,7 @@ function PollCard({ poll, teams, onChanged }) {
   const objections = poll.votes.filter(vote => vote.vote === 'auction');
   const active = ACTIVE.includes(poll.status);
   const marketOpen = poll.window?.status === 'open';
+  const marketRenewals = marketOpen && Boolean(poll.window?.inRenewals);
   const ownsBuyer = Boolean(user?.teamIds?.includes(poll.team.id));
   const canDecide = canEditTeam(poll.team.id);
   const isPresident = Boolean(user?.teamIds?.length) || isAdmin;
@@ -83,14 +84,15 @@ function PollCard({ poll, teams, onChanged }) {
       {!ownsBuyer && <button className={`danger ${poll.myVote === 'auction' ? 'chosen' : ''}`} disabled={act.loading} onClick={() => act.execute('vote', { choice: 'auction' })}>🔴 VAMOS A SUBASTA{poll.myVote === 'auction' ? ' · RETIRAR' : ''}</button>}
     </div>}
 
-    {poll.status === 'awaiting' && canDecide && <div className="poll-confirm">
+    {poll.status === 'awaiting' && poll.preconfirmedAt && <p className="poll-hint">⏳ COMPRA CONFIRMADA: {poll.player.name.toUpperCase()} FIRMA POR {poll.team.name.toUpperCase()} ({gp(poll.price)}) CUANDO EL MERCADO PASE A TRANSACCIONES. TENDRÁS QUE TENER EL SALDO EN ESE MOMENTO.</p>}
+    {poll.status === 'awaiting' && canDecide && !poll.preconfirmedAt && <div className="poll-confirm">
       <p>{poll.team.name.toUpperCase()}: ¿CONFIRMAS LA COMPRA POR {gp(poll.price)}?</p>
       <div className="mini-actions">
-        <button disabled={act.loading} onClick={() => { if (window.confirm(`¿Confirmas la compra de ${poll.player.name} por ${gp(poll.price)}?`)) act.execute('confirm'); }}>✅ CONFIRMO LA COMPRA</button>
+        <button disabled={act.loading} onClick={() => { if (window.confirm(`¿Confirmas la compra de ${poll.player.name} por ${gp(poll.price)}?${marketRenewals ? ' Se ejecuta (y se paga) cuando el mercado pase a transacciones.' : ''}`)) act.execute('confirm'); }}>✅ CONFIRMO LA COMPRA</button>
         <button className="danger" disabled={act.loading} onClick={() => act.execute('decline')}>AL FINAL NO</button>
       </div>
     </div>}
-    {poll.status === 'awaiting' && !canDecide && <p className="poll-hint">LUZ VERDE: FALTA QUE EL PRESI DE {poll.team.name.toUpperCase()} CONFIRME LA COMPRA.</p>}
+    {poll.status === 'awaiting' && !canDecide && !poll.preconfirmedAt && <p className="poll-hint">LUZ VERDE: FALTA QUE EL PRESI DE {poll.team.name.toUpperCase()} CONFIRME LA COMPRA.</p>}
 
     {poll.status === 'disputed' && <SendToAuction poll={poll} onChanged={onChanged}/>}
 
