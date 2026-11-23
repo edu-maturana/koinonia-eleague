@@ -155,11 +155,19 @@ export function BundleProposal({ myTeamId, teams, onDone }) {
   </form>;
 }
 
-function Face({ player }) {
-  return <span className="bundle-face" title={player.name}>
-    <PlayerFace src={player.faceUrl} name={player.name}/>
-    <span><b>{player.name}</b><small>{player.position}{player.overall != null && <OverallBadge value={player.overall}/>}</small></span>
-  </span>;
+/** Una flecha: cara del jugador y de qué club a qué club va. */
+function Move({ player, from, to }) {
+  return <div className="bundle-move">
+    <span className="bundle-face" title={player.name}>
+      <PlayerFace src={player.faceUrl} name={player.name}/>
+      <span><b>{player.name}</b><small>{player.position}{player.overall != null && <OverallBadge value={player.overall}/>}</small></span>
+    </span>
+    <span className="bundle-route">
+      <span className="lm-club"><TeamMark team={from}/><span>{from.name}</span></span>
+      <span className="lm-arrow" aria-label="pasa a">→</span>
+      <span className="lm-club"><TeamMark team={to}/><span>{to.name}</span></span>
+    </span>
+  </div>;
 }
 
 const STATUS = { accepted: ['✅ ACEPTÓ', 'ok'], pending: ['⏳ FALTA', 'wait'], rejected: ['❌ RECHAZÓ', 'bad'] };
@@ -177,20 +185,29 @@ function BundleCard({ bundle, onChanged, highlighted }) {
       <b>ACUERDO COMPUESTO</b>
       <small>ARMADO POR {upper(bundle.parties.find(party => party.proposer)?.team.name)} · {BUNDLE_STATUS[bundle.status] ?? upper(bundle.status)}</small>
     </header>
-    <div className="bundle-parties">
-      {bundle.parties.map(party => <div key={party.team.id} className="bundle-party">
-        <div className="bundle-party-head">
-          <span className="lm-club"><TeamMark team={party.team}/><span>{party.team.name}</span></span>
-          <em className={`bundle-status ${STATUS[party.status]?.[1] ?? ''}`}>{STATUS[party.status]?.[0] ?? upper(party.status)}</em>
-        </div>
-        <div className="bundle-moves">
-          <div><small>RECIBE</small>{party.receives.length ? party.receives.map(player => <Face key={player.id} player={player}/>) : <span className="empty-copy">—</span>}</div>
-          <div><small>ENTREGA</small>{party.gives.length ? party.gives.map(player => <Face key={player.id} player={player}/>) : <span className="empty-copy">—</span>}</div>
-        </div>
-        <p className={`bundle-net ${party.net < 0 ? 'pays' : ''}`}>{netText(party.net)}</p>
-        {pending && isAdmin && !isPresidentOf(party.team.id) && party.status === 'pending' && <div className="mini-actions">
-          <button type="button" disabled={respond.loading} onClick={() => respond.execute({ action: 'accept', teamId: party.team.id })}>ACEPTAR POR {upper(party.team.name)}</button>
-        </div>}
+    {/* Los movimientos, uno por línea: quién, de dónde, a dónde y cuánta plata. */}
+    <ol className="bundle-flow">
+      {bundle.pieces.map((piece, index) => <li key={index} className={`bundle-flow-item kind-${piece.kind}`}>
+        {piece.kind === 'transfer'
+          ? <>
+            <Move player={piece.player} from={piece.fromTeam} to={piece.toTeam}/>
+            <p className="bundle-flow-money">{piece.gpAmount ? `${piece.toTeam.name} paga ${gp(piece.gpAmount)}` : 'Sin GP'}</p>
+          </>
+          : <>
+            <Move player={piece.fromPlayer} from={piece.fromTeam} to={piece.toTeam}/>
+            <span className="bundle-flow-swap" aria-label="a cambio de">⇄ A CAMBIO DE</span>
+            <Move player={piece.toPlayer} from={piece.toTeam} to={piece.fromTeam}/>
+            <p className="bundle-flow-money">{[piece.gpFrom ? `${piece.fromTeam.name} pone ${gp(piece.gpFrom)}` : null, piece.gpTo ? `${piece.toTeam.name} pone ${gp(piece.gpTo)}` : null].filter(Boolean).join(' · ') || 'Mano a mano'}</p>
+          </>}
+      </li>)}
+    </ol>
+    {/* La votación: cada club con su respuesta y cómo queda en plata. */}
+    <div className="bundle-votes" aria-label="Respuesta de cada club">
+      {bundle.parties.map(party => <div key={party.team.id} className={`bundle-vote vote-${party.status}`}>
+        <span className="lm-club"><TeamMark team={party.team}/><span>{party.team.name}</span></span>
+        <em className={`bundle-status ${STATUS[party.status]?.[1] ?? ''}`}>{party.proposer ? '✅ LO ARMÓ' : STATUS[party.status]?.[0] ?? upper(party.status)}</em>
+        <small className={`bundle-net ${party.net < 0 ? 'pays' : ''}`}>{netText(party.net)}</small>
+        {pending && isAdmin && !isPresidentOf(party.team.id) && party.status === 'pending' && <button type="button" className="bundle-admin" disabled={respond.loading} onClick={() => respond.execute({ action: 'accept', teamId: party.team.id })}>ACEPTAR POR ÉL</button>}
       </div>)}
     </div>
     {pending && bundle.blocker && <p className="signing-warning" role="alert">⚠️ HOY NO SE PUEDE CERRAR: {bundle.blocker}</p>}
