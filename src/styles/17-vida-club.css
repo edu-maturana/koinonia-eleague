@@ -247,6 +247,12 @@
 .tc-points.down { color: var(--c-red); }
 .tc-role-hint { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding: 6px 8px; background: var(--c-gold-bg); border-left: 4px solid var(--c-gold-line); font: 600 var(--fs-xs)/1.3 var(--font-body); color: var(--c-ink); }
 .tc-role-hint button { min-height: 28px; padding: 0 8px; border: 2px solid var(--c-navy-900); background: var(--c-white); color: var(--c-navy-900); font: 500 var(--fs-xs)/1 var(--font-ui); cursor: pointer; }
+.tc-openness { margin: 0; padding: 5px 10px; display: flex; align-items: center; gap: 6px; font: 600 var(--fs-xs)/1.3 var(--font-body); background: #eef2fb; color: #1c2c55; border-bottom: 2px solid #c9d4ee; }
+.tc-openness.is-abierto { background: #e4f4ea; color: #0d4a2a; border-bottom-color: #8fc67a; }
+.tc-openness.is-cerrado { background: #fdeceb; color: #7a1f1a; border-bottom-color: #e3a29c; }
+.tc .pc-bubble.kind-callout { background: #fdeceb; border-color: #e3a29c; }
+.tc .pc-row.theirs .pc-bubble.kind-callout::after { border-right-color: #fdeceb; border-bottom-color: #fdeceb; }
+.tc-done.is-refused { border-color: #a8322a; background: #fdeceb; color: #7a1f1a; }
 .tc-done { display: flex; align-items: center; gap: 6px; margin: 0; padding: 8px 10px; border: 2px solid #167a45; background: #e4f4ea; color: #0d4a2a; font: 600 var(--fs-sm)/1.3 var(--font-body); }
 @media (max-width: 560px) { .tc-score { grid-template-columns: auto auto 1fr; } .tc-score small { grid-column: 1 / -1; } .tc-steps { grid-column: 3; grid-row: 1; justify-self: end; } }
 

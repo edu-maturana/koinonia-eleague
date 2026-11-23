@@ -88,6 +88,9 @@ export function TransferChat({ player, teamId, onChanged, onPromiseRole, onClose
   const toggle = option => setPicks(current => (current.includes(option.code) ? current.filter(code => code !== option.code)
     : current.length >= max || blockedBy(option) ? current : [...current, option.code]));
   const answered = (chat?.messages ?? []).filter(item => item.kind === 'answer').length;
+  // Cuántas preguntas hace depende de él (la plata, si te pide a cuenta algo): viene del servidor.
+  const total = Math.max(chat?.questions?.total ?? 3, answered);
+  const refused = Boolean(chat?.refused);
 
   return <section className="pc tc" aria-label={`Conversación con ${player.name}`}>
     <header className="pc-head">
@@ -98,9 +101,10 @@ export function TransferChat({ player, teamId, onChanged, onPromiseRole, onClose
     {chat && <div className="tc-score" aria-live="polite">
       <span>LA CHARLA {chat.points === 0 ? 'NO HA MOVIDO NADA' : chat.points > 0 ? 'SUMA' : 'RESTA'}</span>
       <b className={chat.points > 0 ? 'up' : chat.points < 0 ? 'down' : ''}>{chat.points === 0 ? '±0' : signed(chat.points)}</b>
-      <small>DE ±{chat.limit} POSIBLES · {chat.finished ? 'CONVERSACIÓN TERMINADA' : `PREGUNTA ${Math.min(answered + 1, 3)} DE 3`}</small>
-      <span className="tc-steps" aria-hidden="true">{Array.from({ length: 3 }, (_, index) => <i key={index} className={index < answered ? 'done' : index === answered && pending ? 'now' : ''}/>)}</span>
+      <small>DE ±{chat.limit} POSIBLES · {refused ? 'NO QUISO CONVERSAR' : chat.finished ? 'CONVERSACIÓN TERMINADA' : `PREGUNTA ${Math.min(answered + 1, total)} DE ${total}`}</small>
+      {!refused && <span className="tc-steps" aria-hidden="true">{Array.from({ length: total }, (_, index) => <i key={index} className={index < answered ? 'done' : index === answered && pending ? 'now' : ''}/>)}</span>}
     </div>}
+    {chat?.openness && !refused && <p className={`tc-openness is-${chat.openness.level}`}><Icon name="people" size={12}/> DE ENTRADA: {chat.openness.text}</p>}
     {!chat && !error && <p className="pc-note">Llamando a su representante…</p>}
     {error && <p className="form-feedback error" role="alert">{error.message}</p>}
     {chat && <>
@@ -127,7 +131,9 @@ export function TransferChat({ player, teamId, onChanged, onPromiseRole, onClose
             <Button variant="positive" disabled={answer.loading || !picks.length} onClick={() => answer.execute({ topic: pending.topic, optionCodes: picks })}>RESPONDER</Button>
           </div>
         </>}
-        {chat.finished && !typing && <p className="tc-done"><Icon name="check" size={14}/> Conversación terminada. Ahora arma la oferta: la prima y el rol hacen el resto.</p>}
+        {chat.finished && !typing && (refused
+          ? <p className="tc-done is-refused"><Icon name="cross" size={14}/> Su representante no quiere conversar con tu club en este mercado. Igual puedes ofertar, pero no llega convencido.</p>
+          : <p className="tc-done"><Icon name="check" size={14}/> Conversación terminada. Ahora arma la oferta: la prima y el rol hacen el resto.</p>)}
         {chat.rewind?.available && !typing && (confirmUndo
           ? <p className="pc-confirm">¿Cambiar tu última respuesta? <button type="button" disabled={rewind.loading} onClick={() => rewind.execute()}>SÍ</button><button type="button" onClick={() => setConfirmUndo(false)}>NO</button></p>
           : <button type="button" className="pc-undo" onClick={() => setConfirmUndo(true)}>↩ CAMBIAR MI ÚLTIMA RESPUESTA (QUEDAN {chat.rewind.limit - chat.rewind.used})</button>)}

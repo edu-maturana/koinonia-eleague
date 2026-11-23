@@ -44,7 +44,9 @@ export function MessagesTab({ team, onTab, onRead, highlightId }) {
               <em>{row.typing ? 'Escribiendo…' : row.lastMessage?.text ?? 'Todavía no hablan.'}</em>
             </span>
             {row.unanswered && <i className="chat-list-badge">Te espera</i>}
-            {row.finished && !row.unanswered && <i className="chat-list-done"><Icon name="check" size={12}/> Terminada</i>}
+            {row.finished && !row.unanswered && (row.refused
+              ? <i className="chat-list-done is-refused"><Icon name="cross" size={12}/> No quiso hablar</i>
+              : <i className="chat-list-done"><Icon name="check" size={12}/> Terminada</i>)}
           </button>
         </li>)}</ul>
         : <p className="screen-lead">Todavía no hablas con nadie. Busca a un jugador (de otro club o libre) y convéncelo antes de hacerle una oferta. Se puede aunque el mercado esté cerrado.</p>}
