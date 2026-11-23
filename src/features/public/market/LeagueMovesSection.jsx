@@ -71,6 +71,7 @@ function MoveCard({ move }) {
   const head = <header className="lm-head">
     <b className={`lm-kind kind-${move.type}`}>{KIND[move.type] ?? move.type.toUpperCase()}</b>
     {move.type === 'loan' && LOAN_STATUS[move.loanStatus] && <small className="lm-tag">{LOAN_STATUS[move.loanStatus]}</small>}
+    {move.bundleId && <small className="lm-tag">ACUERDO COMPUESTO</small>}
     {move.type === 'purchase' && <small className="lm-tag">{move.origin === 'new' ? 'NUEVO EN LA LIGA' : 'AGENTE LIBRE'}</small>}
     <time dateTime={date?.toISOString()}>{hourLabel(date)}</time>
   </header>;

@@ -9,6 +9,7 @@ import { useAutoRefresh } from './PollsSection.jsx';
 import { GpInput } from '../../../components/GpInput.jsx';
 import { ArrivalPanel } from './ArrivalPanel.jsx';
 import { Button, HowItWorks } from '../../../ui/index.js';
+import { BundleProposal } from './BundleSection.jsx';
 
 // La misma banda que valida el servidor: todo precio queda entre 0,7× y 1,25× el valor de Transfermarkt del jugador.
 const PRICE_MIN = 0.7;
@@ -438,12 +439,14 @@ export function ProposeOffers({ teams, marketOpen, onChanged, prefill = null }) 
       <button type="button" className={tab === 'transfer' ? 'active' : ''} onClick={() => setTab('transfer')}>TRASPASO</button>
       <button type="button" className={tab === 'trade' ? 'active' : ''} onClick={() => setTab('trade')}>TRUEQUE</button>
       <button type="button" className={tab === 'loan' ? 'active' : ''} onClick={() => setTab('loan')}>PRÉSTAMO</button>
+      <button type="button" className={tab === 'bundle' ? 'active' : ''} onClick={() => setTab('bundle')}>COMPUESTO</button>
       <button type="button" className={tab === 'release' ? 'active' : ''} onClick={() => setTab('release')}>LIBERAR</button>
     </nav>
     {closed && <p className="empty-copy">El mercado está cerrado: los traspasos y trueques se proponen cuando se abra.</p>}
     {!closed && tab === 'transfer' && <TransferProposal myTeamId={myTeamId} rivals={rivals} onDone={onChanged} prefill={prefill}/>}
     {!closed && tab === 'loan' && <LoanProposal myTeamId={myTeamId} rivals={rivals} onDone={onChanged} prefill={prefill?.op === 'prestamo' ? prefill : null}/>}
     {!closed && tab === 'trade' && <TradeProposal myTeamId={myTeamId} rivals={rivals} onDone={onChanged}/>}
+    {!closed && tab === 'bundle' && <BundleProposal myTeamId={myTeamId} teams={teams} onDone={onChanged}/>}
     {tab === 'release' && <ReleaseForm myTeamId={myTeamId} onDone={onChanged}/>}
   </section>;
 }

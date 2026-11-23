@@ -11,6 +11,7 @@ import { useMarketClock } from './market/MarketClock.jsx';
 import { useApiQuery } from './useApiQuery.js';
 import { MyClubPanel, clubFigures, signingBlocker, signingNotes } from './market/MyClubPanel.jsx';
 import { OffersInbox, ProposeOffers } from './market/OffersSection.jsx';
+import { BundlesInbox } from './market/BundleSection.jsx';
 import { PollsSection } from './market/PollsSection.jsx';
 import { ForSaleSection } from './market/ForSaleSection.jsx';
 import { LeavingSection } from './market/LeavingSection.jsx';
@@ -262,6 +263,7 @@ export function MarketPage({ teams, initialTab = null, highlightId = null, prefi
     {current === 'ofertas' && <>
       {/* Si llegas desde la ficha de un jugador, el formulario va primero y con él ya elegido. */}
       {operates && myTeamId && prefill && <ProposeOffers teams={teams} marketOpen={marketOpen} onChanged={refresh} prefill={prefill}/>}
+      {operates && <BundlesInbox revision={revision} onChanged={refresh} highlightId={highlightId}/>}
       {operates && <OffersInbox revision={revision} onChanged={refresh} highlightId={highlightId}/>}
       {operates && myTeamId && !prefill && <ProposeOffers teams={teams} marketOpen={marketOpen} onChanged={refresh}/>}
     </>}
