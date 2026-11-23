@@ -140,6 +140,7 @@ export const endpoints = {
   resolveRequest: (teamId, requestId, body, signal) => apiClient.post(`/teams/${teamId}/requests/${requestId}/resolve`, body, { actor: 'web', signal }),
   answerLetter: (teamId, messageId, body, signal) => apiClient.post(`/teams/${teamId}/letters/${messageId}/answer`, body, { actor: 'web', signal }),
   negotiateContract: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/contracts/negotiate`, body, { actor: 'web', signal }),
+  reopenRenewal: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/contracts/reopen`, body, { actor: 'web', signal }),
   renewContract: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/contracts/renew`, body, { actor: 'web', signal }),
   negotiateAllContracts: (teamId, body, signal) => apiClient.post(`/teams/${teamId}/contracts/negotiate-all`, body, { actor: 'web', signal }),
   releasePlayer: (playerId, body, signal) => apiClient.post(`/players/${playerId}/release`, body, { actor: 'web', signal }),

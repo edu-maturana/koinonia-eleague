@@ -60,8 +60,21 @@ function refusalHint(info, contract) {
   return [why, reversible, lever, exit].filter(Boolean).join(' ');
 }
 
+/** Editar una renovación ya firmada en este mercado: se deshace (vuelve el contrato anterior y la prima) y se negocia de nuevo. */
+export function ReopenRenewalButton({ team, playerId, playerName, onReopened }) {
+  const [confirming, setConfirming] = useState(false);
+  const reopen = useApiMutation((body, signal) => endpoints.reopenRenewal(team.id, body, signal), { onSuccess: response => { setConfirming(false); onReopened(response?.data ?? null); } });
+  if (!confirming) return <button type="button" className="ghost" onClick={() => setConfirming(true)}>EDITAR</button>;
+  return <span className="offer-confirm" role="group" aria-label="CONFIRMAR EDICIÓN DE LA RENOVACIÓN">
+    <span>¿Editar la renovación de {String(playerName).toUpperCase()}? Se deshace la firma, se te devuelve la prima y vuelves a negociar años y condiciones (la firma deshecha no gasta propuesta).</span>
+    <button type="button" disabled={reopen.loading} onClick={() => reopen.execute({ playerId })}>{reopen.loading ? 'ESPERA…' : 'SÍ, EDITAR'}</button>
+    <button type="button" className="ghost" disabled={reopen.loading} onClick={() => setConfirming(false)}>VOLVER</button>
+    <FormFeedback mutation={reopen}/>
+  </span>;
+}
+
 /** La hoja de firma de una renovación: se negocia hasta en 3 propuestas y, si hay acuerdo, se firma. */
-export function SigningSheet({ team, contract, args = [], maxRounds = 3, marketOpen = true, seasonOptions = SEASONS, onDone, onAccepted }) {
+export function SigningSheet({ team, contract, args = [], maxRounds = 3, marketOpen = true, seasonOptions = SEASONS, onDone, onAccepted, onReopened }) {
   const info = contract.renewal;
   const talk = contract.talk;
   const [seasons, setSeasons] = useState(seasonOptions[0]);
@@ -128,6 +141,7 @@ export function SigningSheet({ team, contract, args = [], maxRounds = 3, marketO
       {last?.contract && <p className="sheet-terms">NUEVO CONTRATO: <b>{last.contract.seasons} TEMPORADAS</b> · <b>{gpLabel(last.contract.salary)} AL AÑO</b>{last.contract.promised_role ? <> · ROL PROMETIDO: <b>{roleLabel(last.contract.promised_role)}</b></> : null}</p>}
       <Signatures playerName={contract.playerName}/>
       <div className="sheet-stamp good" role="status">FIRMADO ✔</div>
+      {marketOpen && onReopened && <ReopenRenewalButton team={team} playerId={contract.playerId} playerName={contract.playerName} onReopened={onReopened}/>}
     </>}
     {finalRefusal && <div className="sheet-stamp bad" role="status">NO RENUEVA ✖</div>}
     {finalRefusal && <p className="poll-hint">Se negó tras escuchar tus propuestas: con este contrato no hay vuelta atrás. Puedes traspasarlo desde ya a otro club, o dejar que salga libre cuando venza.</p>}

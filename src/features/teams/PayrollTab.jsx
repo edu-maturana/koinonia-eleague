@@ -10,7 +10,7 @@ import { gpNumber } from '../../utils/money.js';
 import { useApiQuery } from '../public/useApiQuery.js';
 import { HORIZON, PLAYOFF_PRIZES, leaguePrize, maxSalaryFor, roundStep, simulate } from '../../utils/payrollSim.js';
 import { BalanceLine, PayrollBars } from './PayrollCharts.jsx';
-import { SigningSheet } from './SigningSheet.jsx';
+import { ReopenRenewalButton, SigningSheet } from './SigningSheet.jsx';
 import { ArrivalSheets } from './ArrivalSheet.jsx';
 import { Button, HowItWorks } from '../../ui/index.js';
 
@@ -208,6 +208,13 @@ function RealView({ team, query, balance, marketOpen, canEdit, layout, refresh }
   const livePayroll = projection?.payroll ?? 0;
   const [signedIds, setSignedIds] = useState([]);
   const [signedSnapshots, setSignedSnapshots] = useState({});
+  // Al editar una renovación la hoja vuelve a abrirse limpia: se cambia su `key` y se olvida la firma de esta sesión.
+  const [epochs, setEpochs] = useState({});
+  const reopened = result => {
+    const id = result?.contractId;
+    if (id) { setSignedIds(ids => ids.filter(item => item !== id)); setEpochs(items => ({ ...items, [id]: (items[id] ?? 0) + 1 })); }
+    refresh();
+  };
   // Las hojas que ya se firmaron siguen a la vista (con su firma animada) aunque el contrato ya no esté vencido.
   const renewables = contracts.filter(contract => contract.renewable);
   const sheets = [...renewables, ...signedIds.filter(id => !renewables.some(contract => contract.id === id)).map(id => signedSnapshots[id]).filter(Boolean)];
@@ -231,6 +238,7 @@ function RealView({ team, query, balance, marketOpen, canEdit, layout, refresh }
   // Solo los firmados en este mercado (llegadas y renovaciones): un contrato de antes ya está cerrado.
   const editable = contract => canEdit && marketOpen && contract.status === 'active' && contract.seasonsPaid === 0 && contract.seasonsEditable === true;
   const actions = contract => <>
+    {canEdit && marketOpen && contract.renewalEditable && <ReopenRenewalButton team={team} playerId={contract.playerId} playerName={contract.playerName} onReopened={reopened}/>}
     {editable(contract) && <ContractYears team={team} contract={contract} onDone={refresh} options={seasonOptions}/>}
     <BonusEditor team={team} contract={contract} editable={canEdit && marketOpen} onDone={refresh}/>
     {canEdit && contract.status === 'active' && <TerminateButton team={team} contract={contract} onDone={refresh}/>}
@@ -251,7 +259,7 @@ function RealView({ team, query, balance, marketOpen, canEdit, layout, refresh }
       ]}/>
       {canEdit && <ArrivalSheets team={team} onDone={refresh} seasonOptions={seasonOptions}/>}
       {canEdit && <RenewAll team={team} expiredCount={renewables.length} onDone={refresh} marketOpen={marketOpen} seasonOptions={seasonOptions}/>}
-      {canEdit && sheets.map(contract => <SigningSheet key={contract.id} team={team} contract={contract} args={query.data?.arguments ?? []} maxRounds={query.data?.maxRounds ?? 3} marketOpen={marketOpen} seasonOptions={seasonOptions} onDone={refresh} onAccepted={() => keepSigned(contract)}/>)}
+      {canEdit && sheets.map(contract => <SigningSheet key={`${contract.id}:${epochs[contract.id] ?? 0}`} onReopened={reopened} team={team} contract={contract} args={query.data?.arguments ?? []} maxRounds={query.data?.maxRounds ?? 3} marketOpen={marketOpen} seasonOptions={seasonOptions} onDone={refresh} onAccepted={() => keepSigned(contract)}/>)}
       {layout === 'cards'
         ? <div className="payroll-grid">{contracts.map(contract => <article key={contract.id} className={`payroll-card ${contract.status}`}>
           <header><PlayerFace src={contract.faceUrl} name={contract.playerName}/><div><b>{contract.playerName}</b><small>{contract.position} · VALE {gp(contract.marketValue)}</small></div><OverallBadge value={contract.overall}/></header>
