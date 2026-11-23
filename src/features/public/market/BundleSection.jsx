@@ -224,7 +224,8 @@ function BundleCard({ bundle, onChanged, highlighted }) {
 export function BundlesInbox({ revision, onChanged, highlightId = null }) {
   const bundles = useApiQuery(signal => endpoints.marketBundles(signal).catch(() => ({ data: [] })), [revision]);
   useAutoRefresh(bundles.retry, 30000);
-  const rows = asList(bundles.data);
+  // Los que se cayeron o se retiraron no se muestran: solo ocupaban espacio.
+  const rows = asList(bundles.data).filter(row => row.status === 'pending' || row.status === 'approved');
   if (!rows.length) return bundles.error ? <DataState query={bundles}/> : null;
   const pending = rows.filter(row => row.status === 'pending').length;
   return <section className="market-section bundle-inbox">
