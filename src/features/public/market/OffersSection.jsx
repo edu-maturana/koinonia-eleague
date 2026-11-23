@@ -124,7 +124,7 @@ function OfferCard({ offer, onChanged, highlighted = false, timing = null }) {
   const rejectLabel = incoming ? 'RECHAZAR' : outgoing ? 'RETIRAR OFERTA' : 'ANULAR';
   const canReject = incoming ? offer.canReject : outgoing ? offer.canWithdraw : isAdmin;
   const later = timing?.kind && timing.kind !== 'now' ? timing.label : null;
-  const loanNote = offer.kind === 'loan' ? `¿Aceptas ${offer.swapPlayer ? 'el canje a préstamo' : 'el préstamo'}? ${offer.feeGp ? `${offer.swapPlayer ? 'La compensación' : 'La tarifa'} (${gp(offer.feeGp)}) se paga ahora. ` : ''}${offer.swapPlayer ? 'Los jugadores parten' : 'El jugador parte'} ${later ?? 'de inmediato'} y duran la ventana (2 torneos); cada club paga el sueldo de quien recibe y no se puede deshacer.` : null;
+  const loanNote = offer.kind === 'loan' ? `¿Aceptas ${offer.swapPlayer ? 'el canje a préstamo' : 'el préstamo'}? ${offer.feeGp ? `${offer.swapPlayer ? 'La compensación' : 'La tarifa'} (${gp(offer.feeGp)}) se paga ahora. ` : ''}${offer.swapPlayer ? 'Los jugadores parten' : 'El jugador parte'} ${later ?? 'de inmediato'} y duran ${offer.duration === 1 ? '1 torneo (el primero de la ventana)' : 'la ventana (2 torneos)'}; cada club paga el sueldo de quien recibe y no se puede deshacer.` : null;
   const acceptNote = loanNote ?? later ? `¿Aceptas? Los GP se pagan ahora y el acuerdo queda cerrado, sin vuelta atrás; los jugadores cambian de club ${later}. (Si uno de los jugadores se va libre, el canje es al tiro.)` : '¿Aceptas? Se mueven los jugadores y los GP al tiro.';
   const ask = { approve: incoming ? acceptNote : `¿ACEPTAR EN NOMBRE DE ${upper(counterpart?.name)}?`,
     reject: incoming ? '¿RECHAZAS ESTA OFERTA?' : outgoing ? '¿RETIRAS TU OFERTA?' : '¿ANULAR ESTA OFERTA?' };
@@ -147,13 +147,13 @@ function OfferCard({ offer, onChanged, highlighted = false, timing = null }) {
             <span className="offer-swap" aria-hidden="true">⇄</span>
             <div><small>{upper(teamLabel(offer.toTeam))} PRESTA</small><PlayerChip player={offer.swapPlayer}/>{offer.swapBuyPrice ? <small>OPCIÓN DE COMPRA: {gp(offer.swapBuyPrice)}</small> : null}
               <b className="offer-price">{offer.feeGp ? `COMPENSA ${upper(teamLabel(offer.feePayerTeamId === offer.fromTeam?.id ? offer.fromTeam : offer.toTeam))}: ${gp(offer.feeGp)}` : 'SIN COMPENSACIÓN'}</b>
-              <small>CADA CLUB PAGA EL SUELDO DE QUIEN RECIBE · LA VENTANA (2 TORNEOS)</small></div>
+              <small>CADA CLUB PAGA EL SUELDO DE QUIEN RECIBE · {offer.duration === 1 ? '1 TORNEO' : 'LA VENTANA (2 TORNEOS)'}</small></div>
           </div>
           : <div className="offer-sides">
             <div><small>{upper(teamLabel(offer.fromTeam))} PRESTA</small><PlayerChip player={offer.player}/></div>
             <span className="offer-swap" aria-hidden="true">→</span>
             <div><small>{upper(teamLabel(offer.toTeam))} RECIBE</small><b className="offer-price">{offer.feeGp ? `TARIFA ${gp(offer.feeGp)}` : 'SIN TARIFA'}</b>
-              <small>{offer.buyPrice ? `OPCIÓN DE COMPRA: ${gp(offer.buyPrice)}` : 'SIN OPCIÓN DE COMPRA'} · EL SUELDO LO PAGA QUIEN RECIBE · LA VENTANA (2 TORNEOS)</small></div>
+              <small>{offer.buyPrice ? `OPCIÓN DE COMPRA: ${gp(offer.buyPrice)}` : 'SIN OPCIÓN DE COMPRA'} · EL SUELDO LO PAGA QUIEN RECIBE · {offer.duration === 1 ? '1 TORNEO' : 'LA VENTANA (2 TORNEOS)'}</small></div>
           </div>)
       : <div className="offer-sides">
         <div><small>{upper(teamLabel(offer.fromTeam))} VENDE</small><PlayerChip player={offer.player}/></div>
@@ -206,7 +206,7 @@ export function OffersInbox({ revision, onChanged, highlightId = null }) {
 }
 
 const LOAN_STATUS = { agreed: 'CERRADO · PARTE AL TERMINAR EL TORNEO', active: 'EN CURSO' };
-const leaguesText = loan => (loan.status === 'active' && loan.leagues ? ` · QUEDAN ${loan.leagues} ${loan.leagues === 1 ? 'TORNEO' : 'TORNEOS'}` : ' · LA VENTANA (2 TORNEOS)');
+const leaguesText = loan => (loan.status === 'active' && loan.leagues ? ` · QUEDAN ${loan.leagues} ${loan.leagues === 1 ? 'TORNEO' : 'TORNEOS'}` : loan.duration === 1 ? ' · 1 TORNEO' : ' · LA VENTANA (2 TORNEOS)');
 
 /** Préstamos cerrados y en curso (de la liga). El club que recibe marca la opción de compra; un admin puede anular. */
 function ActiveLoans({ revision, onChanged }) {
@@ -300,7 +300,7 @@ function TransferProposal({ myTeamId, rivals, onDone, prefill = null }) {
 }
 
 function LoanProposal({ myTeamId, rivals, onDone, prefill = null }) {
-  const empty = { side: 'borrow', otherTeamId: '', playerId: '', feeGp: '', withOption: false, buyPrice: '', withSwap: false, swapPlayerId: '', payer: '' };
+  const empty = { side: 'borrow', otherTeamId: '', playerId: '', feeGp: '', withOption: false, buyPrice: '', withSwap: false, swapPlayerId: '', payer: '', leagues: 2 };
   const [form, setForm] = useState(() => (prefill?.teamId ? { ...empty, otherTeamId: prefill.teamId, playerId: prefill.playerId } : empty));
   const [sent, setSent] = useState('');
   const borrowing = form.side === 'borrow';
@@ -325,7 +325,7 @@ function LoanProposal({ myTeamId, rivals, onDone, prefill = null }) {
   const submit = event => {
     event.preventDefault();
     if (!ready) return;
-    mutation.execute({ playerId: form.playerId, proposerTeamId: myTeamId, feeGp: fee, buyPrice: form.withOption ? buyPrice : null,
+    mutation.execute({ playerId: form.playerId, proposerTeamId: myTeamId, leagues: form.leagues, feeGp: fee, buyPrice: form.withOption ? buyPrice : null,
       ...(swapPlayer ? { swapPlayerId: swapPlayer.id, feePayerTeamId: fee ? (payerIsMe ? myTeamId : form.otherTeamId) : null } : {}),
       ownerTeamId: borrowing ? form.otherTeamId : myTeamId, borrowerTeamId: borrowing ? myTeamId : form.otherTeamId });
   };
@@ -337,6 +337,10 @@ function LoanProposal({ myTeamId, rivals, onDone, prefill = null }) {
     </div>
     <label>{borrowing ? 'CLUB QUE TE LO PRESTA' : 'CLUB AL QUE SE LO PRESTAS'}<select required value={form.otherTeamId} onChange={event => set('otherTeamId', event.target.value)}><option value="">ELEGIR CLUB</option>{rivals.map(team => <option key={team.id} value={team.id}>{teamLabel(team)}</option>)}</select></label>
     <label>{borrowing ? 'JUGADOR QUE QUIERES' : 'JUGADOR TUYO QUE PRESTAS'}<select required value={form.playerId} disabled={borrowing && !form.otherTeamId} onChange={event => set('playerId', event.target.value)}>{playerOptions(squad)}</select></label>
+    <div className="offer-toggle" role="radiogroup" aria-label="DURACIÓN DEL PRÉSTAMO">
+      <button type="button" role="radio" aria-checked={form.leagues === 2} className={form.leagues === 2 ? 'on' : ''} onClick={() => set('leagues', 2)}>LA VENTANA (2 TORNEOS)</button>
+      <button type="button" role="radio" aria-checked={form.leagues === 1} className={form.leagues === 1 ? 'on' : ''} onClick={() => set('leagues', 1)}>SOLO 1 TORNEO</button>
+    </div>
     <label>{form.withSwap ? 'COMPENSACIÓN EN GP (PUEDE SER 0)' : 'TARIFA EN GP (LA PAGA QUIEN RECIBE; PUEDE SER 0)'}<GpInput placeholder="0" value={form.feeGp} disabled={!player} onChange={event => set('feeGp', event.target.value)} aria-label={form.withSwap ? 'Compensación del canje' : 'Tarifa del préstamo'}/></label>
     {form.withSwap && fee > 0 && <label>QUIÉN PAGA LA COMPENSACIÓN<select value={payerIsMe ? 'me' : 'other'} onChange={event => set('payer', event.target.value)}><option value="me">YO (MI CLUB)</option><option value="other">{upper(other?.name ?? 'EL OTRO CLUB')}</option></select></label>}
     <label className="loan-option"><input type="checkbox" checked={form.withSwap} disabled={!player} onChange={event => setForm(current => ({ ...current, withSwap: event.target.checked, swapPlayerId: '' }))}/> CANJE: A CAMBIO DE OTRO JUGADOR</label>
@@ -344,7 +348,7 @@ function LoanProposal({ myTeamId, rivals, onDone, prefill = null }) {
     <label className="loan-option"><input type="checkbox" checked={form.withOption} onChange={event => setForm(current => ({ ...current, withOption: event.target.checked, buyPrice: event.target.checked && player ? String(player.gpValue ?? '') : '' }))}/> INCLUIR OPCIÓN DE COMPRA</label>
     {form.withOption && <label>PRECIO DE LA OPCIÓN{band ? ` · ENTRE ${gp(band.min)} Y ${gp(band.max)}` : ''}<GpInput value={form.buyPrice} disabled={!player} onChange={event => set('buyPrice', event.target.value)} aria-label="Precio de la opción de compra"/></label>}
     {player && other && <Summary problem={problem}>
-      {borrowing ? `${upper(other.name)} TE PRESTA A ${upper(player.name)}` : `LE PRESTAS ${upper(player.name)} A ${upper(other.name)}`}{swapPlayer ? ` Y ${borrowing ? `TÚ LE PRESTAS A ${upper(swapPlayer.name)}` : `${upper(other.name)} TE PRESTA A ${upper(swapPlayer.name)}`}` : ''} POR LA VENTANA (2 TORNEOS){fee ? ` (${form.withSwap ? `COMPENSA ${payerIsMe ? 'TU CLUB' : upper(other.name)}: ` : 'TARIFA '}${gp(fee)})` : form.withSwap ? '' : ' (SIN TARIFA)'}{form.withOption && Number.isFinite(buyPrice) ? `, CON OPCIÓN DE COMPRA A ${gp(buyPrice)}` : ''}. CADA CLUB PAGA EL SUELDO DEL JUGADOR QUE RECIBE. PARTE CUANDO TERMINA EL TORNEO EN CURSO (O AL PASAR A TRANSACCIONES) Y VUELVE AL TERMINAR LA VENTANA; SI PARTE ENTRE LOS DOS TORNEOS, CUBRE SOLO EL QUE QUEDA. NO ENTRA SI TIENE UN CONTRATO QUE VENCE. TOPE: 2 PRESTADOS ENTRANDO Y 2 SALIENDO POR CLUB.
+      {borrowing ? `${upper(other.name)} TE PRESTA A ${upper(player.name)}` : `LE PRESTAS ${upper(player.name)} A ${upper(other.name)}`}{swapPlayer ? ` Y ${borrowing ? `TÚ LE PRESTAS A ${upper(swapPlayer.name)}` : `${upper(other.name)} TE PRESTA A ${upper(swapPlayer.name)}`}` : ''} {form.leagues === 1 ? 'POR 1 TORNEO (EL PRIMERO DE LA VENTANA)' : 'POR LA VENTANA (2 TORNEOS)'}{fee ? ` (${form.withSwap ? `COMPENSA ${payerIsMe ? 'TU CLUB' : upper(other.name)}: ` : 'TARIFA '}${gp(fee)})` : form.withSwap ? '' : ' (SIN TARIFA)'}{form.withOption && Number.isFinite(buyPrice) ? `, CON OPCIÓN DE COMPRA A ${gp(buyPrice)}` : ''}. CADA CLUB PAGA EL SUELDO DEL JUGADOR QUE RECIBE. PARTE CUANDO TERMINA EL TORNEO EN CURSO (O AL PASAR A TRANSACCIONES) Y VUELVE AL TERMINAR EL PRÉSTAMO ({form.leagues === 1 ? 'AL CERRAR ESE TORNEO; EL SEGUNDO LO JUEGA CON SU DUEÑO' : 'SI PARTE ENTRE LOS DOS TORNEOS, CUBRE SOLO EL QUE QUEDA'}). NO ENTRA SI TIENE UN CONTRATO QUE VENCE. TOPE: 2 PRESTADOS ENTRANDO Y 2 SALIENDO POR CLUB.
     </Summary>}
     <Button variant="positive" type="submit" disabled={mutation.loading || !ready}>{mutation.loading ? 'ENVIANDO…' : 'ENVIAR PRÉSTAMO'}</Button>
     {mutation.error && <p className="form-feedback error" role="alert">{mutation.error.message}</p>}
