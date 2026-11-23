@@ -223,9 +223,30 @@
 
 /* Chat con el jugador antes de ofertar: usa el mismo lenguaje que el chat de subastas (pc-*). */
 .tc { animation: pc-in .22s ease both; }
-.tc { height: auto; max-height: none; }
-.tc .pc-log, .sealed-card.stage .tc .pc-log { flex: 0 1 auto; min-height: 120px; max-height: min(46vh, 360px); }
-.tc .pc-composer { max-height: none; }
+/* Como un chat de teléfono: alto fijo, solo la conversación scrollea (lo viejo se va hacia arriba) y las respuestas quedan
+   abajo con su propio scroll si no caben. Así no se rompe por largo que se ponga la charla. */
+.tc { height: clamp(440px, calc(var(--vh-full, 100dvh) - 180px), 760px); max-height: none; }
+.tc .pc-log, .sealed-card.stage .tc .pc-log { flex: 1 1 0; min-height: 120px; max-height: none; }
+.tc .pc-composer { flex: 0 0 auto; max-height: 46%; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.tc .pc-chips { grid-auto-rows: max-content; }
+/* En la ventana "Hablar con…" el chat llena la ventana, que mide el alto de la pantalla. */
+.ui-modal.ui-modal--chat { width: min(760px, 100%); height: calc(var(--vh-full, 100dvh) - 32px); max-height: none; display: flex; flex-direction: column; overflow: hidden; }
+.ui-modal--chat > header { flex: 0 0 auto; }
+.ui-modal--chat .ui-modal__body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3); overflow: hidden; }
+.ui-modal--chat .talk-help { flex: 0 0 auto; margin: 0; font-size: var(--fs-sm); }
+.ui-modal--chat .tc { flex: 1 1 auto; min-height: 0; height: auto; }
+/* Pantalla bajita (notebook con la ventana chica): la ayuda se esconde para que la charla y las respuestas quepan. */
+@media (max-height: 760px) { .ui-modal--chat .talk-help { display: none; } }
+@media (max-width: 560px) {
+  /* Teléfono: la ventana ocupa la pantalla completa y la ayuda se esconde para dejarle espacio a la charla. */
+  .ui-modal-backdrop:has(.ui-modal--chat) { padding: 0; place-items: stretch; }
+  .ui-modal.ui-modal--chat { width: 100%; height: var(--vh-full, 100dvh); border: 0; box-shadow: none; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .ui-modal--chat > header { padding-top: max(var(--sp-2), env(safe-area-inset-top, 0px)); }
+  .ui-modal--chat .ui-modal__body { padding: 0; gap: 0; }
+  .ui-modal--chat .talk-help { display: none; }
+  .ui-modal--chat .tc { border-left: 0; border-right: 0; }
+  .tc .pc-composer { max-height: 50%; }
+}
 .tc-score { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 4px 10px; padding: 6px 10px 8px; background: #0b3a8c; color: #fff9e8; }
 .tc-score > span:first-child { font: 600 var(--fs-xs)/1 var(--font-ui); letter-spacing: .6px; }
 .tc-score b { font: 400 22px/1 var(--font-display); }

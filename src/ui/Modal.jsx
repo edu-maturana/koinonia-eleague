@@ -5,7 +5,7 @@ import { Button } from './Button.jsx';
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Ventana modal: Escape o clic fuera cierran, el foco queda dentro y vuelve a quien la abrió. */
-export function Modal({ title, onClose, children, wide = false }) {
+export function Modal({ title, onClose, children, wide = false, className = '' }) {
   const box = useRef(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -26,7 +26,7 @@ export function Modal({ title, onClose, children, wide = false }) {
     return () => { document.removeEventListener('keydown', onKey); opener?.focus?.(); };
   }, []);
   return createPortal(<div className="ui-modal-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <div className={`ui-modal ${wide ? 'ui-modal--wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} ref={box}>
+    <div className={`ui-modal ${wide ? 'ui-modal--wide' : ''} ${className}`.trim()} role="dialog" aria-modal="true" aria-label={title} ref={box}>
       <header><h2>{title}</h2><Button variant="ghost" size="sm" aria-label="Cerrar" onClick={onClose}>✕</Button></header>
       <div className="ui-modal__body">{children}</div>
     </div>
