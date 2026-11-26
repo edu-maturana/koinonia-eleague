@@ -36,7 +36,7 @@ function SectorsButton({ stadium }) {
   const [open, setOpen] = useState(false);
   const standing = stadium.sectors.find(sector => sector.type === 'standing');
   return <>
-    <Button className="stadium-sectors-button" variant="ghost" size="sm" icon="stadium" onClick={() => setOpen(true)}>VER SECTORES{standing ? ' · CON TRIBUNA DE PIE' : ''}</Button>
+    <Button className="stadium-sectors-button" variant="ghost" size="sm" icon="stadium" onClick={() => setOpen(true)}>VER SECTORES</Button>
     {open && <Modal wide className="stadium-sectors-modal" title={stadium.displayName ?? stadium.name} onClose={() => setOpen(false)}>
       <div className="stadium-sectors-summary">
         <Chip tone="navy">CAT. {stadium.category}</Chip>
