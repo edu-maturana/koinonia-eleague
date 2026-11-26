@@ -382,7 +382,7 @@ function SimView({ team, projection, balance, canEdit, layout, currentPosition, 
         <figure><figcaption>SALDO PROYECTADO</figcaption><BalanceLine rows={timeline} start={typeof balance === 'number' ? balance : 0} labelOf={labelOf}/></figure>
       </div>
       <div className="ptable-wrap"><table className="ptable sim-timeline-table">
-        <thead><tr><th>TORNEO</th><th>PUESTO</th><th>PLAYOFFS</th><th>NÓMINA</th><th>PREMIOS</th><th>NETO</th><th>SALDO</th><th>CONTRATOS QUE VENCEN</th></tr></thead>
+        <thead><tr><th>TORNEO</th><th>PUESTO</th><th>PLAYOFFS</th><th>NÓMINA</th><th>TV LIGA + POSTEMP.</th><th>NETO</th><th>SALDO</th><th>CONTRATOS QUE VENCEN</th></tr></thead>
         <tbody>{timeline.map(row => <tr key={row.torneo} className={row.overCap || row.balance < 0 ? 'over' : ''}>
           <td><b>{labelOf(row.torneo - 1)}</b></td>
           <td><select aria-label={`Puesto en el torneo ${row.torneo}`} value={row.position} disabled={!canEdit} onChange={event => setTorneo('positions', row.torneo - 1, Number(event.target.value))}>{Array.from({ length: 10 }, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}.º</option>)}</select></td>
@@ -393,12 +393,12 @@ function SimView({ team, projection, balance, canEdit, layout, currentPosition, 
         </tr>)}</tbody>
       </table></div>
       <p className="payroll-note">{upcoming[0] ? `El primer torneo que se cobra es el ${upper(upcoming[0])}.` : 'T1 es el primer torneo con contratos.'}</p>
-      <HowItWorks><p>Los premios son los de la tabla de la liga según el puesto y los playoffs que elijas en cada fila (parten de tu puesto de hoy). No incluye fichajes nuevos.</p></HowItWorks>
+      <HowItWorks><p>Lo que entra es la TV de la liga según el puesto (40% en partes iguales, 45% por puesto y 15% por audiencia, estimada como la de un club promedio) más la TV de postemporada de los playoffs que elijas en cada fila (parten de tu puesto de hoy). No incluye taquilla, contrato con canal ni fichajes nuevos.</p></HowItWorks>
     </section>
   </div>;
 }
 
-/** Nómina del club: la real (contratos firmados) y la simulación (qué pasaría con otros sueldos, años y premios). */
+/** Nómina del club: la real (contratos firmados) y la simulación (qué pasaría con otros sueldos, años y puestos). */
 export function PayrollTab({ team, balance, onChanged, onTab = null, currentPosition = null, forcedView = null }) {
   const { canEditTeam } = useAuth();
   const canEdit = canEditTeam(team.id);

@@ -1,17 +1,24 @@
 // Simulación de la nómina de un club para los próximos torneos. Es pura (sin red ni estado): no cambia nada real.
 // Cada jugador cobra su sueldo cada torneo mientras dura su contrato; al vencer, si se asume renovación, renueva por 2 torneos
-// con el aumento elegido, siempre bajo el tope del 20% de su valor de mercado. Los premios salen de la tabla de la liga.
+// con el aumento elegido, siempre bajo el tope del 20% de su valor de mercado. Lo que entra sale de la TV de la liga (según el puesto) y la de postemporada.
 export const SALARY_STEP = 10_000;
 export const MAX_SALARY_SHARE = 0.2;
 export const HORIZON = 6;
-// Premios de la liga (los mismos que sugiere el panel de torneos al otorgarlos): con 10 clubes, el 1.º cobra 150 M y cada puesto baja 10 M (el 10.º, 60 M).
-export const LEAGUE_FIRST_PRIZE = 150_000_000;
-export const LEAGUE_PRIZE_STEP = 10_000_000;
+// Lo que paga la liga al cerrar cada torneo es TV (igual que el servidor, core/league-tv.js): 110 M por club, 40% en partes
+// iguales, 45% según el puesto y 15% según la audiencia. Acá la audiencia se toma como la de un club promedio (estimado).
+export const LEAGUE_TV_PER_CLUB = 110_000_000;
+export const LEAGUE_TV_SHARES = { equal: 0.4, position: 0.45, audience: 0.15 };
+export const LEAGUE_CLUBS = 10;
 export const PLAYOFF_PRIZES = { none: 0, playin: 5_000_000, semifinal: 10_000_000, runnerUp: 20_000_000, champion: 40_000_000 };
 
 export const roundStep = amount => Math.max(SALARY_STEP, Math.round(amount / SALARY_STEP) * SALARY_STEP);
 export const maxSalaryFor = value => Math.max(SALARY_STEP, Math.floor(Number(value) * MAX_SALARY_SHARE / SALARY_STEP) * SALARY_STEP);
-export const leaguePrize = position => Math.max(0, LEAGUE_FIRST_PRIZE - LEAGUE_PRIZE_STEP * (Math.max(1, position) - 1));
+export const leaguePrize = (position, clubs = LEAGUE_CLUBS) => {
+  const place = Math.min(clubs, Math.max(1, position));
+  const pool = LEAGUE_TV_PER_CLUB * clubs;
+  const merit = pool * LEAGUE_TV_SHARES.position * (clubs - place + 1) / (clubs * (clubs + 1) / 2);
+  return Math.round((LEAGUE_TV_PER_CLUB * (LEAGUE_TV_SHARES.equal + LEAGUE_TV_SHARES.audience) + merit) / 10_000) * 10_000;
+};
 
 /**
  * `players`: [{ value, salary, years, raise?, renew?, sold? }]: `raise` y `renew` de un jugador mandan sobre los globales, y `sold` lo saca desde el T1.

@@ -6,7 +6,7 @@ import { FormFeedback } from './FormFeedback.jsx';
 import { useApiMutation } from './useApiMutation.js';
 import { TeamMark } from '../../components/TeamMark.jsx';
 import { gpLabel } from '../../utils/money.js';
-import { LEAGUE_FIRST_PRIZE, LEAGUE_PRIZE_STEP } from '../../utils/payrollSim.js';
+import { leaguePrize } from '../../utils/payrollSim.js';
 import { GpInput } from '../../components/GpInput.jsx';
 import { Button } from '../../ui/index.js';
 
@@ -16,10 +16,9 @@ function MutationAction({ action, label, confirmText, onChanged, danger = false 
   return <div className="mutation-action"><Button variant={danger ? 'danger' : 'primary'} type="submit" disabled={mutation.loading} onClick={run}>{label}</Button><FormFeedback mutation={mutation}/></div>;
 }
 
-// Premios sugeridos (se pre-llenan y el admin los puede cambiar antes de otorgar):
-// liga: 1.º 150 M y bajando de a 10 M (el 10.º recibe 60 M); playoffs: play-in (o cuartos) 5 M, semifinalista 10 M, subcampeón 20 M y campeón 40 M (1 GP = 1 €).
-const LEAGUE_FIRST = LEAGUE_FIRST_PRIZE;
-const LEAGUE_STEP = LEAGUE_PRIZE_STEP;
+// Lo que se paga al cerrar una liga (se pre-llena con lo que calcula el servidor y el admin lo puede cambiar antes de otorgar):
+// TV de la liga (40% iguales, 45% por puesto, 15% por audiencia) y TV de postemporada: play-in (o cuartos) 5 M,
+// semifinalista 10 M, subcampeón 20 M y campeón 40 M (1 GP = 1 €).
 const PLAYOFF_PRIZES = {
   champion: { label: 'CAMPEÓN', gp: 40_000_000 },
   runnerUp: { label: 'SUBCAMPEÓN', gp: 20_000_000 },
@@ -42,10 +41,12 @@ function playoffPlaces(playoffs) {
   return places;
 }
 
-function suggested(rows, places) {
+function suggested(rows, places, plan) {
+  const byTeam = new Map((plan ?? []).map(item => [item.teamId, item]));
   return Object.fromEntries(rows.map((row, index) => {
     const prize = PLAYOFF_PRIZES[places[row.team_id]];
-    return [row.team_id, { league: String(Math.max(0, LEAGUE_FIRST - LEAGUE_STEP * index)), playoff: String(prize?.gp ?? 0) }];
+    const planned = byTeam.get(row.team_id);
+    return [row.team_id, { league: String(planned?.league ?? leaguePrize(index + 1, rows.length)), playoff: String(planned?.playoff ?? prize?.gp ?? 0) }];
   }));
 }
 
@@ -59,7 +60,7 @@ function GrantedPrizes({ prizes }) {
   }
   const teams = [...byTeam.values()].sort((a, b) => b.total - a.total);
   return <section className="tournament-awards">
-    <header><div><h3>Premios ya otorgados</h3><p>Este torneo ya pagó sus premios: no se pueden volver a otorgar. Para corregir un monto, haz un abono o descuento manual al club.</p></div>{prizes.total > 0 && <b>{gpText(prizes.total)}</b>}</header>
+    <header><div><h3>Ya pagado</h3><p>Este torneo ya pagó su TV de la liga y de postemporada (o sus premios, si es de antes de la v17): no se puede volver a pagar. Para corregir un monto, haz un abono o descuento manual al club.</p></div>{prizes.total > 0 && <b>{gpText(prizes.total)}</b>}</header>
     {prizes.manualNote && <p className="poll-hint">{prizes.manualNote}</p>}
     {teams.length > 0 && <div className="tournament-awards-table"><table>
       <thead><tr><th>CLUB</th><th>POR QUÉ</th><th>TOTAL</th></tr></thead>
@@ -77,9 +78,9 @@ export function TournamentAwardsPanel({ tournament, onChanged }) {
   const [values, setValues] = useState(null);
   const [confirming, setConfirming] = useState(false);
   // Se pre-llena apenas llegan la tabla y los playoffs; después manda lo que edite el admin.
-  const ready = !standings.loading && !playoffs.loading && rows.length > 0;
+  const ready = !standings.loading && !playoffs.loading && !prizes.loading && rows.length > 0;
   useEffect(() => { setValues(null); setConfirming(false); }, [tournament.id]);
-  useEffect(() => { if (ready && values === null) setValues(suggested(rows, places)); }, [ready, values]);
+  useEffect(() => { if (ready && values === null) setValues(suggested(rows, places, prizes.data?.plan)); }, [ready, values, prizes.data]);
   const form = values ?? {};
   const set = (teamId, field, value) => setValues(current => ({ ...current, [teamId]: { ...current[teamId], [field]: value } }));
   const grants = rows.map((row, index) => {
@@ -90,17 +91,22 @@ export function TournamentAwardsPanel({ tournament, onChanged }) {
   const totalGp = grants.reduce((sum, item) => sum + item.league + item.playoff, 0);
   // Un solo pedido al servidor: otorga todo junto y se niega si el torneo ya pagó sus premios.
   const mutation = useApiMutation(signal => endpoints.grantTournamentPrizes(tournament.id, {
-    grants: grants.map(grant => ({ teamId: grant.row.team_id, position: grant.position, league: grant.league, playoff: grant.playoff,
-      placeLabel: grant.place ? PLAYOFF_PRIZES[grant.place].label.toLowerCase() : null })),
+    grants: grants.map(grant => {
+      // El desglose (iguales + puesto + audiencia) va en el motivo solo si el admin dejó el monto calculado.
+      const planned = prizes.data?.plan?.find(item => item.teamId === grant.row.team_id);
+      return { teamId: grant.row.team_id, position: grant.position, league: grant.league, playoff: grant.playoff,
+        placeLabel: grant.place ? PLAYOFF_PRIZES[grant.place].label.toLowerCase() : null,
+        ...(planned && planned.league === grant.league ? { leagueDetail: planned.leagueDetail } : {}) };
+    }),
   }, signal), { onSuccess: () => { setConfirming(false); prizes.retry(); onChanged?.(); } });
 
   if (!prizes.data) return <DataState query={prizes}/>;
   if (prizes.data.granted) return <GrantedPrizes prizes={prizes.data}/>;
   return <section className="tournament-awards">
-    <header><div><h3>Clasificación final y premios</h3><p>Vienen pre-llenados (1.º de la liga 150 M GP y bajando de a 10 M; cuartofinalista 5 M; semifinalista 10 M; subcampeón 20 M; campeón 40 M). Revisa, ajusta y otorga todo con un solo guardado: se paga una sola vez.</p></div><b>{gpText(totalGp)}</b></header>
+    <header><div><h3>Clasificación final: TV de la liga y de postemporada</h3><p>Vienen pre-llenados con el reparto de la TV de la liga (40% iguales, 45% por puesto, 15% por audiencia) y la de postemporada (play-in o cuartos 5 M, semifinalista 10 M, subcampeón 20 M, campeón 40 M). Revisa, ajusta y otorga todo con un solo guardado: se paga una sola vez.</p></div><b>{gpText(totalGp)}</b></header>
     <DataState query={standings}/>
     {rows.length > 0 && <div className="tournament-awards-table"><table>
-      <thead><tr><th>#</th><th>CLUB</th><th>PTS</th><th>GP LIGA</th><th>PLAYOFFS</th><th>GP PLAYOFFS</th></tr></thead>
+      <thead><tr><th>#</th><th>CLUB</th><th>PTS</th><th>TV LIGA</th><th>PLAYOFFS</th><th>TV POSTEMPORADA</th></tr></thead>
       <tbody>{rows.map((row, index) => {
         const entry = form[row.team_id] ?? {};
         const place = places[row.team_id];
@@ -112,7 +118,7 @@ export function TournamentAwardsPanel({ tournament, onChanged }) {
         </tr>;
       })}</tbody>
     </table></div>}
-    {rows.length > 0 && !playoffs.data && <p className="poll-hint">Este torneo no tiene playoffs: solo se pre-llenan los premios de la liga.</p>}
+    {rows.length > 0 && !playoffs.data && <p className="poll-hint">Este torneo no tiene playoffs: solo se pre-llena la TV de la liga.</p>}
     {confirming
       ? <div className="offer-confirm" role="group" aria-label="CONFIRMAR PREMIOS">
         <span>¿OTORGAR {gpText(totalGp)} A {grants.length} CLUBES? SE ACREDITA AL TIRO Y SE PAGA UNA SOLA VEZ.</span>
@@ -123,7 +129,7 @@ export function TournamentAwardsPanel({ tournament, onChanged }) {
       </div>
       : <div className="button-row">
         <Button className="tournament-awards-save" type="submit" disabled={!grants.length} onClick={() => setConfirming(true)}>Guardar y otorgar premios</Button>
-        <Button variant="ghost" className="ghost-button" disabled={!ready} onClick={() => setValues(suggested(rows, places))}>VOLVER A LOS SUGERIDOS</Button>
+        <Button variant="ghost" className="ghost-button" disabled={!ready} onClick={() => setValues(suggested(rows, places, prizes.data?.plan))}>VOLVER A LOS SUGERIDOS</Button>
       </div>}
     {mutation.error && <p className="form-feedback error" role="alert">{mutation.error.message}</p>}
   </section>;

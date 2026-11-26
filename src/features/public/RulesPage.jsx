@@ -60,17 +60,24 @@ const Transfers = ({ squadValueLimit, payrollCap, contractsEnabled }) => <sectio
 
 const Prizes = () => <>
   <section className="rules-section">
-    <h2>5. Sistema de Premios</h2>
-    <h3>Tabla de la liga</h3>
-    <ul><li><strong>1.º:</strong> 150 M GP</li><li><strong>Desde el 2.º:</strong> 10 M GP menos por cada puesto (2.º 140 M, 3.º 130 M, 4.º 120 M, y así hasta el 10.º, que recibe 60 M).</li></ul>
-    <h3>Playoffs</h3>
+    <h2>5. Derechos de TV de la liga (desde el cierre de la v17)</h2>
+    <p>Como en la Premier o LaLiga, la liga no paga premios por puesto: vende la transmisión de todos los partidos en bloque y reparte esa plata entre sus clubes al cerrar cada torneo. Lo que cobra de más el que termina arriba sale de ahí.</p>
+    <h3>TV de la liga</h3>
+    <ul>
+      <li><strong>Cuánto reparte:</strong> 110 M GP por club en cada torneo (con 9 clubes, 990 M).</li>
+      <li><strong>40% en partes iguales:</strong> 44 M para cada club.</li>
+      <li><strong>45% según el puesto en la tabla:</strong> el 1.º cobra N partes y el último 1 (con 9 clubes, del 1.º 89 M al 9.º 10 M).</li>
+      <li><strong>15% según la audiencia:</strong> según la raíz de los hinchas de cada club, para que los gigantes cobren más sin llevárselo todo.</li>
+      <li><strong>Tope:</strong> el que más cobra no puede recibir más de 3,5 veces lo del último (la regla de LaLiga).</li>
+    </ul>
+    <h3>TV de postemporada</h3>
     <ul>
       <li><strong>Campeón:</strong> 40 M GP.</li>
       <li><strong>Subcampeón:</strong> 20 M GP.</li>
       <li><strong>Semifinalista:</strong> 10 M GP.</li>
-      <li><strong>Cuartofinalista:</strong> 5 M GP.</li>
+      <li><strong>Play-in o cuartos:</strong> 5 M GP.</li>
     </ul>
-    <p>Los premios de los playoffs se suman a los de la tabla.</p>
+    <p>Se suma a la TV de la liga. Aparte, cada club puede firmar su propio contrato con un canal (ver la sección 15) y la directiva pone un <strong>aporte del dueño</strong> cuando se cumplen sus metas. La Copa Grande Giocatore y las giras sí pagan premios, porque son copas. Hasta la v16 se pagaban premios por puesto (1.º 150 M y 10 M menos por puesto).</p>
   </section>
 </>;
 
@@ -135,7 +142,7 @@ const ClubSystems = ({ superclasico = null }) => <>
         </ul>
       </li>
       <li><strong>Salir campeón no se le exige a nadie:</strong> el que lo logra cobra un bono de 10 M GP, tenga la meta que tenga. Superar la meta de tabla por dos puestos o más paga 5 M GP por cada puesto de más.</li>
-      <li>Se evalúan al terminar el torneo. Cada objetivo cumplido da su premio en GP y sube el ánimo de la plantilla (+5); uno fallado baja el ánimo (−5), sin multa.</li>
+      <li>Se evalúan al terminar el torneo. Cada objetivo cumplido trae un aporte del dueño en GP y sube el ánimo de la plantilla (+5); uno fallado baja el ánimo (−5), sin multa.</li>
     </ul>
   </section>
   <section className="rules-section">
@@ -189,17 +196,17 @@ const ClubSystems = ({ superclasico = null }) => <>
     </ul>
   </section>
   <section className="rules-section">
-    <h2>15. Conciertos, La Velada y derechos de TV</h2>
+    <h2>15. Conciertos, La Velada y contrato con un canal</h2>
     <ul>
       <li><strong>Conciertos:</strong> el Presidente contrata a un artista de la cartelera, le paga por adelantado lo que cobra por tocar y el show se hace en su próxima fecha de local. Al club le quedan 60 € por persona. Cada artista pide un aforo mínimo. La convocatoria tiene azar: un estadio lleno deja ganancia e hinchas y un show flojo puede dar pérdida. Máximo dos por temporada; cancelar devuelve la mitad de lo pagado. <strong>Cada artista está con un solo club a la vez</strong>: mientras está agendado nadie más lo puede contratar, y apenas toca queda libre para cualquiera (si el show se cancela, también). La cartelera es solo de <strong>música cristiana</strong>: Michael W. Smith, Marcos Witt, Steven Curtis Chapman, Phil Wickham, Tauren Wells, Marcos Barrientos, Redimi2, Marcos Vidal, Alex Zurdo, Juan Carlos Alvarado, Funky, Majo y Dan, Eli Soares, ResQ Band y Jah Love. La mayoría cabe en una cancha de 12.000 personas.</li>
       <li><strong>La Velada del Año:</strong> en cada temporada (cada v) Ibai busca estadio para su evento de boxeo: la búsqueda se abre sola cuando arranca la liga, queda abierta 3 días y a cada club le llega un aviso. Funciona como una subasta a sobre cerrado: cada club que quiere el evento le ofrece plata a Ibai, y nadie ve lo que ofrecen los demás. Solo pueden ofrecer los clubes con un estadio de 50.000 personas o más y 3,7 millones de hinchas. Al cierre, Ibai elige uno mirando la plata (50%), el tamaño del estadio (30%) y los hinchas (20%). El elegido paga lo que ofreció y cobra las entradas a estadio lleno (80 € cada una) más 3 M de transmisión; los demás no pagan nada.</li>
-      <li><strong>Derechos de TV:</strong> cada temporada tres canales (TNT Sports, ESPN, DSports, DAZN, Prime Video y otros) ofrecen transmitir los partidos del club: fija (2 torneos), mixta (4 torneos) o arriesgada (6 torneos), para que calcen con las ventanas de mercado. Cada canal paga según su tamaño y los hinchas del club en todo el mundo; los gigantes (Prime Video, DAZN, ESPN) pagan más pero solo llaman a clubes con mucha hinchada, y la TV abierta paga menos y le transmite a cualquiera. Se cobran al cerrar cada torneo de liga, con bonos por playoffs y por título según la oferta. Todos los contratos, los ya firmados y los que vengan, cuentan <strong>desde el v11</strong>: el v10 no paga ni gasta temporadas. Cuando un contrato termina, llegan tres ofertas nuevas, calculadas con los hinchas, los resultados, la historia y el estadio del club en ese momento. No van en la camiseta, porque en el juego se usan camisetas reales con su propia marca.</li>
+      <li><strong>Contrato con un canal:</strong> además de la TV de la liga (sección 5), que se reparte entre todos, cada temporada tres canales (TNT Sports, ESPN, DSports, DAZN, Prime Video y otros) le ofrecen al club un contrato propio (su canal, contenido y documentales, como el «All or Nothing»): es un extra, más chico que la TV de la liga. Fija (2 torneos), mixta (4 torneos) o arriesgada (6 torneos), para que calcen con las ventanas de mercado. Cada canal paga según su tamaño y los hinchas del club en todo el mundo; los gigantes (Prime Video, DAZN, ESPN) pagan más pero solo llaman a clubes con mucha hinchada, y la TV abierta paga menos y le transmite a cualquiera. Se cobran al cerrar cada torneo de liga, con bonos por playoffs y por título según la oferta. Todos los contratos, los ya firmados y los que vengan, cuentan <strong>desde el v11</strong>: el v10 no paga ni gasta temporadas. Cuando un contrato termina, llegan tres ofertas nuevas, calculadas con los hinchas, los resultados, la historia y el estadio del club en ese momento. No van en la camiseta, porque en el juego se usan camisetas reales con su propia marca. Al pasar a la TV de la liga (v17), los contratos vigentes firmados con los hinchas inflados se recalcularon con los hinchas de hoy (mismo canal, estilo y temporadas; solo bajaron).</li>
     </ul>
   </section>
   <section className="rules-section">
     <h2>16. Quiebra</h2>
     <ul>
-      <li>Al arrancar cada torneo de liga (con los premios del anterior ya pagados) se revisa la caja de cada club.</li>
+      <li>Al arrancar cada torneo de liga (con la TV del anterior ya pagada) se revisa la caja de cada club.</li>
       <li><strong>En rojo:</strong> la directiva avisa. Con la caja negativa no se puede comprar (fichajes, pujas ni estadio) y la quiebra baja la reputación del presidente igual que una promesa rota.</li>
       <li><strong>Dos arranques seguidos en rojo:</strong> intervención. La directiva vende a los jugadores más caros del club (al 75% de su valor, quedan como agentes libres) hasta que la caja vuelva a positivo.</li>
       <li>Solo se puede tener un contrato de TV a la vez: el siguiente se firma cuando termina el vigente.</li>

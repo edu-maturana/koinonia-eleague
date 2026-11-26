@@ -26,7 +26,7 @@ export function BoardPanel({ team }) {
     })}</ul>
   </div>;
   return <section className="board-panel">
-    <header><h3>Objetivos de la directiva</h3><p>Se evalúan al terminar el torneo, o antes si el puesto ya quedó asegurado o perdido.</p><HowItWorks><p>La directiva te exige esto según tus resultados de las dos últimas ligas y la historia del club. Si cumples hay premio y los jugadores se animan; si fallas, se desaniman.</p></HowItWorks></header>
+    <header><h3>Objetivos de la directiva</h3><p>Se evalúan al terminar el torneo, o antes si el puesto ya quedó asegurado o perdido.</p><HowItWorks><p>La directiva te exige esto según tus resultados de las dos últimas ligas y la historia del club. Si cumples, el dueño pone plata (aporte del dueño) y los jugadores se animan; si fallas, se desaniman.</p></HowItWorks></header>
     {block(current)}
     {past.length > 0 && <details><summary>TORNEOS ANTERIORES</summary>{past.map(block)}</details>}
   </section>;
