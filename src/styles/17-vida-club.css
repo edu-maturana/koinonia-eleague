@@ -749,11 +749,14 @@
 .sector-table.is-match li { grid-template-columns: 12px minmax(0, 1.3fr) minmax(90px, 1fr) auto; }
 .sector-swatch { width: 12px; height: 12px; background: var(--sector); border: 1px solid var(--c-navy-900); }
 .sector-name { display: grid; gap: 2px; min-width: 0; }
-.sector-name b { font: 500 var(--fs-sm)/1.15 var(--font-ui); letter-spacing: .4px; color: var(--c-navy-900); overflow-wrap: anywhere; }
+.sector-name b { font: 500 var(--fs-sm)/1.15 var(--font-ui); letter-spacing: .4px; color: var(--c-navy-900); overflow-wrap: break-word; }
 .sector-name small, .sector-money small { font: 600 var(--fs-xs)/1.25 var(--font-body); color: var(--c-ink-muted); }
 .sector-money { display: grid; gap: 2px; justify-items: end; text-align: right; }
 .sector-money b { font: 400 var(--fs-lg)/1 var(--font-display); color: var(--c-navy-900); white-space: nowrap; }
 .sector-table .gate-bar { height: 18px; }
+.stadium-sectors-button { justify-self: start; margin-top: var(--sp-2); }
+.stadium-sectors-summary { display: flex; flex-wrap: wrap; gap: 6px; }
+.stadium-sectors-modal .stadium-sectors { grid-template-columns: minmax(180px, 280px) minmax(0, 1fr); }
 .stadium-sectors-toggle { margin-top: var(--sp-2); }
 .stadium-sectors-toggle > summary, .matchday-sectors > summary { cursor: pointer; font: 500 var(--fs-xs)/1.2 var(--font-ui); letter-spacing: .6px; color: var(--c-navy-800); }
 .stadium-sectors-toggle .stadium-sectors { grid-template-columns: 1fr; margin-top: var(--sp-2); }
@@ -765,4 +768,11 @@
   .stadium-plan { max-width: 240px; justify-self: center; }
   .sector-table.is-match li { grid-template-columns: 12px minmax(0, 1fr) auto; }
   .sector-table.is-match li .gate-bar { grid-column: 2 / -1; grid-row: 2; }
+  .stadium-sectors-modal .stadium-sectors { grid-template-columns: 1fr; }
+}
+/* En pantallas angostas el precio va debajo del nombre: así el nombre del sector no se corta letra por letra. */
+@media (max-width: 560px) {
+  .sector-table:not(.is-match) li { grid-template-columns: 12px minmax(0, 1fr); align-items: start; }
+  .sector-table:not(.is-match) .sector-swatch { margin-top: 3px; }
+  .sector-table:not(.is-match) .sector-money { grid-column: 2; justify-items: start; text-align: left; }
 }

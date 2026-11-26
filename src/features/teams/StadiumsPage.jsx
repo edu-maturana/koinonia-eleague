@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { endpoints } from '../../api/endpoints.js';
 import { useAuth } from '../../app/AuthGate.jsx';
 import { TeamMark } from '../../components/TeamMark.jsx';
-import { Button, Chip, ConfirmStep, Icon, Notice, useToast } from '../../ui/index.js';
+import { Button, Chip, ConfirmStep, Icon, Modal, Notice, useToast } from '../../ui/index.js';
 import { gpLabel } from '../../utils/money.js';
 import { teamBalance } from '../../utils/teamPresentation.js';
 import { useApiMutation } from '../admin/useApiMutation.js';
@@ -31,6 +31,25 @@ function PhotoControl({ stadium, onChanged }) {
   </div>;
 }
 
+/** Botón de la ficha que abre el plano y la tabla de sectores en un modal (en la tarjeta no caben). */
+function SectorsButton({ stadium }) {
+  const [open, setOpen] = useState(false);
+  const standing = stadium.sectors.find(sector => sector.type === 'standing');
+  return <>
+    <Button className="stadium-sectors-button" variant="ghost" size="sm" icon="stadium" onClick={() => setOpen(true)}>VER SECTORES{standing ? ' · CON TRIBUNA DE PIE' : ''}</Button>
+    {open && <Modal wide className="stadium-sectors-modal" title={stadium.displayName ?? stadium.name} onClose={() => setOpen(false)}>
+      <div className="stadium-sectors-summary">
+        <Chip tone="navy">CAT. {stadium.category}</Chip>
+        <Chip>{people(stadium.capacity)} ESPECTADORES</Chip>
+        <Chip>{stadium.sectors.length} SECTORES</Chip>
+        {standing ? <Chip tone="yellow">TRIBUNA DE PIE: {people(standing.capacity)}</Chip> : <Chip>TODO CON ASIENTOS</Chip>}
+        {stadium.kind === 'Ficticio' && <Chip>EFOOTBALL</Chip>}
+      </div>
+      <StadiumSectors sectors={stadium.sectors}/>
+    </Modal>}
+  </>;
+}
+
 function StadiumCard({ stadium, myTeamId, mine, balance, canBuy, canPhoto, confirming, setConfirming, busy, onBuy, onSell, onChanged }) {
   const owned = Boolean(myTeamId) && stadium.teamId === myTeamId;
   const free = !stadium.teamId;
@@ -45,10 +64,7 @@ function StadiumCard({ stadium, myTeamId, mine, balance, canBuy, canPhoto, confi
     <div className="stadium-body">
       <b>{stadium.displayName ?? stadium.name}</b>{stadium.customName && <small className="stadium-base-name">{stadium.name}</small>}
       <small>{people(stadium.capacity)} ESPECTADORES · {gpLabel(stadium.price)}</small>
-      {stadium.sectors?.length > 0 && <details className="stadium-sectors-toggle">
-        <summary>VER SECTORES{stadium.sectors.some(sector => sector.type === 'standing') ? ' · CON TRIBUNA DE PIE' : ''}</summary>
-        <StadiumSectors sectors={stadium.sectors}/>
-      </details>}
+      {stadium.sectors?.length > 0 && <SectorsButton stadium={stadium}/>}
       <div className="stadium-owner">
         {owned ? <Chip tone="green" icon="check">ES TUYO</Chip>
           : free ? <Chip tone="yellow" icon="coin">EN VENTA</Chip>
