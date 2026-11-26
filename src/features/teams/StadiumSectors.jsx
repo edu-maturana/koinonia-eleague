@@ -75,8 +75,9 @@ export function SectorTable({ rows, prices = FALLBACK_PRICES, seasonPrices = nul
         <span className="sector-name"><b>{upper(row.name)}</b><small>{upper(row.label ?? TYPE_LABEL[row.type])} · {people(row.capacity)} LUGARES · {percent(row.capacity, capacity)}%</small></span>
         {match ? <>
           <span className="gate-bar" aria-label={`${percent(row.attendance, row.capacity)}% ocupado`}><span style={{ width: `${percent(row.attendance, row.capacity)}%` }}/><em>{people(row.attendance)}</em></span>
-          <span className="sector-money"><b>{gp(row.revenue)}</b><small>{row.seasonTickets ? `${people(row.seasonTickets)} ABONADOS · ` : ''}{row.type === 'away' ? 'VISITA' : 'GENERAL'} {row.price} €{row.released ? ` · ${people(row.released)} LIBERADOS AL LOCAL` : ''}</small></span>
-        </> : <span className="sector-money"><b>{row.type === 'away' ? `${prices.away ?? 35} € TOPE` : `${prices[row.type]} €`}</b>
+          <span className="sector-money"><b>{gp(row.revenue)}</b><small>{row.private ? 'DE DUEÑOS PRIVADOS · EL CLUB COBRA UNA CUOTA' : <>{row.seasonTickets ? `${people(row.seasonTickets)} ABONADOS · ` : ''}{row.type === 'away' ? 'VISITA' : 'GENERAL'} {row.price} €{row.released ? ` · ${people(row.released)} LIBERADOS AL LOCAL` : ''}</>}</small></span>
+        </> : row.private ? <span className="sector-money"><b>{Math.round(prices[row.type] * 0.25)} €</b><small>DE DUEÑOS PRIVADOS · CUOTA POR PARTIDO</small></span>
+          : <span className="sector-money"><b>{row.type === 'away' ? `${prices.away ?? 35} € TOPE` : `${prices[row.type]} €`}</b>
           <small>{row.type === 'away' ? 'NO SUBE CON EL PREMIUM' : `ABONO ${seasonPrices?.[row.type] ?? Math.round(prices[row.type] * 0.8)} € POR PARTIDO${holders ? ` · ${people(holders)} ABONADOS` : ''}`}</small></span>}
       </li>;
     })}
