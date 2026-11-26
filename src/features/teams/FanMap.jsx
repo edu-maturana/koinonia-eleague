@@ -195,6 +195,8 @@ export function FanMap({ fans, title = 'HINCHAS', onChanged }) {
   const origin = fans.origin;
   const formula = origin?.formula;
   const chileShare = percent(chileRow?.fans ?? 0, fans.followers);
+  const restShare = percent(restRow?.fans ?? 0, fans.followers);
+  const homeShare = abroad ? Math.max(0, 100 - chileShare - restShare) : 0;
   const editable = canEditTeam?.(fans.teamId);
   return <Card id="ver-hinchas" title={title} className="fan-map-card" aside={fans.rank ? <Chip icon="people">{fans.rank}.º DE {fans.clubs}</Chip> : null}>
     <div className="fan-map fan-map-chile">
@@ -213,14 +215,17 @@ export function FanMap({ fans, title = 'HINCHAS', onChanged }) {
           <b>{compact(fans.followers)}</b>
           <span>HINCHAS EN TOTAL</span>
         </div>
-        <div className="fan-share" aria-label={`${chileShare}% en Chile, ${100 - chileShare}% ${abroad ? `en ${fans.countryName}` : 'en el resto del mundo'}`}>
+        <div className="fan-share" aria-label={`${chileShare}% en Chile${abroad ? `, ${homeShare}% en ${fans.countryName}` : ''}${restShare ? `, ${restShare}% en el resto del mundo` : ''}`}>
           {abroad || restRow ? <>
-            <span className="fan-share-bar"><i className="home" style={{ flexGrow: Math.max(100 - chileShare, 4) }}/><i className="chile" style={{ flexGrow: Math.max(chileShare, 4) }}/></span>
+            <span className="fan-share-bar">
+              {abroad && <i className="home" style={{ flexGrow: Math.max(homeShare, 4) }}/>}
+              <i className="chile" style={{ flexGrow: Math.max(chileShare, 4) }}/>
+              {restRow && <i className="rest" style={{ flexGrow: Math.max(restShare, 4) }}/>}
+            </span>
             <span className="fan-share-legend">
-              {abroad
-                ? <em>{flag(fans.country)} {upper(fans.countryName)} <b>{compact(countryRow?.fans ?? fans.homeFans)}</b> · {100 - chileShare}%</em>
-                : <em>🌍 RESTO DEL MUNDO <b>{compact(restRow?.fans ?? 0)}</b> · {100 - chileShare}%</em>}
+              {abroad && <em>{flag(fans.country)} {upper(fans.countryName)} <b>{compact(countryRow?.fans ?? fans.homeFans)}</b> · {homeShare}%</em>}
               <em>{flag('CL')} CHILE <b>{compact(chileRow?.fans ?? 0)}</b> · {chileShare}%</em>
+              {restRow && <em>🌍 RESTO DEL MUNDO <b>{compact(restRow.fans)}</b> · {restShare}%</em>}
             </span>
           </> : <span className="fan-share-legend"><em>{flag('CL')} TODOS EN CHILE</em></span>}
         </div>
@@ -240,7 +245,8 @@ export function FanMap({ fans, title = 'HINCHAS', onChanged }) {
         <li><b>Chile se reparte entre todos.</b> Casi todos los chilenos (8 de cada 10) son hinchas de alguno de los clubes de la liga, y se los reparten según la grandeza de cada uno y qué tan vista es su liga por acá. {abroad ? `Los de afuera vienen de ${formula.countryName}, donde el club tiene su gente.` : 'Un club chileno parte con ventaja de local y suma hinchas en el resto del mundo.'}</li>
       </ul>
       <p>Partiste con <b>{compact(origin.start)}</b> y {origin.change >= 0 ? 'ganaste' : 'perdiste'} <b>{compact(Math.abs(origin.change))}</b> jugando: partidos, clásicos, títulos, posición final y conciertos.</p>
-      <p>Todos pueden ir al estadio, pero un club grande llena aunque no sea día de clásico; uno chico depende más del rival. Los derechos de TV miran a todos tus hinchas.</p>
+      {fans.ceiling && <p><b>Techo y piso.</b> Cada triunfo, título o concierto suma una parte de tu punto de partida de hoy ({compact(fans.ceiling.base)}), no de los hinchas que ya tienes, y cuesta más crecer cuanto más cerca del techo estás: puedes llegar hasta <b>{compact(fans.ceiling.max)}</b> y no bajar de <b>{compact(fans.ceiling.min)}</b>. Ningún club tiene más hinchas que la gente que vive en su país: si sigue creciendo, lo nuevo son hinchas en el resto del mundo.</p>}
+      <p>Los de Chile y los de tu país pueden ir al estadio; de los del resto del mundo, algunos van de turistas. Un club grande llena aunque no sea día de clásico; uno chico depende más del rival. Los derechos de TV miran a todos tus hinchas.</p>
     </HowItWorks>}
   </Card>;
 }

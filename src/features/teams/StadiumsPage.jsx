@@ -8,6 +8,7 @@ import { teamBalance } from '../../utils/teamPresentation.js';
 import { useApiMutation } from '../admin/useApiMutation.js';
 import { DataState } from '../public/DataStates.jsx';
 import { useApiQuery } from '../public/useApiQuery.js';
+import { StadiumSectors } from './StadiumSectors.jsx';
 
 const upper = text => String(text ?? '').toUpperCase();
 const people = value => Number(value ?? 0).toLocaleString('es-CL');
@@ -44,6 +45,10 @@ function StadiumCard({ stadium, myTeamId, mine, balance, canBuy, canPhoto, confi
     <div className="stadium-body">
       <b>{stadium.displayName ?? stadium.name}</b>{stadium.customName && <small className="stadium-base-name">{stadium.name}</small>}
       <small>{people(stadium.capacity)} ESPECTADORES · {gpLabel(stadium.price)}</small>
+      {stadium.sectors?.length > 0 && <details className="stadium-sectors-toggle">
+        <summary>VER SECTORES{stadium.sectors.some(sector => sector.type === 'standing') ? ' · CON TRIBUNA DE PIE' : ''}</summary>
+        <StadiumSectors sectors={stadium.sectors}/>
+      </details>}
       <div className="stadium-owner">
         {owned ? <Chip tone="green" icon="check">ES TUYO</Chip>
           : free ? <Chip tone="yellow" icon="coin">EN VENTA</Chip>
@@ -85,7 +90,7 @@ export function StadiumsPage() {
       <Icon name="stadium" size={18}/>
       <span>{mine ? <>TU ESTADIO: <b>{upper(mine.displayName ?? mine.name)}</b> · {people(mine.capacity)} PERSONAS</> : <>JUEGAS EN TU <b>CANCHA PROPIA</b> DE 12.000 PERSONAS</>}</span>
       {balance !== null && <small>SALDO {gpLabel(balance)}</small>}
-      <p>Cada estadio tiene un solo dueño. Si te cambias, te devuelven el que tenías a precio de catálogo. Más aforo = más taquilla y conciertos más grandes.</p>
+      <p>Cada estadio tiene un solo dueño. Si te cambias, te devuelven el que tenías a precio de catálogo. Más aforo = más taquilla y conciertos más grandes. Cada estadio tiene sus sectores reales: una tribuna de pie es barata y se llena sola; los palcos dejan mucha plata si tu club es grande.</p>
     </div>}
     <nav className="stadiums-filter" role="tablist" aria-label="Filtrar estadios">{FILTERS.map(([key, label]) => <button key={key} type="button" role="tab" aria-selected={filter === key} className={filter === key ? 'on' : ''} onClick={() => setFilter(key)}>{label}</button>)}</nav>
     <DataState query={query}/>

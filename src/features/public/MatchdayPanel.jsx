@@ -5,6 +5,7 @@ import { Chip, Icon } from '../../ui/index.js';
 import { useApiMutation } from '../admin/useApiMutation.js';
 import { gp } from './DataStates.jsx';
 import { useApiQuery } from './useApiQuery.js';
+import { SectorTable, StadiumPlan } from '../teams/StadiumSectors.jsx';
 
 const upper = text => String(text ?? '').toUpperCase();
 const people = value => Number(value ?? 0).toLocaleString('es-CL');
@@ -21,6 +22,7 @@ function TicketPicker({ match, ticket, onChanged }) {
         return <button key={option.key} type="button" role="radio" aria-checked={active} className={`ticket-option${active ? ' is-active' : ''}`} disabled={mutation.loading || (!option.available && !active)} onClick={() => choose(option.key)}>
           <b>{upper(option.label)}</b>
           <span className="ticket-price">{option.price} €</span>
+          <small>PLATEA</small>
           <small>~{people(option.attendance)} PERSONAS{option.full ? ' · LLENO' : ''}</small>
           <small>{gp(option.revenue)} DE TAQUILLA</small>
           <small className={option.mood < 0 ? 'is-bad' : option.mood > 0 ? 'is-good' : ''}>{option.mood > 0 ? `+${option.mood}` : option.mood} ÁNIMO DE LA HINCHADA</small>
@@ -28,7 +30,7 @@ function TicketPicker({ match, ticket, onChanged }) {
         </button>;
       })}
     </div>
-    <p className="ticket-picker-foot">PREMIUM USADOS EN ESTE TORNEO: <b>{ticket.premium.used} DE {ticket.premium.cap}</b>. LA PROYECCIÓN ES LA QUE SE COBRARÍA SI EL PARTIDO SE JUGARA HOY. SE FIJA ANTES DE QUE EMPIECE.
+    <p className="ticket-picker-foot">PREMIUM USADOS EN ESTE TORNEO: <b>{ticket.premium.used} DE {ticket.premium.cap}</b>. EL NIVEL SUBE O BAJA EL PRECIO DE CADA SECTOR EN LA VENTA GENERAL (LOS ABONADOS Y LA VISITA NO CAMBIAN). LA PROYECCIÓN ES LA QUE SE COBRARÍA SI EL PARTIDO SE JUGARA HOY. SE FIJA ANTES DE QUE EMPIECE.
       {ticket.chosen && <> <button type="button" className="ghost" disabled={mutation.loading} onClick={() => mutation.execute(null)}>VOLVER AL PRECIO BASE DEL CLUB</button></>}</p>
     {mutation.error && <p className="form-feedback error" role="alert">{mutation.error.message}</p>}
   </div>;
@@ -57,12 +59,20 @@ export function MatchdayPanel({ match, revision }) {
         <span className="gate-bar"><span style={{ width: `${occupancy}%` }}/><em>{occupancy}% DE {people(numbers.capacity)}</em></span>
       </div>
       <dl>
-        <div><dt>ENTRADA</dt><dd>{upper(numbers.tier)} · {numbers.price} €</dd></div>
+        <div><dt>PRECIOS</dt><dd>{upper(numbers.tier)}{numbers.sectors ? ` · PAGARON ${numbers.price} € EN PROMEDIO` : ` · ${numbers.price} €`}</dd></div>
+        {numbers.seasonTickets > 0 && <div><dt>ABONADOS</dt><dd>{people(numbers.seasonTickets)}</dd></div>}
         {gate ? <div><dt>TAQUILLA</dt><dd>{gp(gate.revenue)}{gate.neutral ? ' (MITAD Y MITAD)' : rivalry?.kind === 'derbi' || rivalry?.both ? ' (20% PARA LA VISITA)' : ''}</dd></div>
           : <div><dt>SI SE LLENA</dt><dd>{forecast.full ? 'SE LLENA' : 'QUEDARÍAN ASIENTOS LIBRES'}</dd></div>}
         {(gate?.leftOutside ?? forecast?.leftOutside) > 0 && <div><dt>SE QUEDAN AFUERA</dt><dd>{people(gate?.leftOutside ?? forecast.leftOutside)}</dd></div>}
       </dl>
     </div>}
+    {numbers?.sectors?.length > 0 && !numbers.closedDoors && <details className="matchday-sectors">
+      <summary>{gate ? 'CÓMO SE LLENÓ CADA SECTOR' : 'CÓMO SE LLENARÍA CADA SECTOR'}</summary>
+      <div className="stadium-sectors">
+        <StadiumPlan sectors={numbers.sectors} attendance={Object.fromEntries(numbers.sectors.map(sector => [sector.key, sector.attendance]))}/>
+        <SectorTable rows={numbers.sectors} match/>
+      </div>
+    </details>}
     {data.ticket && !data.ticket.locked && canEditTeam(data.ticket.teamId) && <TicketPicker match={match} ticket={data.ticket} onChanged={query.retry}/>}
     {data.derby && data.headToHead && data.headToHead.played > 0 && <p className="matchday-h2h"><Icon name={rivalry?.icon ?? 'fire'} size={14}/> HISTORIAL {rivalry?.named ? `DE ${upper(rivalry.label)}` : rivalry?.kind === 'derbi' ? 'DEL DERBI' : 'DEL CLÁSICO'}: {data.headToHead.wins} GANADOS PARA {upper(match.homeTeam?.name)}, {data.headToHead.draws} EMPATES Y {data.headToHead.losses} PARA {upper(match.awayTeam?.name)}.</p>}
   </section>;

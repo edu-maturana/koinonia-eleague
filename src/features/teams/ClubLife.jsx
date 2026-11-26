@@ -8,6 +8,7 @@ import { useApiMutation } from '../admin/useApiMutation.js';
 import { DataState, gp } from '../public/DataStates.jsx';
 import { useApiQuery } from '../public/useApiQuery.js';
 import { FanMap } from './FanMap.jsx';
+import { StadiumSectors } from './StadiumSectors.jsx';
 
 const upper = text => String(text ?? '').toUpperCase();
 const people = value => Number(value ?? 0).toLocaleString('es-CL');
@@ -60,14 +61,19 @@ function Stadium({ occupancy = 0, matches = 0, colors }) {
 function TierPicker({ fans, canEdit, onChanged }) {
   const toast = useToast();
   const save = useApiMutation((tier, signal) => endpoints.setTicketTier(fans.teamId, tier, signal), { onSuccess: () => { toast({ tone: 'success', title: 'Precio de la entrada actualizado' }); onChanged?.(); } });
-  const effect = { popular: 'Más gente, menos plata por cabeza. La hinchada lo agradece.', normal: 'EL PRECIO DE SIEMPRE.', premium: 'Más plata por cabeza, menos gente. La hinchada refunfuña.' };
+  const effect = {
+    popular: 'Todo 30% más barato en la venta general. Va más gente y la hinchada lo agradece.',
+    normal: 'Los precios de siempre de cada sector.',
+    premium: 'Todo 45% más caro en la venta general. Va menos gente y la hinchada refunfuña.',
+  };
   return <Card title="PRECIO DE LA ENTRADA" aside={<Chip icon="ticket">Rige para tus partidos de local</Chip>}>
     <div className="tier-picker" role="radiogroup" aria-label="Precio de la entrada">
       {fans.tiers.map(tier => <button type="button" role="radio" key={tier.key} aria-checked={fans.ticketTier === tier.key} className={fans.ticketTier === tier.key ? 'on' : ''}
         disabled={!canEdit || save.loading} onClick={() => fans.ticketTier !== tier.key && save.execute(tier.key)}>
-        <b>{upper(tier.label)}</b><strong>{tier.price} €</strong><small>{effect[tier.key]}</small>
+        <b>{upper(tier.label)}</b><strong>{tier.price} €</strong><small>PLATEA · {effect[tier.key]}</small>
       </button>)}
     </div>
+    <p className="club-life-hint">LOS ABONADOS YA PAGARON SU ABONO Y LA ENTRADA VISITANTE TIENE TOPE DE {fans.awayTicketCap ?? 35} €: EL PRECIO DEL PARTIDO SOLO CAMBIA LA VENTA GENERAL.</p>
     {save.error && <Notice tone="error">{save.error.message}</Notice>}
   </Card>;
 }
@@ -79,6 +85,27 @@ function GateRow({ gate }) {
     <span className="gate-tags">{gate.closedDoors && <Chip tone="red" icon="lock">PUERTAS CERRADAS</Chip>}{gate.derby && <Chip tone="red" icon="fire">CLÁSICO</Chip>}{gate.neutral && <Chip tone="navy">FINAL · MITAD</Chip>}{gate.occupancy >= 100 && <Chip tone="green" icon="check">LLENO</Chip>}</span>
     <strong>{gp(gate.revenue)}</strong>
   </li>;
+}
+
+/** Sectores del estadio con su precio y los abonados del torneo (la campaña queda fija cuando arranca el torneo). */
+function SectorsCard({ fans }) {
+  const season = fans.seasonTickets;
+  const holders = season ? Object.fromEntries(season.sectors.map(sector => [sector.key, sector.seasonTickets])) : null;
+  return <Card id="ver-sectores" title="SECTORES DEL ESTADIO" aside={season ? <Chip icon="ticket" tone={season.fixed ? 'navy' : 'yellow'}>{people(season.total)} ABONADOS · {Math.round(season.total / Math.max(1, season.capacity) * 100)}%</Chip> : null}>
+    <StadiumSectors sectors={fans.venue.sectors} sectorTypes={fans.sectorTypes} seasonTickets={holders}/>
+    {season && <p className="club-life-hint">{season.fixed
+      ? <>ABONOS DEL {upper(season.tournamentName)}: <b>{people(season.total)}</b>. QUEDARON FIJOS AL ARRANCAR EL TORNEO: VAN A TODOS LOS PARTIDOS DE LIGA DE LOCAL AUNQUE EL EQUIPO ANDE MAL.</>
+      : <>CAMPAÑA DE ABONOS DEL {upper(season.tournamentName)}: HOY SE ABONARÍAN <b>{people(season.total)}</b>. SE CIERRA CUANDO ARRANCA EL TORNEO: UNA HINCHADA CONTENTA SE ABONA MÁS.</>}</p>}
+    <HowItWorks title="¿Qué es cada sector?">
+      <ul>
+        <li><b>De pie:</b> la tribuna sin asientos (la Südtribüne del Signal Iduna, las populares de la Bombonera). Es la más barata y la primera que se agota.</li>
+        <li><b>Cabecera y platea:</b> los asientos de detrás de los arcos y de los costados.</li>
+        <li><b>Preferencial y palcos:</b> los compran empresas. Son caros y casi siempre son abonos.</li>
+        <li><b>Visita:</b> el sector de la hinchada rival. Su entrada tiene tope ({fans.awayTicketCap ?? 35} €, como en la Premier League). Si no lo llenan y a tu gente no le alcanzó, se libera para el local.</li>
+      </ul>
+      <p>Los sectores salen de cómo es el estadio real; las cifras son aproximadas. El abono cuesta {Math.round((fans.seasonTicketDiscount ?? 0.2) * 100)}% menos que comprar partido a partido y solo vale para la liga: playoffs y copa se venden aparte.</p>
+    </HowItWorks>
+  </Card>;
 }
 
 /** Estadio y taquilla: lo ve cualquiera; el presi además elige el precio de la entrada. La hinchada va en FansTab. */
@@ -123,11 +150,15 @@ export function VenueTab({ team, onTab: _onTab }) {
         <Card><Stat label="TAQUILLA RECIENTE" value={gp(fans.seasonRevenue)} hint={`${fans.gates.length} PARTIDO${fans.gates.length === 1 ? '' : 'S'} DE LOCAL`}/></Card>
         <Card><Stat label="OCUPACIÓN" value={`${average}%`} hint={full ? `${full} ${full === 1 ? 'VEZ' : 'VECES'} CON ESTADIO LLENO` : 'SIN LLENOS TODAVÍA'} tone={average >= 90 ? 'good' : 'default'}/></Card>
       </div>
+      <SectorsCard fans={fans}/>
       <TierPicker fans={fans} canEdit={canEdit} onChanged={query.retry}/>
       <Card title="PARTIDOS DE LOCAL" aside={<Chip icon="people">ASISTENCIA Y RECAUDACIÓN</Chip>}>
         {fans.gates.length ? <ul className="gate-list">{fans.gates.map(gate => <GateRow key={gate.matchId} gate={gate}/>)}</ul>
           : <EmptyState icon="ticket" title="SIN PARTIDOS DE LOCAL AÚN">Cuando juegues de local verás aquí cuánta gente fue y cuánto recaudaste.</EmptyState>}
-        <HowItWorks title="¿De qué depende la asistencia?"><p>De tus hinchas que viven cerca (en tu país y unos pocos de afuera), el rival, si es clásico o playoffs, el ánimo de la hinchada y el precio de la entrada. El aforo es el techo. El marcador no cambia: esto solo mueve plata, hinchas y ánimo.</p></HowItWorks>
+        <HowItWorks title="¿De qué depende la asistencia?">
+          <p>De tus hinchas que pueden ir (los que viven en Chile y en tu país, y algunos turistas del resto del mundo), el rival, si es clásico o playoffs, el ánimo de la hinchada y el precio de la entrada.</p>
+          <p>La gente se reparte por sectores: la galería de pie y las cabeceras se agotan primero; la preferencial y los palcos los compran empresas, que pagan más en un club grande. Los abonados tienen su lugar asegurado y el resto se vende partido a partido. El aforo es el techo. El marcador no cambia: esto solo mueve plata, hinchas y ánimo.</p>
+        </HowItWorks>
       </Card>
     </>}
   </section>;

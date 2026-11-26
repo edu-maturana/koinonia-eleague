@@ -727,3 +727,42 @@
 .ticket-option small.is-good { color: var(--c-green-bright); }
 .ticket-picker-foot { margin: 0; font: 600 var(--fs-xs)/1.4 var(--font-ui); letter-spacing: .4px; color: var(--c-ink-muted); }
 .ticket-picker-foot .ghost { margin-left: var(--sp-2); }
+
+/* Sectores del estadio: plano visto desde arriba + tabla */
+.fan-share-bar i.rest { background: var(--c-green-bright); }
+.stadium-sectors { display: grid; gap: var(--sp-4); grid-template-columns: minmax(160px, 240px) minmax(0, 1fr); align-items: start; }
+.stadium-plan { width: 100%; height: auto; display: block; }
+.stadium-plan .plan-ground { fill: var(--c-navy-900); }
+.stadium-plan .plan-block rect { stroke: var(--c-navy-900); stroke-width: .8; }
+.stadium-plan .plan-block rect.plan-empty { fill: rgba(10, 16, 32, .72); stroke: none; }
+.stadium-plan .plan-pitch rect, .stadium-plan .plan-pitch line, .stadium-plan .plan-pitch circle { fill: none; stroke: rgba(255, 255, 255, .7); stroke-width: .6; }
+.stadium-plan .plan-pitch > rect:first-child { fill: #2f7d3a; }
+.t-standing { --sector: var(--c-yellow); }
+.t-popular { --sector: var(--c-red); }
+.t-lateral { --sector: #4f6bb0; }
+.t-premium { --sector: var(--c-green-bright); }
+.t-boxes { --sector: #8a5cc2; }
+.t-away { --sector: #9aa3b5; }
+.stadium-plan .plan-block rect:first-child { fill: var(--sector); }
+.sector-table { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sector-table li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: var(--sp-2); align-items: center; padding: 6px var(--sp-2); background: var(--c-white); border: 1px solid var(--c-paper-line); }
+.sector-table.is-match li { grid-template-columns: 12px minmax(0, 1.3fr) minmax(90px, 1fr) auto; }
+.sector-swatch { width: 12px; height: 12px; background: var(--sector); border: 1px solid var(--c-navy-900); }
+.sector-name { display: grid; gap: 2px; min-width: 0; }
+.sector-name b { font: 500 var(--fs-sm)/1.15 var(--font-ui); letter-spacing: .4px; color: var(--c-navy-900); overflow-wrap: anywhere; }
+.sector-name small, .sector-money small { font: 600 var(--fs-xs)/1.25 var(--font-body); color: var(--c-ink-muted); }
+.sector-money { display: grid; gap: 2px; justify-items: end; text-align: right; }
+.sector-money b { font: 400 var(--fs-lg)/1 var(--font-display); color: var(--c-navy-900); white-space: nowrap; }
+.sector-table .gate-bar { height: 18px; }
+.stadium-sectors-toggle { margin-top: var(--sp-2); }
+.stadium-sectors-toggle > summary, .matchday-sectors > summary { cursor: pointer; font: 500 var(--fs-xs)/1.2 var(--font-ui); letter-spacing: .6px; color: var(--c-navy-800); }
+.stadium-sectors-toggle .stadium-sectors { grid-template-columns: 1fr; margin-top: var(--sp-2); }
+.stadium-sectors-toggle .stadium-plan { max-width: 200px; justify-self: center; }
+.matchday-sectors { margin-top: var(--sp-3); }
+.matchday-sectors .stadium-sectors { margin-top: var(--sp-2); }
+@media (max-width: 720px) {
+  .stadium-sectors { grid-template-columns: 1fr; }
+  .stadium-plan { max-width: 240px; justify-self: center; }
+  .sector-table.is-match li { grid-template-columns: 12px minmax(0, 1fr) auto; }
+  .sector-table.is-match li .gate-bar { grid-column: 2 / -1; grid-row: 2; }
+}
