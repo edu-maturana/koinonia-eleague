@@ -284,7 +284,7 @@ function VeladaCard({ team, velada, canEdit, onChanged }) {
     </div>}
     {round?.status !== 'resolved' && <ol className="velada-steps">
       <Step n={1} state={open ? 'done' : 'now'} title={open ? `Ibai está buscando estadio · cierra el ${upper(closes)}` : 'Espera a que Ibai abra la búsqueda'}>
-        <small>{open ? (round.bidders.length ? `YA LE OFRECIERON: ${round.bidders.map(bidder => upper(bidder.name)).join(' · ')}` : 'Todavía nadie le ofrece su estadio.') : 'La abre la administración una vez por temporada. Te llega un aviso.'}</small>
+        <small>{open ? (round.bidders.length ? `YA LE OFRECIERON: ${round.bidders.map(bidder => upper(bidder.name)).join(' · ')}` : 'Todavía nadie le ofrece su estadio.') : 'Se abre sola cuando arranca cada liga (cada v) y queda abierta 3 días. Te llega un aviso.'}</small>
       </Step>
       <Step n={2} state={eligible ? 'done' : 'blocked'} title={eligible ? 'Tu club cumple los requisitos' : 'Tu club todavía no cumple los requisitos'}>
         <ul className="velada-reqs">
