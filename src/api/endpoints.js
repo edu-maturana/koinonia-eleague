@@ -281,6 +281,7 @@ export const endpoints = {
   teamInvestments: (teamId, signal) => get(`/teams/${teamId}/investments`, null, signal),
   preseasons: signal => get('/preseason', null, signal),
   tourTitles: signal => get('/preseason/titles', null, signal),
+  leagueHistory: signal => get('/league-history', null, signal),
   cups: signal => get('/cups', null, signal),
   cupBracket: (tournamentId, signal) => get(`/cups/${tournamentId}`, null, signal),
   seasonFlow: signal => get('/season-flow', null, signal),

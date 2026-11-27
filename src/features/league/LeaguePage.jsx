@@ -12,6 +12,7 @@ import { PlayersPage } from '../public/PlayersPage.jsx';
 import { ClubsGrid } from './ClubsGrid.jsx';
 import { PreseasonPanel } from '../public/PreseasonPanel.jsx';
 import { CupPanel, CupPauseNotice } from '../public/CupPanel.jsx';
+import { LeagueHistoryPanel } from '../public/LeagueHistoryPanel.jsx';
 import { useAuth } from '../../app/AuthGate.jsx';
 
 // Tres áreas del menú, cada una con una sola fila de pestañas: Partidos, Torneos y Equipos.
@@ -36,7 +37,7 @@ export function MatchesScreen({ tab, teams = [], navigate, matchesMode = 'all' }
 }
 
 const TOURNAMENT_TABS = [
-  { id: 'tabla', label: 'Tabla' }, { id: 'goleadores', label: 'Goleadores' }, { id: 'playoffs', label: 'Playoffs' }, { id: 'premios', label: 'Premios' }, { id: 'copa', label: 'Copa GG' }, { id: 'giras', label: 'Giras' },
+  { id: 'tabla', label: 'Tabla' }, { id: 'goleadores', label: 'Goleadores' }, { id: 'playoffs', label: 'Playoffs' }, { id: 'premios', label: 'Premios' }, { id: 'copa', label: 'Copa GG' }, { id: 'giras', label: 'Giras' }, { id: 'historia', label: 'Historia' },
   { id: 'calculadora', label: 'Calculadora' }, { id: 'rankings', label: 'Rankings' },
 ];
 const TOURNAMENT_INTRO = {
@@ -46,6 +47,7 @@ const TOURNAMENT_INTRO = {
   premios: 'Balón de Oro, Bota, Guante, Golden Boy, DT y portadas. Aquí votan los presis.',
   copa: 'La Copa Grande Giocatore: a mitad de cada torneo, los 8 primeros del torneo anterior a partido único.',
   giras: 'Torneos de pretemporada entre clubes: se arman, se juegan y se cierran aparte de la liga.',
+  historia: 'Toda la liga desde la Liga de Transición: campeones, tabla histórica, récords, jugadores y todos contra todos.',
   calculadora: 'Qué necesita cada club para clasificar.',
   rankings: 'Los planteles más caros y las divisiones.',
 };
@@ -66,6 +68,7 @@ export function TournamentsScreen({ tab, teams = [], navigate, query = {}, tourn
     {['tabla', 'goleadores', 'playoffs', 'premios'].includes(active) && <TournamentsPage teams={teams} initialId={query.torneo ?? null} initialView={active}/>}
     {active === 'giras' && <PreseasonPanel teams={teams} myTeamId={myTeamId}/>}
     {active === 'copa' && <CupPanel teams={teams}/>}
+    {active === 'historia' && <LeagueHistoryPanel teams={teams}/>}
     {active === 'calculadora' && <CalculatorPage tournament={tournament} teams={teams} initialTeamId={query.equipo ?? null}/>}
     {active === 'rankings' && <RankingsPage teams={teams} navigate={navigate}/>}
   </Screen>;

@@ -1,0 +1,108 @@
+/* Historia de la liga (Torneos → Historia). */
+.league-history { display: grid; gap: 14px; min-width: 0; }
+.league-history-tabs { flex-wrap: wrap; }
+.league-history .history-card { min-width: 0; }
+.history-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 14px; align-items: start; }
+
+.history-totals { display: flex; flex-wrap: wrap; gap: 8px; }
+.history-totals span { flex: 1 1 120px; display: grid; gap: 2px; padding: 10px 12px; background: var(--c-cream); border: 2px solid var(--c-navy-800);
+  font: 600 var(--fs-xs)/1.1 var(--font-ui); letter-spacing: .5px; text-transform: uppercase; color: var(--c-ink-muted); }
+.history-totals b { font: 400 28px/1 var(--font-display); color: var(--c-navy-900); letter-spacing: 0; }
+
+.history-table { width: 100%; min-width: 560px; border-collapse: collapse; font: 500 15px/1.2 var(--font-body); }
+.history-table th { padding: 6px 8px; border-bottom: 2px solid var(--c-navy-800); color: var(--c-navy-900); font: 600 var(--fs-xs)/1.1 var(--font-ui);
+  letter-spacing: .6px; text-transform: uppercase; text-align: center; white-space: nowrap; }
+.history-table td { padding: 6px 8px; border-bottom: 1px dashed var(--c-paper-line); text-align: center; vertical-align: middle; }
+.history-table .left { text-align: left; }
+.history-table .strong { font-weight: 700; color: var(--c-navy-900); }
+.history-table .nowrap { white-space: nowrap; }
+.history-table td.win { color: var(--form-g); font-weight: 700; }
+.history-table td.draw { color: #8a6d00; font-weight: 700; }
+.history-table td.loss { color: var(--form-p); font-weight: 700; }
+.history-table tr.is-live td { background: var(--c-gold-bg); }
+.history-alltime { min-width: 680px; }
+.history-editions { min-width: 900px; }
+
+.history-club { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: inherit; font-weight: 600; }
+.history-club span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-club.is-gone { opacity: .6; }
+.history-crest { width: 22px; height: 22px; object-fit: contain; flex: none; font-size: 16px; line-height: 22px; }
+.history-none { color: var(--c-ink-muted); }
+.history-sub { color: var(--c-ink-muted); font-size: var(--fs-sm); }
+.history-live { display: inline-block; margin-left: 6px; padding: 1px 5px; background: var(--c-red); color: var(--c-white); font: 600 10px/1.3 var(--font-ui); letter-spacing: .5px; }
+.history-player { display: inline-block; margin-right: 8px; white-space: nowrap; }
+.history-player small, .history-club-top small { color: var(--c-ink-muted); font-weight: 700; }
+.history-player-name { font-weight: 600; }
+
+.history-labels { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.history-labels i { padding: 1px 6px; border: 1px solid var(--c-navy-800); background: var(--c-cream); font: 600 var(--fs-xs)/1.4 var(--font-ui); font-style: normal; letter-spacing: .3px; }
+.history-labels i.is-league { background: var(--c-gold-bg); border-color: var(--c-gold-line); }
+.history-labels i.is-cup { background: #e8eef9; border-color: var(--c-ice); }
+
+.history-note { margin: 10px 0 0; color: var(--c-ink-muted); font: 500 var(--fs-sm)/1.35 var(--font-body); }
+.history-subtitle { margin: 14px 0 6px; font: 600 var(--fs-sm)/1.2 var(--font-ui); letter-spacing: .5px; text-transform: uppercase; color: var(--c-navy-900); }
+
+.history-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.history-toggle { display: inline-flex; flex-wrap: wrap; border: 2px solid var(--c-navy-800); background: var(--c-cream); }
+.history-toggle button { padding: 6px 10px; border: 0; background: transparent; color: var(--c-navy-900); font: 600 var(--fs-xs)/1.2 var(--font-ui); letter-spacing: .5px; text-transform: uppercase; cursor: pointer; }
+.history-toggle button + button { border-left: 1px solid var(--c-navy-800); }
+.history-toggle button.active { background: var(--c-navy-800); color: var(--c-white); }
+.history-card .history-toggle { margin-bottom: 8px; }
+
+.history-list, .history-rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.history-list li, .history-rank li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 7px 0; border-bottom: 1px dashed var(--c-paper-line); min-width: 0; }
+.history-list li > b { min-width: 34px; font: 400 18px/1 var(--font-display); color: var(--c-navy-900); }
+.history-list li small, .history-rank li small { color: var(--c-ink-muted); font-size: var(--fs-sm); }
+.history-rank { counter-reset: rank; }
+.history-rank li { counter-increment: rank; }
+.history-rank li::before { content: counter(rank); min-width: 18px; font: 700 var(--fs-sm)/1 var(--font-ui); color: var(--c-ink-muted); }
+.history-rank li > b { margin-left: auto; font: 400 22px/1 var(--font-display); color: var(--c-navy-900); }
+.history-rank li > small, .history-rank li > .history-club-trail { flex-basis: 100%; padding-left: 28px; }
+
+.history-matches { display: grid; gap: 0; }
+.history-match { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--c-paper-line); color: inherit; text-decoration: none; }
+.history-match small { color: var(--c-ink-muted); font: 600 var(--fs-xs)/1 var(--font-ui); }
+.history-match b { font: 400 20px/1 var(--font-display); color: var(--c-navy-900); white-space: nowrap; text-align: center; }
+.history-match-team { display: flex; align-items: center; gap: 6px; min-width: 0; font-weight: 600; }
+.history-match-team > span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.history-match-team.is-away { justify-content: flex-end; text-align: right; }
+.history-match:hover b { color: var(--c-red); }
+
+.history-club-goals, .history-club-top, .history-club-trail { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.history-club-goals span { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; }
+.history-club-top .is-minor { color: var(--c-ink-muted); font-size: var(--fs-sm); }
+.history-club-trail { gap: 2px; }
+.history-more { margin-top: 10px; padding: 7px 12px; border: 2px solid var(--c-navy-800); background: var(--c-cream); color: var(--c-navy-900); font: 600 var(--fs-xs)/1 var(--font-ui); letter-spacing: .5px; cursor: pointer; }
+
+/* Evolución: puesto por edición, como mapa de calor. */
+.history-evolution { min-width: 900px; }
+.history-evolution .sticky, .history-matrix .sticky { position: sticky; left: 0; z-index: 1; background: var(--c-paper); }
+.history-cell { position: relative; font-weight: 700; min-width: 34px; }
+.history-cell.is-first { background: #f5d76e; color: var(--c-navy-900); }
+.history-cell.is-top { background: #d8ead9; color: var(--c-green); }
+.history-cell.is-mid { background: #efe6cf; }
+.history-cell.is-low { background: #f2d4d4; color: var(--c-red-dark); }
+.history-cell.is-out { color: var(--c-paper-line); }
+.history-cell i { position: absolute; top: 1px; right: 2px; font-size: 10px; font-style: normal; color: var(--c-red); }
+.history-cell.is-champion { box-shadow: inset 0 0 0 2px var(--c-navy-800); }
+
+/* Cara a cara de todos contra todos. */
+.history-matrix { border-collapse: collapse; font: 500 14px/1.1 var(--font-body); min-width: 720px; }
+.history-matrix th { padding: 6px; border-bottom: 2px solid var(--c-navy-800); }
+.history-matrix tbody th { text-align: left; border-bottom: 1px dashed var(--c-paper-line); white-space: nowrap; }
+.history-matrix td { padding: 6px 4px; text-align: center; border: 1px solid var(--c-paper); min-width: 62px; }
+.history-matrix td b { display: block; font-weight: 700; }
+.history-matrix td small { color: var(--c-ink-muted); font-size: 11px; }
+.history-matrix td.is-self { background: repeating-linear-gradient(45deg, var(--c-paper-deep), var(--c-paper-deep) 4px, var(--c-paper) 4px, var(--c-paper) 8px); }
+.history-matrix td.is-good { background: #b9dcc1; }
+.history-matrix td.is-fair { background: #dcebdc; }
+.history-matrix td.is-even { background: #efe6cf; }
+.history-matrix td.is-poor { background: #f3dcdc; }
+.history-matrix td.is-bad { background: #e8b8b8; }
+
+@media (max-width: 560px) {
+  .history-totals b { font-size: 22px; }
+  .history-match { grid-template-columns: 30px minmax(0, 1fr) auto minmax(0, 1fr); gap: 6px; font-size: 14px; }
+  .history-match .history-crest { display: none; }
+  .history-club span { max-width: 130px; }
+}
