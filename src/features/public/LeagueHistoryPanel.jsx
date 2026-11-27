@@ -185,6 +185,7 @@ function Records({ history, club }) {
   return <div className="history-grid">
     <Card title="LAS GOLEADAS MÁS GRANDES" className="history-card">
       <div className="history-matches">{records.biggestWins.slice(0, 6).map(match => <MatchLine key={match.matchId} match={match} club={club}/>)}</div>
+      <p className="history-note">No cuentan los castigos ni los partidos con más de un gol sin jugador asignado.</p>
     </Card>
     <Card title="LOS PARTIDOS CON MÁS GOLES" className="history-card">
       <div className="history-matches">{records.highestScoring.slice(0, 6).map(match => <MatchLine key={match.matchId} match={match} club={club}/>)}</div>
